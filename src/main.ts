@@ -5,6 +5,8 @@ import { Sigma } from 'sigma';
 import { RdfStreamingReader } from "./RdfStreamingReader";
 
 (() => {
+  const pathPrefix = '/rdf-visual-transform/';
+
   async function renderGraph(url: string | URL, target: HTMLElement) {
     const graph = new graphology.UndirectedGraph();
 
@@ -63,12 +65,12 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
     },
   };
 
-  const route = window.location.pathname.slice(1);
+  const route = window.location.pathname.replace(pathPrefix, '');
 
   if (route in routes) {
     routes[route]();
   } else {
-    window.location.replace(new URL('/sigma', window.location.href));
+    window.location.replace(new URL(`${pathPrefix}sigma`, window.location.href));
   }
 
   function renderLinks(links: string[], target: HTMLElement) {
@@ -78,7 +80,7 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
 
     for (const link of links) {
       const a = document.createElement('a');
-      a.href = `/${link}`;
+      a.href = `${pathPrefix}${link}`;
       a.innerText = link[0].toUpperCase() + link.slice(1);
 
       if (link === route) {
