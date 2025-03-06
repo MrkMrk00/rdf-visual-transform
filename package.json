@@ -21,7 +21,9 @@
     ]
   },
   "dependencies": {
+    "@sigma/utils": "^3.0.0",
     "graphology": "^0.26.0",
+    "graphology-layout": "^0.6.1",
     "rdf-parse": "^4.0.0",
     "readable-stream": "^4.7.0",
     "sigma": "^3.0.1"

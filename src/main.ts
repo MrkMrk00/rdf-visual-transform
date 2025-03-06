@@ -1,52 +1,65 @@
-import { rdfParser } from "rdf-parse";
-import { PassThrough } from 'readable-stream';
-import type * as RDF from '@rdfjs/types';
-
-function webStreamToNodeStream(webStream: ReadableStream) {
-  const pass = new PassThrough();
-  const reader = webStream.getReader();
-
-  function read() {
-    reader
-      .read()
-      .then(({ done, value }) => {
-        if (done) {
-          pass.end();
-          return;
-        }
-        pass.write(value);
-        read();
-      })
-      .catch((err) => pass.destroy(err));
-  }
-
-  read();
-
-  return pass;
-}
+import * as graphology from 'graphology';
+import * as layouts from 'graphology-layout';
+import { getNodesInViewport } from '@sigma/utils';
+import { Sigma } from 'sigma';
+import { RdfStreamingReader } from "./RdfStreamingReader";
 
 (() => {
-  const DATA_URL = 'https://data.wa.gov/api/views/f6w7-q2d2/rows.rdf';
+  async function renderGraph(url: string | URL, target: HTMLElement) {
+    const graph = new graphology.UndirectedGraph();
 
-  async function doGetData(cb: (quad: RDF.Quad) => void) {
-    fetch(DATA_URL).then(response => {
-      let contentType = response.headers.get('Content-Type') ?? 'application/rdf+xml';
-      if (contentType.includes(';')) {
-        contentType = contentType.split(';')[0];
+    const rdfReader = new RdfStreamingReader();
+    await rdfReader.read(url, ({ subject, predicate, object }) => {
+      if (!graph.hasNode(subject.value)) {
+        graph.addNode(subject.value, { label: subject.value });
       }
 
-      rdfParser.parse(webStreamToNodeStream(response.body!), { contentType })
-        .on('data', cb)
-        .on('error', () => { });
+      if (!graph.hasNode(object.value)) {
+        graph.addNode(object.value, { label: object.value });
+      }
+
+      if (!graph.hasEdge(subject.value, object.value)) {
+        graph.addEdge(subject.value, object.value, { label: predicate.value });
+      }
     });
+
+    layouts.random.assign(graph);
+
+    return new Sigma(graph, target);
   }
-
-
 
   const routes: Record<string, VoidFunction> = {
     'sigma': async function() {
-      doGetData(({ subject, object, predicate }) =>
-        console.log(`<${subject.value}> <${predicate.value}> <${object.value}>`));
+      // @ts-ignore
+      const urlForm: HTMLFormElement = document.forms.graphUrl;
+      const container = document.querySelector('main')!;
+
+      let sigma: Sigma | null = null;
+
+      urlForm.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+
+        sigma = null;
+
+        const graphUrl = Object.fromEntries(
+          new FormData(ev.currentTarget as HTMLFormElement),
+        ).url as string;
+
+        sigma = await renderGraph(graphUrl, container);
+      });
+
+      const submitButton = urlForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitButton.click();
+
+      document.getElementById('nodes-in-viewport')!.addEventListener('click', () => {
+        if (!sigma) {
+          console.error('Sigma handle is not available. Maybe the graph is currently re-rendering.');
+
+          return;
+        }
+
+        console.log(getNodesInViewport(sigma));
+      });
     },
   };
 

@@ -1,14 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="width: 100%; height: 100%;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + TS</title>
   </head>
-  <body>
+  <body style="display: flex; flex-direction: column; height: 100%; width: 100%;">
     <nav id="links"></nav>
-    <main id="app"></main>
+    <div id="app" style="display: flex; flex-direction: column; height: 100%; width: 100%; gap: 2em;">
+
+      <div style="display: flex; flex-direction: row; gap: 2em;">
+        <form name="graphUrl" style="display: flex; flex-direction: row; gap: 2em;">
+          <input name="url" type="text" value="https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf">
+          <button type="submit">Render graph</button>
+        </form>
+        <button id="nodes-in-viewport">Log nodes in viewport to console</button>
+      </div>
+
+      <main style="height: 100%; width: 100%;"></main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

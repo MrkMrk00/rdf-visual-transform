@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@sigma/utils':
+        specifier: ^3.0.0
+        version: 3.0.0(sigma@3.0.1(graphology-types@0.24.8))
       graphology:
         specifier: ^0.26.0
         version: 0.26.0(graphology-types@0.24.8)
+      graphology-layout:
+        specifier: ^0.6.1
+        version: 0.6.1(graphology-types@0.24.8)
       rdf-parse:
         specifier: ^4.0.0
         version: 4.0.0
@@ -377,6 +383,11 @@ packages:
     resolution: {integrity: sha512-UW4OTIsOtJ5KSXo2Tchi4lhZqu+tlHrOAs4nNti7CrtB53kAZl3/hyrTi6HkMihxdbDM6m2Zc3swc/ZewEe1xw==}
     engines: {node: '>=v12.22.12'}
 
+  '@sigma/utils@3.0.0':
+    resolution: {integrity: sha512-JCMjj3CHpA8yh8HcWm1YBs4Zdo2s0YUR2YKZ2NUlM2Purkdd8odLuaGQ/R/guSrBz/y+tOLSaQX7hKF6fkUG1g==}
+    peerDependencies:
+      sigma: '>=3.0.0-beta.29'
+
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
@@ -468,6 +479,11 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  graphology-layout@0.6.1:
+    resolution: {integrity: sha512-m9aMvbd0uDPffUCFPng5ibRkb2pmfNvdKjQWeZrf71RS1aOoat5874+DcyNfMeCT4aQguKC7Lj9eCbqZj/h8Ag==}
+    peerDependencies:
+      graphology-types: '>=0.19.0'
+
   graphology-types@0.24.8:
     resolution: {integrity: sha512-hDRKYXa8TsoZHjgEaysSRyPdT6uB78Ci8WnjgbStlQysz7xR52PInxNsmnB7IBOM1BhikxkNyCVEFgmPKnpx3Q==}
 
@@ -530,6 +546,9 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
+  mnemonist@0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+
   n3@1.24.0:
     resolution: {integrity: sha512-iE4V0aSa3gCaqb3E2HoxQhlmoe7Kqy1Uy56mO0eDo9u3kJKzjjPIIO5mHi1bGi+YCP0cYZDt95k58tSSO0GlgQ==}
     engines: {node: '>=12.0'}
@@ -547,6 +566,12 @@ packages:
     peerDependenciesMeta:
       encoding:
         optional: true
+
+  obliterator@2.0.5:
+    resolution: {integrity: sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw==}
+
+  pandemonium@2.4.1:
+    resolution: {integrity: sha512-wRqjisUyiUfXowgm7MFH2rwJzKIr20rca5FsHXCMNm1W5YPP1hCtrZfgmQ62kP7OZ7Xt+cR858aB28lu5NX55g==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -1047,6 +1072,10 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
+  '@sigma/utils@3.0.0(sigma@3.0.1(graphology-types@0.24.8))':
+    dependencies:
+      sigma: 3.0.1(graphology-types@0.24.8)
+
   '@types/estree@1.0.6': {}
 
   '@types/http-link-header@1.0.7':
@@ -1163,6 +1192,12 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
+  graphology-layout@0.6.1(graphology-types@0.24.8):
+    dependencies:
+      graphology-types: 0.24.8
+      graphology-utils: 2.5.2(graphology-types@0.24.8)
+      pandemonium: 2.4.1
+
   graphology-types@0.24.8: {}
 
   graphology-utils@2.5.2(graphology-types@0.24.8):
@@ -1247,6 +1282,10 @@ snapshots:
 
   minimist@1.2.8: {}
 
+  mnemonist@0.39.8:
+    dependencies:
+      obliterator: 2.0.5
+
   n3@1.24.0:
     dependencies:
       buffer: 6.0.3
@@ -1258,6 +1297,12 @@ snapshots:
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
+
+  obliterator@2.0.5: {}
+
+  pandemonium@2.4.1:
+    dependencies:
+      mnemonist: 0.39.8
 
   picocolors@1.1.1: {}
 
