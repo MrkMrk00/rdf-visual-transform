@@ -5,8 +5,6 @@ import { Sigma } from 'sigma';
 import { RdfStreamingReader } from "./RdfStreamingReader";
 
 (() => {
-  const pathPrefix = '/rdf-visual-transform/';
-
   async function renderGraph(url: string | URL, target: HTMLElement) {
     const graph = new graphology.UndirectedGraph();
 
@@ -30,68 +28,40 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
     return new Sigma(graph, target);
   }
 
-  const routes: Record<string, VoidFunction> = {
-    'sigma': async function() {
-      // @ts-ignore
-      const urlForm: HTMLFormElement = document.forms.graphUrl;
-      const container = document.querySelector('main')!;
+  async function renderWithSigma() {
+    // @ts-ignore
+    const urlForm: HTMLFormElement = document.forms.graphUrl;
+    const container = document.querySelector('main')!;
 
-      let sigma: Sigma | null = null;
+    let sigma: Sigma | null = null;
 
-      urlForm.addEventListener('submit', async (ev) => {
-        ev.preventDefault();
+    urlForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
 
-        sigma = null;
+      sigma?.kill();
+      sigma = null;
 
-        const graphUrl = Object.fromEntries(
-          new FormData(ev.currentTarget as HTMLFormElement),
-        ).url as string;
+      const graphUrl = Object.fromEntries(
+        new FormData(ev.currentTarget as HTMLFormElement),
+      ).url as string;
 
-        sigma = await renderGraph(graphUrl, container);
-      });
+      sigma = await renderGraph(graphUrl, container);
+    });
 
-      const submitButton = urlForm.querySelector('button[type="submit"]') as HTMLButtonElement;
-      submitButton.click();
+    const submitButton = urlForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitButton.click();
 
-      document.getElementById('nodes-in-viewport')!.addEventListener('click', () => {
-        if (!sigma) {
-          console.error('Sigma handle is not available. Maybe the graph is currently re-rendering.');
+    document.getElementById('nodes-in-viewport')!.addEventListener('click', () => {
+      if (!sigma) {
+        console.error('Sigma handle is not available. Maybe the graph is currently re-rendering.');
 
-          return;
-        }
-
-        console.log(getNodesInViewport(sigma));
-      });
-    },
-  };
-
-  const route = window.location.pathname.replace(pathPrefix, '');
-
-  if (route in routes) {
-    routes[route]();
-  } else {
-    window.location.replace(new URL(`${pathPrefix}sigma`, window.location.href));
-  }
-
-  function renderLinks(links: string[], target: HTMLElement) {
-    target.style.display = 'flex';
-    target.style.alignItems = 'center';
-    target.style.gap = '2em';
-
-    for (const link of links) {
-      const a = document.createElement('a');
-      a.href = `${pathPrefix}${link}`;
-      a.innerText = link[0].toUpperCase() + link.slice(1);
-
-      if (link === route) {
-        a.style.fontWeight = 'bold';
-        a.style.textDecoration = 'none';
+        return;
       }
 
-      target.insertAdjacentElement('beforeend', a);
-    }
-  }
+      console.log(getNodesInViewport(sigma));
+    });
+  };
 
-  renderLinks(Object.keys(routes), document.getElementById('links')!);
+  renderWithSigma();
 })();
 
