@@ -1,11 +1,41 @@
 import * as graphology from 'graphology';
 import * as layouts from 'graphology-layout';
+import forceLayout from 'graphology-layout-force';
+import forceAtlas2Layout from 'graphology-layout-forceatlas2';
 import { getNodesInViewport } from '@sigma/utils';
 import { Sigma } from 'sigma';
 import { RdfStreamingReader } from "./RdfStreamingReader";
 
+type Layout = 'force' | 'circular' | 'circlepack' | 'random' | 'forceAtlas2';
+type LayoutInstance = {
+  assign(graph: graphology.DirectedGraph): void;
+};
+
 (() => {
-  async function renderGraph(url: string | URL, target: HTMLElement) {
+  function instantiateLayout(layout: Layout): LayoutInstance {
+    switch (layout) {
+      case 'force': return ({
+        assign: (graph) => {
+          layouts.random.assign(graph);
+
+          forceLayout.assign(graph, { maxIterations: 2 });
+        },
+      });
+      case 'forceAtlas2': return ({
+        assign: (graph) => {
+          layouts.random.assign(graph);
+          const settings = forceAtlas2Layout.inferSettings(graph);
+
+          forceAtlas2Layout.assign(graph, { iterations: 2, settings });
+        },
+      });
+      case 'random': return layouts.random;
+      case 'circular': return layouts.circular;
+      case 'circlepack': return layouts.circlepack;
+    }
+  }
+
+  async function renderGraph(url: string | URL, target: HTMLElement, layout: Layout = 'random') {
     const graph = new graphology.UndirectedGraph();
 
     const rdfReader = new RdfStreamingReader();
@@ -23,7 +53,7 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
       }
     });
 
-    layouts.random.assign(graph);
+    instantiateLayout(layout).assign(graph);
 
     return new Sigma(graph, target);
   }
@@ -41,11 +71,11 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
       sigma?.kill();
       sigma = null;
 
-      const graphUrl = Object.fromEntries(
+      const options = Object.fromEntries(
         new FormData(ev.currentTarget as HTMLFormElement),
-      ).url as string;
+      ) as Record<string, string>;
 
-      sigma = await renderGraph(graphUrl, container);
+      sigma = await renderGraph(options.url, container, options.layout as Layout | undefined);
     });
 
     const submitButton = urlForm.querySelector('button[type="submit"]') as HTMLButtonElement;

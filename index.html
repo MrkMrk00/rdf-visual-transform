@@ -12,6 +12,16 @@
       <div style="display: flex; flex-direction: row; gap: 2em;">
         <form name="graphUrl" style="display: flex; flex-direction: row; gap: 2em;">
           <input name="url" type="text" value="https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf">
+          <label>
+            Layout:
+            <select name="layout" onchange="this.form.requestSubmit()">
+              <option value="random">Random</option>
+              <option value="circular">Circular</option>
+              <option value="circlepack">Circlepack</option>
+              <option value="force">Force</option>
+              <option value="forceAtlas2">ForceAtlas2</option>
+            </select>
+          </label>
           <button type="submit">Render graph</button>
         </form>
         <button id="nodes-in-viewport">Log nodes in viewport to console</button>
