@@ -21,7 +21,9 @@
     ]
   },
   "dependencies": {
+    "@sigma/node-square": "^3.0.0",
     "@sigma/utils": "^3.0.0",
+    "cytoscape": "^3.31.1",
     "graphology": "^0.26.0",
     "graphology-layout": "^0.6.1",
     "graphology-layout-force": "^0.2.4",

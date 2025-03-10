@@ -4,7 +4,11 @@ import forceLayout from 'graphology-layout-force';
 import forceAtlas2Layout from 'graphology-layout-forceatlas2';
 import { getNodesInViewport } from '@sigma/utils';
 import { Sigma } from 'sigma';
+import { DEFAULT_NODE_PROGRAM_CLASSES } from 'sigma/settings';
+import { NodeSquareProgram } from '@sigma/node-square';
 import { RdfStreamingReader } from "./RdfStreamingReader";
+import cytoscape from 'cytoscape';
+import { Quad_Object, Quad_Predicate, Quad_Subject } from '@rdfjs/types';
 
 type Layout = 'force' | 'circular' | 'circlepack' | 'random' | 'forceAtlas2';
 type LayoutInstance = {
@@ -12,7 +16,15 @@ type LayoutInstance = {
 };
 
 (() => {
-  function instantiateLayout(layout: Layout): LayoutInstance {
+  function getObjectKey(subject: Quad_Subject, predicate: Quad_Predicate, object: Quad_Object) {
+    if (object.termType === 'Literal') {
+      return `lit:${subject.value}-${predicate.value}-${object.value}`;
+    }
+
+    return object.value;
+  }
+
+  function instantiateGraphologyLayout(layout: Layout): LayoutInstance {
     switch (layout) {
       case 'force': return ({
         assign: (graph) => {
@@ -35,8 +47,8 @@ type LayoutInstance = {
     }
   }
 
-  async function renderGraph(url: string | URL, target: HTMLElement, layout: Layout = 'random') {
-    const graph = new graphology.UndirectedGraph();
+  async function renderSigmaGraph(url: string | URL, target: HTMLElement, layout: Layout = 'random') {
+    const graph = new graphology.DirectedGraph();
 
     const rdfReader = new RdfStreamingReader();
     await rdfReader.read(url, ({ subject, predicate, object }) => {
@@ -44,18 +56,26 @@ type LayoutInstance = {
         graph.addNode(subject.value, { label: subject.value });
       }
 
-      if (!graph.hasNode(object.value)) {
-        graph.addNode(object.value, { label: object.value });
+      const objectKey = getObjectKey(subject, predicate, object);
+      if (object.termType === 'Literal') {
+        graph.addNode(objectKey, { label: object.value, type: 'square' });
+      } else if (!graph.hasNode(object.value)) {
+        graph.addNode(objectKey, { label: object.value });
       }
 
-      if (!graph.hasEdge(subject.value, object.value)) {
-        graph.addEdge(subject.value, object.value, { label: predicate.value });
+      if (!graph.hasEdge(subject.value, objectKey)) {
+        graph.addEdge(subject.value, objectKey, { label: predicate.value });
       }
     });
 
-    instantiateLayout(layout).assign(graph);
+    instantiateGraphologyLayout(layout).assign(graph);
 
-    return new Sigma(graph, target);
+    return new Sigma(graph, target, {
+      nodeProgramClasses: {
+        ...DEFAULT_NODE_PROGRAM_CLASSES,
+        square: NodeSquareProgram,
+      },
+    });
   }
 
   async function renderWithSigma() {
@@ -75,7 +95,7 @@ type LayoutInstance = {
         new FormData(ev.currentTarget as HTMLFormElement),
       ) as Record<string, string>;
 
-      sigma = await renderGraph(options.url, container, options.layout as Layout | undefined);
+      sigma = await renderSigmaGraph(options.url, container, options.layout as Layout | undefined);
     });
 
     const submitButton = urlForm.querySelector('button[type="submit"]') as HTMLButtonElement;
@@ -91,6 +111,73 @@ type LayoutInstance = {
       console.log(getNodesInViewport(sigma));
     });
   };
+
+  async function renderWithCytoscape() {
+    const cy = cytoscape({
+      layout: { name: 'random' },
+      container: document.querySelector('main')!,
+      styleEnabled: true,
+      style: [{
+        selector: 'node',
+        style: {
+          shape: 'ellipse',
+          label: 'data(label)',
+        },
+      }],
+    });
+
+    const urlForm = (document.forms as unknown as Record<string, HTMLFormElement>).graphUrl;
+    const options = Object.fromEntries(new FormData(urlForm));
+
+    const rdfReader = new RdfStreamingReader();
+    let i = 0;
+    await rdfReader.read(options.url as string, ({ subject, predicate, object }) => {
+      if (i++ > 100) {
+        return;
+      }
+
+      if (!cy.hasElementWithId(subject.value)) {
+        cy.add({
+          group: 'nodes',
+          data: { id: subject.value, label: subject.value },
+        });
+      }
+
+      const objectKey = getObjectKey(subject, predicate, object);
+      if (!cy.hasElementWithId(objectKey)) {
+        cy.add({
+          group: 'nodes',
+          data: { id: objectKey, label: object.value },
+          style: {
+            shape: object.termType === 'Literal' ? 'rectangle' : 'circle',
+            width: '100px',
+          },
+        });
+      }
+
+      const edgeKey = `${subject.value}-${predicate.value}-${objectKey}`;
+      if (!cy.hasElementWithId(edgeKey)) {
+        cy.add({
+          group: 'edges',
+          data: {
+            id: edgeKey,
+            source: subject.value,
+            target: objectKey,
+            label: predicate.value,
+          },
+        });
+      }
+    });
+
+    cy.layout({ name: 'random' }).run();
+
+  }
+
+  if (window.location.href.includes('cytoscape')) {
+    renderWithCytoscape();
+
+    return;
+  }
 
   renderWithSigma();
 })();

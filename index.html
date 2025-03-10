@@ -25,6 +25,10 @@
           <button type="submit">Render graph</button>
         </form>
         <button id="nodes-in-viewport">Log nodes in viewport to console</button>
+        <form>
+          <button type="submit" name="cytoscape" value="1">Render with Cytoscape</button>
+          <button type="button" onclick="window.location.replace(window.location.href.split('?')[0]);">Render with Sigma</button>
+        </form>
       </div>
 
       <main style="height: 100%; width: 100%;"></main>

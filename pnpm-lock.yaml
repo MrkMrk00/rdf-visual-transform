@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@sigma/node-square':
+        specifier: ^3.0.0
+        version: 3.0.0(sigma@3.0.1(graphology-types@0.24.8))
       '@sigma/utils':
         specifier: ^3.0.0
         version: 3.0.0(sigma@3.0.1(graphology-types@0.24.8))
+      cytoscape:
+        specifier: ^3.31.1
+        version: 3.31.1
       graphology:
         specifier: ^0.26.0
         version: 0.26.0(graphology-types@0.24.8)
@@ -389,6 +395,11 @@ packages:
     resolution: {integrity: sha512-UW4OTIsOtJ5KSXo2Tchi4lhZqu+tlHrOAs4nNti7CrtB53kAZl3/hyrTi6HkMihxdbDM6m2Zc3swc/ZewEe1xw==}
     engines: {node: '>=v12.22.12'}
 
+  '@sigma/node-square@3.0.0':
+    resolution: {integrity: sha512-hPX2oWo7WeaSe6M3D56AXsrLyg3F+7N/YsodaJh4Sw3KTce0GAFVWWPZZklu9CITz0xi3kEmlCGulqAH0cVG2w==}
+    peerDependencies:
+      sigma: '>=3.0.0-beta.17'
+
   '@sigma/utils@3.0.0':
     resolution: {integrity: sha512-JCMjj3CHpA8yh8HcWm1YBs4Zdo2s0YUR2YKZ2NUlM2Purkdd8odLuaGQ/R/guSrBz/y+tOLSaQX7hKF6fkUG1g==}
     peerDependencies:
@@ -439,6 +450,10 @@ packages:
 
   cross-fetch@3.2.0:
     resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
+
+  cytoscape@3.31.1:
+    resolution: {integrity: sha512-Hx5Mtb1+hnmAKaZZ/7zL1Y5HTFYOjdDswZy/jD+1WINRU8KVi1B7+vlHdsTwY+VCFucTreoyu1RDzQJ9u0d2Hw==}
+    engines: {node: '>=0.10'}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -1088,6 +1103,10 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
+  '@sigma/node-square@3.0.0(sigma@3.0.1(graphology-types@0.24.8))':
+    dependencies:
+      sigma: 3.0.1(graphology-types@0.24.8)
+
   '@sigma/utils@3.0.0(sigma@3.0.1(graphology-types@0.24.8))':
     dependencies:
       sigma: 3.0.1(graphology-types@0.24.8)
@@ -1146,6 +1165,8 @@ snapshots:
       node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
+
+  cytoscape@3.31.1: {}
 
   dom-serializer@2.0.0:
     dependencies:
