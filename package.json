@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "fmt": "prettier --write ."
+        "fmt": "prettier --write .",
+        "test": "vitest"
     },
     "devDependencies": {
         "@rdfjs/types": "^2.0.1",
@@ -21,7 +22,8 @@
     "packageManager": "pnpm@10.5.2+sha512.da9dc28cd3ff40d0592188235ab25d3202add8a207afbedc682220e4a0029ffbff4562102b9e6e46b4e3f9e8bd53e6d05de48544b0c57d4b0179e22c76d1199b",
     "pnpm": {
         "onlyBuiltDependencies": [
-            "esbuild"
+            "esbuild",
+            "xpath-iterator"
         ]
     },
     "dependencies": {
@@ -33,6 +35,7 @@
         "graphology-layout-forceatlas2": "^0.10.1",
         "rdf-parse": "^4.0.0",
         "readable-stream": "^4.7.0",
+        "rocketrml": "^2.1.2",
         "sigma": "^3.0.1"
     }
 }

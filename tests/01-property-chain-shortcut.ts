@@ -16,5 +16,7 @@ describe("Apply property chain shortcut pattern", () => {
         });
     });
 
-    it("creates a shorcut", () => {});
+    it("creates a shorcut", () => {
+        
+    });
 });

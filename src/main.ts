@@ -4,7 +4,7 @@ import * as graphology from "graphology";
 import { Sigma } from "sigma";
 import { DEFAULT_NODE_PROGRAM_CLASSES } from "sigma/settings";
 import exampleData from "../example-data/people-graph.ttl?raw";
-import { insertQuadIntoGraph, instantiateGraphologyLayout, Layout } from "./graph";
+import { graphIntoNTriples, insertQuadIntoGraph, instantiateGraphologyLayout, Layout } from "./graph";
 import { RdfStreamingReader } from "./RdfStreamingReader";
 
 (async () => {
@@ -54,5 +54,6 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
         }
 
         console.log(getNodesInViewport(sigma));
+        console.log(graphIntoNTriples(sigma.getGraph()));
     });
 })();

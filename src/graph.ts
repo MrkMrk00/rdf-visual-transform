@@ -15,21 +15,8 @@ export async function downloadAndParseGraph(url: string | URL) {
     const graph = new graphology.DirectedGraph();
 
     const rdfReader = new RdfStreamingReader();
-    await rdfReader.readFromUrl(url, ({ subject, predicate, object }) => {
-        if (!graph.hasNode(subject.value)) {
-            graph.addNode(subject.value, { label: subject.value });
-        }
-
-        const objectKey = getObjectKey(subject, predicate, object);
-        if (object.termType === "Literal") {
-            graph.addNode(objectKey, { label: object.value, type: "square" });
-        } else if (!graph.hasNode(object.value)) {
-            graph.addNode(objectKey, { label: object.value });
-        }
-
-        if (!graph.hasEdge(subject.value, objectKey)) {
-            graph.addEdge(subject.value, objectKey, { label: predicate.value });
-        }
+    await rdfReader.readFromUrl(url, (quad) => {
+        insertQuadIntoGraph(graph, quad);
     });
 
     return graph;
@@ -78,19 +65,71 @@ export async function instantiateGraphologyLayout(layout: Layout): Promise<Layou
     }
 }
 
-export function insertQuadIntoGraph(graph: graphology.DirectedGraph, { subject, predicate, object }: Quad) {
+const NODE_DEFAULT_SIZE = 15;
+
+export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad) {
+    const { subject, predicate, object } = quad;
+
     if (!graph.hasNode(subject.value)) {
-        graph.addNode(subject.value, { label: subject.value, size: 15 });
+        graph.addNode(subject.value, <CustomNodeAttributes>{
+            label: subject.value,
+            size: NODE_DEFAULT_SIZE,
+
+            self: subject,
+            quad: quad,
+        });
     }
 
     const objectKey = getObjectKey(subject, predicate, object);
     if (object.termType === "Literal") {
-        graph.addNode(objectKey, { label: object.value, type: "square", size: 15 });
+        graph.addNode(objectKey, <CustomNodeAttributes>{
+            type: "square",
+            label: object.value,
+            size: NODE_DEFAULT_SIZE,
+
+            self: object,
+            quad: quad,
+        });
     } else if (!graph.hasNode(object.value)) {
-        graph.addNode(objectKey, { label: object.value, size: 15 });
+        graph.addNode(objectKey, <CustomNodeAttributes>{
+            label: object.value,
+            size: NODE_DEFAULT_SIZE,
+
+            self: object,
+            quad: quad,
+        });
     }
 
     if (!graph.hasEdge(subject.value, objectKey)) {
-        graph.addEdge(subject.value, objectKey, { label: predicate.value });
+        graph.addEdge(subject.value, objectKey, <CustomEdgeAttributes>{
+            label: predicate.value,
+
+            self: predicate,
+            quad: quad,
+        });
     }
+}
+
+interface CustomNodeAttributes {
+    label: string;
+    self: Quad_Subject | Quad_Object;
+    quad: Quad;
+}
+
+interface CustomEdgeAttributes {
+    label: string;
+    self: Quad_Predicate;
+    quad: Quad;
+}
+
+export function graphIntoNTriples(graph: graphology.DirectedGraph) {
+    let triples = '';
+
+    for (const edge of graph.edges()) {
+        const { quad } = graph.getEdgeAttributes(edge) as CustomEdgeAttributes;
+
+        triples += `<${quad.subject.value}> <${quad.predicate.value}> <${quad.object.value}> .\n`;
+    }
+
+    return triples;
 }
