@@ -1,26 +1,35 @@
-import { PassThrough } from "readable-stream";
+import { PassThrough, Readable } from "readable-stream";
 
 export function webStreamToNodeStream(webStream: ReadableStream) {
-  const pass = new PassThrough();
-  const reader = webStream.getReader();
+    const pass = new PassThrough();
+    const reader = webStream.getReader();
 
-  function read() {
-    reader
-      .read()
-      .then(({ done, value }) => {
-        if (done) {
-          pass.end();
+    function read() {
+        reader
+            .read()
+            .then(({ done, value }) => {
+                if (done) {
+                    pass.end();
 
-          return;
-        }
+                    return;
+                }
 
-        pass.write(value);
-        read();
-      })
-      .catch((err) => pass.destroy(err));
-  }
+                pass.write(value);
+                read();
+            })
+            .catch((err) => pass.destroy(err));
+    }
 
-  read();
+    read();
 
-  return pass;
+    return pass;
+}
+
+export function stringToStream(text: string) {
+    return new Readable({
+        read() {
+            this.push(text);
+            this.push(null);
+        },
+    });
 }
