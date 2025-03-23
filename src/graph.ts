@@ -3,6 +3,14 @@ import * as graphology from "graphology";
 import * as layouts from "graphology-layout";
 import { RdfStreamingReader } from "./RdfStreamingReader";
 
+const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+const RDFS = "http://www.w3.org/2000/01/rdf-schema#";
+
+const specialProperties = {
+    [`${RDF}type`]: "type",
+    [`${RDFS}label`]: "label",
+};
+
 export function getObjectKey(subject: Quad_Subject, predicate: Quad_Predicate, object: Quad_Object) {
     if (object.termType === "Literal") {
         return `lit:${subject.value}-${predicate.value}-${object.value}`;
@@ -77,7 +85,23 @@ export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad)
 
             self: subject,
             quad: quad,
+
+            properties: {},
         });
+    }
+
+    // If the predicate is a "special property" (like rdf:type or rdfs:label),
+    // do not add it to the graph, but instead add it to the node's properties
+    if (predicate.value in specialProperties) {
+        const previousProperties = graph.getNodeAttribute(subject.value, "properties");
+        const predicateValue = predicate.value as keyof typeof specialProperties;
+
+        graph.setNodeAttribute(subject.value, "properties", {
+            ...previousProperties,
+            [specialProperties[predicateValue]]: object.value,
+        });
+
+        return;
     }
 
     const objectKey = getObjectKey(subject, predicate, object);
@@ -97,6 +121,8 @@ export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad)
 
             self: object,
             quad: quad,
+
+            properties: {},
         });
     }
 
@@ -123,7 +149,7 @@ interface CustomEdgeAttributes {
 }
 
 export function graphIntoNTriples(graph: graphology.DirectedGraph) {
-    let triples = '';
+    let triples = "";
 
     for (const edge of graph.edges()) {
         const { quad } = graph.getEdgeAttributes(edge) as CustomEdgeAttributes;
