@@ -2,14 +2,7 @@ import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from "@rdfjs/typ
 import * as graphology from "graphology";
 import * as layouts from "graphology-layout";
 import { RdfStreamingReader } from "./RdfStreamingReader";
-
-const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-const RDFS = "http://www.w3.org/2000/01/rdf-schema#";
-
-const specialProperties = {
-    [`${RDF}type`]: "type",
-    [`${RDFS}label`]: "label",
-};
+import { RDF } from "./special-properties";
 
 export function getObjectKey(subject: Quad_Subject, predicate: Quad_Predicate, object: Quad_Object) {
     if (object.termType === "Literal") {
@@ -92,17 +85,13 @@ export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad)
 
     // If the predicate is a "special property" (like rdf:type or rdfs:label),
     // do not add it to the graph, but instead add it to the node's properties
-    if (predicate.value in specialProperties) {
-        const previousProperties = graph.getNodeAttribute(subject.value, "properties");
-        const predicateValue = predicate.value as keyof typeof specialProperties;
-
-        graph.setNodeAttribute(subject.value, "properties", {
-            ...previousProperties,
-            [specialProperties[predicateValue]]: object.value,
-        });
-
-        return;
-    }
+    // if (isSpecialProperty(predicate)) {
+    //     graph.updateNodeAttributes(subject.value, (attributes) => {
+    //         return updateNodeAttributes(attributes, predicate, object);
+    //     });
+    //
+    //     return;
+    // }
 
     const objectKey = getObjectKey(subject, predicate, object);
     if (object.termType === "Literal") {
@@ -121,8 +110,6 @@ export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad)
 
             self: object,
             quad: quad,
-
-            properties: {},
         });
     }
 
@@ -158,4 +145,36 @@ export function graphIntoNTriples(graph: graphology.DirectedGraph) {
     }
 
     return triples;
+}
+
+export function graphIntoJsonLd(graph: graphology.DirectedGraph) {
+    const objects: Array<Record<string, any>> = [];
+
+    for (const node of graph.nodes()) {
+        const { self } = graph.getNodeAttributes(node) as CustomNodeAttributes;
+
+        if (self.termType === "Literal") {
+            continue;
+        }
+
+        const edges = graph.outboundEdges(node).map((edgeId) => graph.getEdgeAttribute(edgeId, "quad") as Quad);
+
+        const nodeItem: Record<string, any> = {
+            "@id": self.value,
+        };
+
+        const type = edges.find(({ predicate }) => predicate.value === `${RDF}type`);
+
+        if (type) {
+            nodeItem["@type"] = type.object.value;
+        }
+
+        for (const edge of edges) {
+            nodeItem[edge.predicate.value] = edge.object.value;
+        }
+
+        objects.push(nodeItem);
+    }
+
+    return objects;
 }

@@ -27,6 +27,7 @@
         ]
     },
     "dependencies": {
+        "@comake/rmlmapper-js": "^0.5.2",
         "@sigma/node-square": "^3.0.0",
         "@sigma/utils": "^3.0.0",
         "graphology": "^0.26.0",
@@ -35,7 +36,6 @@
         "graphology-layout-forceatlas2": "^0.10.1",
         "rdf-parse": "^4.0.0",
         "readable-stream": "^4.7.0",
-        "rocketrml": "^2.1.2",
         "sigma": "^3.0.1"
     }
 }
