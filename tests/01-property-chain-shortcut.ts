@@ -1,14 +1,14 @@
+import { RdfReader } from "@/util/rdf-reader";
 import * as graphology from "graphology";
 import { assert, beforeEach, describe, it } from "vitest";
-import { graphIntoJsonLd, insertQuadIntoGraph } from "../src/graph";
-import { RdfStreamingReader } from "../src/RdfStreamingReader";
 
+import { insertQuadIntoGraph } from "@/util/graphology";
 import type { Quad } from "@rdfjs/types";
 import graphData from "../example-data/people-graph.ttl?raw";
 import peopleMapping from "../rml-templates/01-property-chain-shortcut.ttl?raw";
 
 describe("Apply property chain shortcut pattern", () => {
-    const reader = new RdfStreamingReader();
+    const reader = new RdfReader();
     let graph!: graphology.DirectedGraph;
 
     beforeEach(async () => {
@@ -49,7 +49,6 @@ describe("Apply property chain shortcut pattern", () => {
         assert(!triples.includes("David-studiesUnderProfessor-Alice"));
         assert(!triples.includes("David-studiesUnderProfessor-Charlie"));
         assert(!triples.includes("David-studiesUnderProfessor-David"));
-
     });
 });
 
@@ -68,7 +67,7 @@ async function transform(inputTriples: object[], rmlMapping: string) {
         return { error: await (e as Response).text() };
     }
 
-    const reader = new RdfStreamingReader();
+    const reader = new RdfReader();
     const newTriples: Quad[] = [];
 
     await reader.readFromString(await response.text(), "application/n-triples", (quad) => {
