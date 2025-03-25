@@ -1,38 +1,34 @@
 <!doctype html>
-<html lang="en" style="width: 100%; height: 100%;">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rdf-visual-transform</title>
-  </head>
-  <body style="display: flex; flex-direction: column; height: 100%; width: 100%;">
-    <nav id="links"></nav>
-    <div id="app" style="display: flex; flex-direction: column; height: 100%; width: 100%; gap: 2em;">
+<html lang="en" style="width: 100%; height: 100%">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>rdf-visual-transform</title>
+    </head>
+    <body style="display: flex; flex-direction: column; height: 100%; width: 100%">
+        <nav id="links"></nav>
+        <div id="app" style="display: flex; flex-direction: column; height: 100%; width: 100%; gap: 2em">
+            <div style="display: flex; flex-direction: row; gap: 2em">
+                <form name="graphUrl" style="display: flex; flex-direction: row; gap: 2em">
+                    <input name="url" type="text" value="https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf" />
 
-      <div style="display: flex; flex-direction: row; gap: 2em;">
-        <form name="graphUrl" style="display: flex; flex-direction: row; gap: 2em;">
-          <input name="url" type="text" value="https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf">
-          <label>
-            Layout:
-            <select name="layout" onchange="this.form.requestSubmit()">
-              <option value="random">Random</option>
-              <option value="circular">Circular</option>
-              <option value="circlepack">Circlepack</option>
-              <option value="force">Force</option>
-              <option value="forceAtlas2">ForceAtlas2</option>
-            </select>
-          </label>
-          <button type="submit">Render graph</button>
-        </form>
-        <button id="nodes-in-viewport">Log nodes in viewport to console</button>
-        <form>
-          <button type="submit" name="cytoscape" value="1">Render with Cytoscape</button>
-          <button type="button" onclick="window.location.replace(window.location.href.split('?')[0]);">Render with Sigma</button>
-        </form>
-      </div>
+                    <label>
+                        Layout:
+                        <select name="layout" onchange="this.form.requestSubmit()">
+                            <option value="random">Random</option>
+                            <option value="circular">Circular</option>
+                            <option value="circlepack">Circlepack</option>
+                            <option value="force">Force</option>
+                            <option value="forceAtlas2" selected>ForceAtlas2</option>
+                        </select>
+                    </label>
+                    <button type="submit">Render graph</button>
+                </form>
+                <button id="nodes-in-viewport">Log nodes in viewport to console</button>
+            </div>
 
-      <main style="height: 100%; width: 100%;"></main>
-    </div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+            <main style="height: 100%; width: 100%"></main>
+        </div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
 </html>
