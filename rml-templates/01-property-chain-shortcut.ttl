@@ -5,9 +5,10 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix uni: <http://example.org/university#> .
 @prefix carml: <http://carml.taxonic.com/carml/> .
-
-# Map Student studies -> subject <- Professor teaches
-#       into Student studiesUnderProfessor
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://example.org/> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
 
 _:StudentSource
     rml:source [ a carml:Stream ] ;
@@ -24,15 +25,45 @@ _:ProfessorSource
 _:CoursesSource
     rml:source [ a carml:Stream ] ;
     rml:referenceFormulation ql:JSONPath  ;
-    rml:iterator "$[?(@['@type'] == 'http://www.w3.org/2000/01/rdf-schema#Class')]"
+    rml:iterator "$[?(@['@type'] == 'http://example.org/university#Course')]"
 .
-
 
 _:ProfessorsWithCourses a rr:TriplesMap ;
     rml:logicalSource _:ProfessorSource ;
 
     rr:subjectMap [
         rr:template "{.@id}" ;
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate uni:teachesLookup ;
+        rr:objectMap [ a fnml:FunctionMap ;
+            fnml:functionValue [
+                rml:logicalSource _:ProfessorSource ;
+
+                rr:subjectMap [
+                    rr:template "functionExec";
+                    rr:termType rr:BlankNode ;
+                    rr:class fno:Execution
+                ] ;
+
+                rr:predicateObjectMap [
+                    rr:predicate fno:executes ;
+                    rr:objectMap [
+                        rr:constant ex:lookupObject ;
+                    ] ;
+                ] ,
+                [
+                    rr:predicate ex:paramIri ;
+                    rr:objectMap [ rml:reference "$['http://example.org/university#teaches']" ] ;
+                ] ,
+                [
+                    rr:predicate ex:paramLookup ;
+                    rr:objectMap [ rr:constant "$['@id']" ] ;
+                ]
+          ] ;
+          rr:datatype xsd:string ;
+        ]
     ] ;
 
     rr:predicateObjectMap [
@@ -45,6 +76,16 @@ _:ProfessorsWithCourses a rr:TriplesMap ;
                 rr:subjectMap [
                     rr:template "{.@id}" ;
                 ] ;
+
+                # === Delete the node in between
+                rr:predicateObjectMap [
+                    rr:predicate uni:deleted ;
+
+                    rr:objectMap [
+                        rr:constant "true" ;
+                        rr:dataType xsd:boolean ;
+                    ] ;
+                ] ;
             ] ;
 
             rr:joinCondition [
@@ -55,12 +96,12 @@ _:ProfessorsWithCourses a rr:TriplesMap ;
     ] ;
 .
 
+# Create the new shortcut property between students and professors
 _:StudentsUnderProfessors a rr:TripleMap ;
     rml:logicalSource _:StudentSource ;
 
     rr:subjectMap [
         rr:template "{.@id}" ;
-        rr:class uni:Student ;
     ] ;
 
     rr:predicateObjectMap [

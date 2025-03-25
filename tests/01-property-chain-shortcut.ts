@@ -26,6 +26,8 @@ describe("Apply property chain shortcut pattern", () => {
         assert(!("error" in transformationResult), (transformationResult as { error: string }).error);
         const triples = quadsIntoStrings(transformationResult);
 
+        console.log(triples);
+
         assert(triples.includes("Charlie-studiesUnderProfessor-David"));
 
         assert(!triples.includes("Charlie-studiesUnderProfessor-Bob"));

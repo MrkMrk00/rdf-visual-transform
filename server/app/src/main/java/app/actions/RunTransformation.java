@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.jetbrains.annotations.NotNull;
 
+import app.util.RmlFunctions;
 import io.carml.engine.rdf.RdfRmlMapper;
 import io.carml.logicalsourceresolver.JsonPathResolver;
 import io.carml.util.RmlMappingLoader;
@@ -57,6 +58,7 @@ public class RunTransformation implements Handler {
                     .triplesMaps(mapping)
                     .baseIri(DUMMY_BASE_IRI)
                     .setLogicalSourceResolver(Rdf.Ql.JsonPath, JsonPathResolver::getInstance)
+                    .addFunctions(new RmlFunctions(request.graph))
                     .build();
 
         } catch (Exception e) {
