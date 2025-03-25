@@ -1,11 +1,12 @@
+import { insertQuadIntoGraph } from "@/util/graphology";
+import { instantiateGraphologyLayout, type Layout } from "@/util/graphology-layouts";
+import { RdfReader } from "@/util/rdf-reader";
 import { NodeSquareProgram } from "@sigma/node-square";
 import { getNodesInViewport } from "@sigma/utils";
 import * as graphology from "graphology";
 import { Sigma } from "sigma";
 import { DEFAULT_NODE_PROGRAM_CLASSES } from "sigma/settings";
 import exampleData from "../example-data/people-graph.ttl?raw";
-import { graphIntoNTriples, insertQuadIntoGraph, instantiateGraphologyLayout, Layout } from "./graph";
-import { RdfStreamingReader } from "./RdfStreamingReader";
 
 (async () => {
     // @ts-ignore
@@ -25,7 +26,7 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
         // const graph = await downloadAndParseGraph(options.url);
 
         const graph = new graphology.DirectedGraph();
-        const rdfReader = new RdfStreamingReader();
+        const rdfReader = new RdfReader();
 
         await rdfReader.readFromString(exampleData, "text/turtle", (quad) => {
             insertQuadIntoGraph(graph, quad);
@@ -54,6 +55,5 @@ import { RdfStreamingReader } from "./RdfStreamingReader";
         }
 
         console.log(getNodesInViewport(sigma));
-        console.log(graphIntoNTriples(sigma.getGraph()));
     });
 })();

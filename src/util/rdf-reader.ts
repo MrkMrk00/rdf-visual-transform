@@ -1,8 +1,8 @@
 import type { Quad } from "@rdfjs/types";
 import { rdfParser } from "rdf-parse";
-import { stringToStream, webStreamToNodeStream } from "./streams";
+import { stringToStream, webStreamToNodeStream } from "@/util/streams";
 
-export class RdfStreamingReader {
+export class RdfReader {
     constructor(private fallbackContentType = "application/rdf+xml") {}
 
     readFromString(data: string, contentType: string, onData: (quad: Quad) => void) {
