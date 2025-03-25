@@ -11,3 +11,4 @@ build
 /app/bin/
 .settings/
 
+kls_database.db
