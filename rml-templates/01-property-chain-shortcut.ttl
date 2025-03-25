@@ -4,65 +4,76 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix uni: <http://example.org/university#> .
+@prefix carml: <http://carml.taxonic.com/carml/> .
 
 # Map Student studies -> subject <- Professor teaches
 #       into Student studiesUnderProfessor
 
-<#StudentSource>
-    rml:source "input"                    ;
+_:StudentSource
+    rml:source [ a carml:Stream ] ;
     rml:referenceFormulation ql:JSONPath  ;
     rml:iterator "$[?(@['http://example.org/university#major'])]"
 .
 
-<#ProfessorSource>
-    rml:source "input"                    ;
+_:ProfessorSource
+    rml:source [ a carml:Stream ] ;
     rml:referenceFormulation ql:JSONPath  ;
     rml:iterator "$[?(@['http://example.org/university#teaches'])]"
 .
 
-<#CoursesSource>
-    rml:source "input"                    ;
+_:CoursesSource
+    rml:source [ a carml:Stream ] ;
     rml:referenceFormulation ql:JSONPath  ;
     rml:iterator "$[?(@['@type'] == 'http://www.w3.org/2000/01/rdf-schema#Class')]"
 .
 
-<#CreatePropertyShortcutMapping> a rr:TriplesMap ;
-    rml:logicalSource <#StudentSource> ;
+
+_:ProfessorsWithCourses a rr:TriplesMap ;
+    rml:logicalSource _:ProfessorSource ;
+
     rr:subjectMap [
-        rr:template "{@id}" ;
+        rr:template "{.@id}" ;
     ] ;
 
     rr:predicateObjectMap [
-        rr:predicate uni:studiesUnderProfessor ;
+        rr:predicate uni:teaches ;
+
         rr:objectMap [
             rr:parentTriplesMap [
-                rml:logicalSource <#ProfessorSource> ;
+                rml:logicalSource _:CoursesSource ;
+
                 rr:subjectMap [
-                    rr:template "{@id}" ;
+                    rr:template "{.@id}" ;
                 ] ;
+            ] ;
 
-                rr:predicateObjectMap [
-                    rr:predicate uni:teaches ;
-
-                    rr:objectMap [
-                        rr:parentTriplesMap [
-                            rml:logicalSource <#CoursesSource> ;
-                            rr:subjectMap [
-                                rr:template "{@id}" ;
-                            ] ;
-                        ] ;
-
-                        rr:joinCondition [
-                            rr:child "http://example.org/university#teaches" ;
-                            rr:parent "@id" ;
-                        ] ;
-                    ] ;
-                ] ;
-                rr:joinCondition [
-                    rr:child "http://example.org/university#major" ;
-                    rr:parent "http://example.org/university#teaches" ;
-                ] ;
+            rr:joinCondition [
+                rr:parent "$['@id']" ;
+                rr:child "$['http://example.org/university#teaches']" ;
             ] ;
         ] ;
     ] ;
 .
+
+_:StudentsUnderProfessors a rr:TripleMap ;
+    rml:logicalSource _:StudentSource ;
+
+    rr:subjectMap [
+        rr:template "{.@id}" ;
+        rr:class uni:Student ;
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate uni:studiesUnderProfessor ;
+
+        rr:objectMap [
+            rr:parentTriplesMap _:ProfessorsWithCourses ;
+
+            rr:joinCondition [
+                rr:parent "$['http://example.org/university#teaches']" ;
+                rr:child "$['http://example.org/university#major']" ;
+            ] ;
+        ] ;
+    ] ;
+.
+
