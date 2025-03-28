@@ -1,9 +1,9 @@
 import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from "@rdfjs/types";
-import * as graphology from "graphology";
+import type { DirectedGraph } from "graphology";
 
 export const NODE_DEFAULT_SIZE = 15;
 
-export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad) {
+export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     const { subject, predicate, object } = quad;
 
     if (!graph.hasNode(subject.value)) {
@@ -36,8 +36,8 @@ export function insertQuadIntoGraph(graph: graphology.DirectedGraph, quad: Quad)
         });
     }
 
-    if (!graph.hasEdge(subject.value, objectKey)) {
-        graph.addEdge(subject.value, objectKey, <CustomEdgeAttributes>{
+    if (!graph.hasDirectedEdge(subject.value, objectKey)) {
+        graph.addDirectedEdge(subject.value, objectKey, <CustomEdgeAttributes>{
             label: predicate.value,
 
             self: predicate,
