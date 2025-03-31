@@ -1,44 +1,67 @@
 import { RdfReader } from "@/util/rdf-reader";
 import { useQuery } from "@tanstack/react-query";
+import { createStore, useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { Store } from "n3";
+import type { Settings as SigmaSettings } from "sigma/settings";
 import { create } from "zustand";
 
 type GraphSettingsStore = {
-    graphUrl: string;
+    graph: { url: string } | { data: string; name: string } | null;
+    sigmaSettings: Partial<SigmaSettings>;
 
-    updateGraphUrl: (maybeGraphUrl: string) => void;
+    loadGraphFromUrl: (url: string) => void;
 };
 
+const graphUrlHistory = atomWithStorage<string[]>("graphUrlHistory", []);
+const store = createStore();
+
+const HISTORY_MAX_SIZE = 20;
+
 export const useGraphStore = create<GraphSettingsStore>()((set) => ({
-    graphUrl: "https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf",
+    graph: { url: "https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf" },
+    sigmaSettings: {},
 
-    updateGraphUrl: (maybeGraphUrl: string) => {
-        let url!: URL;
-        try {
-            url = new URL(maybeGraphUrl);
-        } catch (_) {
-            return;
-        }
+    loadGraphFromUrl: (url) => {
+        store.set(graphUrlHistory, (history) => {
+            return Array.from(new Set([url, ...history])).slice(0, Math.min(history.length + 1, HISTORY_MAX_SIZE));
+        });
 
-        set({ graphUrl: url.href });
+        set({ graph: { url } });
     },
 }));
 
 const rdfReader = new RdfReader();
 
 export function useTripleStore() {
-    const graphUrl = useGraphStore((store) => store.graphUrl);
+    const graph = useGraphStore((store) => store.graph);
 
     return useQuery({
-        queryKey: ["rdf-graph", graphUrl],
+        queryKey: ["rdf-graph", graph],
         queryFn: async () => {
             const store = new Store();
 
-            await rdfReader.readFromUrl(graphUrl, (quad) => {
-                store.addQuad(quad);
-            });
+            if (!graph) {
+                return store;
+            }
+
+            if ("data" in graph) {
+                await rdfReader.readFromString(graph.data, "text/turtle", (quad) => {
+                    store.addQuad(quad);
+                });
+            } else {
+                await rdfReader.readFromUrl(graph.url, (quad) => {
+                    store.addQuad(quad);
+                });
+            }
 
             return store;
         },
     });
+}
+
+export function useGraphUrlHistory() {
+    const [urlHistory] = useAtom(graphUrlHistory);
+
+    return urlHistory;
 }
