@@ -4,15 +4,15 @@ import { useLoadGraph } from "@react-sigma/core";
 import { DirectedGraph } from "graphology";
 import { random as randomLayout } from "graphology-layout";
 import forceAtlas2Layout from "graphology-layout-forceatlas2";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
     const { data: store } = useTripleStore();
 
-    useEffect(() => {
+    const graph = useMemo(() => {
         if (!store) {
-            return;
+            return null;
         }
 
         const graph = new DirectedGraph();
@@ -25,8 +25,16 @@ export function GraphRenderer() {
         const settings = forceAtlas2Layout.inferSettings(graph);
         forceAtlas2Layout.assign(graph, { ...settings, iterations: 5 });
 
+        return graph;
+    }, [store]);
+
+    useEffect(() => {
+        if (!graph) {
+            return;
+        }
+
         loadGraph(graph);
-    }, [loadGraph, store]);
+    }, [loadGraph, graph]);
 
     return null;
 }

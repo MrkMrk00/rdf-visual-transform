@@ -10,7 +10,13 @@ type UrlHistoryPopoverProps = {
 };
 
 function formatUrl(urlStr: string) {
-    const url = new URL(urlStr);
+    let url: URL;
+
+    try {
+        url = new URL(urlStr);
+    } catch (_e) {
+        return urlStr;
+    }
 
     return `${url.hostname}${url.pathname}`;
 }
