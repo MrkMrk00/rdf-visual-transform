@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useGraphUrlHistory } from "@/stores/graphSettings";
+import { useGraphStore } from "@/stores/graphSettings";
 import { PopoverClose } from "@radix-ui/react-popover";
 import { type ReactNode } from "react";
 
 type UrlHistoryPopoverProps = {
     trigger: ReactNode;
+    triggerAsChild?: boolean;
     onSelect: (url: string) => void;
 };
 
@@ -21,12 +22,12 @@ function formatUrl(urlStr: string) {
     return `${url.hostname}${url.pathname}`;
 }
 
-export function UrlHistoryPopover({ trigger, onSelect }: UrlHistoryPopoverProps) {
-    const urlHistory = useGraphUrlHistory();
+export function UrlHistoryPopover({ trigger, triggerAsChild, onSelect }: UrlHistoryPopoverProps) {
+    const urlHistory = useGraphStore((store) => store.graphUrlHistory);
 
     return (
         <Popover>
-            <PopoverTrigger>{trigger}</PopoverTrigger>
+            <PopoverTrigger asChild={triggerAsChild}>{trigger}</PopoverTrigger>
             <PopoverContent asChild>
                 <ul className="w-full">
                     {urlHistory.map((url, i) => (

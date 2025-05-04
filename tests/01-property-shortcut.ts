@@ -45,11 +45,7 @@ describe("property shortcut pattern", () => {
         console.log("diff", diff);
 
         expect(diff).toHaveLength(2);
-        expect(diff).toContainEqual(
-            "uni:Alice uni:studiesUnderProfessor uni:Bob",
-        );
-        expect(diff).toContainEqual(
-            "uni:Charlie uni:studiesUnderProfessor uni:David",
-        );
+        expect(diff).toContainEqual("uni:Alice uni:studiesUnderProfessor uni:Bob");
+        expect(diff).toContainEqual("uni:Charlie uni:studiesUnderProfessor uni:David");
     });
 });
