@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useGraphStore } from "@/stores/graphSettings";
+import { useUiControlStore } from "@/stores/uiControl";
 import { ArrowDownTrayIcon, EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import { Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
@@ -20,6 +21,7 @@ export function Menu() {
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
     const graph = useGraphStore((store) => store.graph);
+    const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
 
     useEffect(() => {
         if (!graph) {
@@ -74,6 +76,13 @@ export function Menu() {
                             >
                                 University
                             </MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger>Transform...</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem onClick={toggleSparqlConsole}>SPARQL console</MenubarItem>
+                            <MenubarItem>Define transformation</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </div>

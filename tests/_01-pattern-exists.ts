@@ -59,10 +59,10 @@ describe("Pattern exists 01", () => {
 
         for await (const a of r) {
             console.log(a.get("from")?.value);
-            console.log('\t ->', a.get("p1")?.value);
-            console.log('\t ->', a.get("middle")?.value);
-            console.log('\t ->', a.get("p2")?.value);
-            console.log('\t ->', a.get("to")?.value);
+            console.log("\t ->", a.get("p1")?.value);
+            console.log("\t ->", a.get("middle")?.value);
+            console.log("\t ->", a.get("p2")?.value);
+            console.log("\t ->", a.get("to")?.value);
         }
 
         stream.destroy();
