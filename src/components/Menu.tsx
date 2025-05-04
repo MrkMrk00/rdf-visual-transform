@@ -12,50 +12,45 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { useGraphStore } from "@/stores/graphSettings";
 import { ArrowDownTrayIcon, EllipsisVerticalIcon } from "@heroicons/react/20/solid";
-import { FocusEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { Cog8ToothIcon } from "@heroicons/react/24/outline";
+import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { UrlHistoryPopover } from "./UrlHistoryPopover";
 
 export function Menu() {
-    const graph = useGraphStore((store) => store.graph);
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
-
-    const [isUrlCorrect, setIsUrlCorrect] = useState(true);
-    const urlRef = useRef<HTMLInputElement>(null);
+    const graph = useGraphStore((store) => store.graph);
 
     useEffect(() => {
-        if (!urlRef.current || !graph) {
+        if (!graph) {
             return;
         }
 
         if (!("url" in graph)) {
-            urlRef.current.value = "";
+            setGraphUrl("");
 
             return;
         }
 
-        urlRef.current.value = graph.url;
+        setGraphUrl(graph.url);
     }, [graph]);
 
-    function validateUrl(url: string) {
-        if (!url) {
-            setIsUrlCorrect(false);
-
-            return;
+    const [graphUrl, setGraphUrl] = useState<string>(!!graph && "url" in graph ? graph.url : "");
+    const isUrlCorrect = useMemo(() => {
+        if (!graphUrl) {
+            return false;
         }
 
         try {
-            new URL(url);
+            new URL(graphUrl);
         } catch (_e) {
-            setIsUrlCorrect(false);
-
-            return;
+            return false;
         }
 
-        setIsUrlCorrect(true);
-    }
+        return true;
+    }, [graphUrl]);
 
-    function submitUrl(ev: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>) {
+    function loadFromUrl(ev: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>) {
         if (!isUrlCorrect) {
             return;
         }
@@ -65,9 +60,27 @@ export function Menu() {
 
     return (
         <nav className="p-2 flex flex-col gap-2">
-            <Menubar>
+            <Menubar className="flex w-full justify-between items-center">
+                <div className="flex flex-row">
+                    <MenubarMenu>
+                        <MenubarTrigger>Example data</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem
+                                onSelect={async () => {
+                                    const { default: data } = await import("../../example-data/people-graph.ttl?raw");
+
+                                    useGraphStore.setState({ graph: { data, name: "University" } });
+                                }}
+                            >
+                                University
+                            </MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                </div>
                 <MenubarMenu>
-                    <MenubarTrigger>Settings</MenubarTrigger>
+                    <MenubarTrigger className="h-full inline-flex items-center">
+                        <Cog8ToothIcon className="h-6 w-6" />
+                    </MenubarTrigger>
                     <MenubarContent>
                         <MenubarCheckboxItem
                             checked={!!sigmaSettings.renderEdgeLabels}
@@ -81,30 +94,15 @@ export function Menu() {
                         </MenubarCheckboxItem>
                     </MenubarContent>
                 </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger>Choose example data</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarItem
-                            onSelect={async () => {
-                                const { default: data } = await import("../../example-data/people-graph.ttl?raw");
-
-                                useGraphStore.setState({ graph: { data, name: "University" } });
-                            }}
-                        >
-                            University
-                        </MenubarItem>
-                    </MenubarContent>
-                </MenubarMenu>
             </Menubar>
 
             <div className="flex items-center">
                 <label className="inline-flex items-center gap-2">
                     <span className="text-sm min-w-fit">Graph from URL:</span>
                     <Input
-                        ref={urlRef}
-                        onInput={(ev) => setTimeout(validateUrl, 0, ev.currentTarget.value)}
-                        onBlur={submitUrl}
-                        onKeyDown={(ev) => ev.key === "Enter" && submitUrl(ev)}
+                        onInput={(ev) => setGraphUrl(ev.currentTarget.value)}
+                        value={graphUrl}
+                        onKeyDown={(ev) => ev.key === "Enter" && loadFromUrl(ev)}
                         className={cn("w-sm rounded-r-none border-r-0", {
                             "underline decoration-wavy decoration-destructive": !isUrlCorrect,
                         })}
@@ -112,26 +110,32 @@ export function Menu() {
                     />
                 </label>
 
-                <UrlHistoryPopover
-                    trigger={
-                        <TooltipProvider>
-                            <Tooltip>
+                <TooltipProvider>
+                    <Tooltip>
+                        <UrlHistoryPopover
+                            triggerAsChild
+                            trigger={
                                 <TooltipTrigger asChild>
                                     <Button className="rounded-none" variant="outline" size="icon">
                                         <EllipsisVerticalIcon />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Select from previous</TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    }
-                    onSelect={(url) => useGraphStore.setState({ graph: { url } })}
-                />
+                            }
+                            onSelect={setGraphUrl}
+                        />
+                        <TooltipContent>Select from previous</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
 
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button className="rounded-l-none border-l-0" variant="outline" size="icon">
+                            <Button
+                                className="rounded-l-none border-l-0"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => loadGraphFromUrl(graphUrl)}
+                            >
                                 <ArrowDownTrayIcon />
                             </Button>
                         </TooltipTrigger>

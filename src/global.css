@@ -3,13 +3,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html, body, #app {
+html,
+body,
+#app {
     height: 100%;
     width: 100%;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 #app {
@@ -125,11 +127,10 @@ body {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }
-
