@@ -1,4 +1,3 @@
-import { useEventListener } from "@/hooks/useEventListener";
 import { useTripleStore } from "@/stores/graphSettings";
 import { insertQuadIntoGraph } from "@/util/graphology";
 import { useLoadGraph } from "@react-sigma/core";
@@ -33,15 +32,6 @@ export function GraphRenderer() {
 
         return intoGraph(store);
     }, [store]);
-
-    useEventListener(document.body, "rdf.rerender", () => {
-        if (!store) {
-            return;
-        }
-
-        const graph = intoGraph(store);
-        loadGraph(graph);
-    });
 
     useEffect(() => {
         if (!graph) {

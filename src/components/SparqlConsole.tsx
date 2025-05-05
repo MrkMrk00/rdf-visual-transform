@@ -1,57 +1,26 @@
-import { useTripleStore } from "@/stores/graphSettings";
+import * as templates from "@/sparql-templates";
 import { useUiControlStore } from "@/stores/uiControl";
-import { QueryEngine } from "@comunica/query-sparql";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import MonacoEditor, { type Monaco as MonacoInstance } from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import type Monaco from "monaco-editor";
-import { use, useRef } from "react";
+import { use, useRef, useState } from "react";
 import { createHighlighter } from "shiki";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
+import { Input } from "./ui/input";
 
 const highlighterPromise = createHighlighter({
     themes: ["github-light"],
     langs: ["sparql"],
 });
 
-const propertyChainShortcut = `\
-PREFIX uni: <http://example.org/university#>
-INSERT {
-    ?student uni:studiesUnderProfessor ?professor .
-}
-WHERE {
-    ?student uni:major ?course .
-    ?professor uni:teaches ?course .
-}`;
-
-const queryEngine = new QueryEngine();
-function useSparqlEngine() {
-    const { data: store } = useTripleStore();
-
-    return {
-        queryVoid: (query: string) => {
-            if (!store) {
-                throw new Error("No store available");
-            }
-
-            const result = queryEngine.queryVoid(query, {
-                sources: [store],
-            });
-
-            result.then(() => {
-                document.body.dispatchEvent(new Event("rdf.rerender"));
-            });
-
-            return result;
-        },
-    };
-}
-
 export function SparqlConsole() {
     const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
-    const { queryVoid } = useSparqlEngine();
+
+    const [chosenPattern, setChosenPattern] = useState<keyof typeof templates>("propertyChainShortcut");
 
     const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -75,6 +44,32 @@ export function SparqlConsole() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4 h-full">
                 <div className="flex gap-4 items-center w-full h-full">
+                    <form
+                        className="h-full flex flex-col gap-2"
+                        onSubmit={(ev) => {
+                            ev.preventDefault();
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const data = Object.fromEntries(new FormData(ev.currentTarget)) as Record<string, any>;
+                            data["delete"] = !!data["delete"];
+
+                            editorRef.current?.setValue(
+                                templates.propertyChainShortcut(data as unknown as templates.PropertyChainShortcutOpts),
+                            );
+                        }}
+                    >
+                        <div className="font-bold text-xl">{chosenPattern}</div>
+                        <Input name="result" placeholder="result" />
+                        <Input name="predicate0" placeholder="predicate0" />
+                        <Input name="predicate1" placeholder="predicate1" />
+                        <label className="text-center inline-flex items-center gap-2">
+                            Delete:
+                            <Checkbox name="delete" />
+                        </label>
+
+                        <Button type="submit">Compile template</Button>
+                    </form>
+
                     <MonacoEditor
                         defaultLanguage="sparql"
                         height="80%"
@@ -84,14 +79,7 @@ export function SparqlConsole() {
                     />
 
                     <div className="flex flex-col gap-2 h-full">
-                        <Button
-                            variant="success"
-                            onClick={() => {
-                                queryVoid(editorRef.current?.getValue() ?? "");
-                            }}
-                        >
-                            Execute
-                        </Button>
+                        <Button variant="success">Execute</Button>
                     </div>
                 </div>
 
@@ -103,8 +91,6 @@ export function SparqlConsole() {
                             if (!editorRef.current) {
                                 return;
                             }
-
-                            editorRef.current.setValue(propertyChainShortcut);
                         }}
                     >
                         property chain shortcut

@@ -20,6 +20,7 @@ import { UrlHistoryPopover } from "./UrlHistoryPopover";
 export function Menu() {
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
+    const loadGraphFromData = useGraphStore((store) => store.loadGraphFromData);
     const graph = useGraphStore((store) => store.graph);
     const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
 
@@ -71,7 +72,7 @@ export function Menu() {
                                 onSelect={async () => {
                                     const { default: data } = await import("../../example-data/people-graph.ttl?raw");
 
-                                    useGraphStore.setState({ graph: { data, name: "University" } });
+                                    loadGraphFromData(data, "University");
                                 }}
                             >
                                 University
