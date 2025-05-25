@@ -91,6 +91,8 @@ export function SparqlConsole() {
                             if (!editorRef.current) {
                                 return;
                             }
+
+                            setChosenPattern("propertyChainShortcut");
                         }}
                     >
                         property chain shortcut

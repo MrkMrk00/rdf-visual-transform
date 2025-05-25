@@ -14,15 +14,16 @@ import { useGraphStore } from "@/stores/graphSettings";
 import { useUiControlStore } from "@/stores/uiControl";
 import { ArrowDownTrayIcon, EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import { Cog8ToothIcon } from "@heroicons/react/24/outline";
-import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UrlHistoryPopover } from "./UrlHistoryPopover";
 
 export function Menu() {
-    const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
-    const loadGraphFromData = useGraphStore((store) => store.loadGraphFromData);
-    const graph = useGraphStore((store) => store.graph);
+    const toggleSigmaSetting = useGraphStore((store) => store.toggleSetting);
     const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
+
+    const graph = useGraphStore((store) => store.graph);
+    const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
 
     useEffect(() => {
         if (!graph) {
@@ -53,12 +54,12 @@ export function Menu() {
         return true;
     }, [graphUrl]);
 
-    function loadFromUrl(ev: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>) {
+    function submitUrlForLoad() {
         if (!isUrlCorrect) {
             return;
         }
 
-        loadGraphFromUrl(ev.currentTarget.value);
+        loadGraphFromUrl(graphUrl);
     }
 
     return (
@@ -69,11 +70,7 @@ export function Menu() {
                         <MenubarTrigger>Example data</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem
-                                onSelect={async () => {
-                                    const { default: data } = await import("../../example-data/people-graph.ttl?raw");
-
-                                    loadGraphFromData(data, "University");
-                                }}
+                                onSelect={() => loadGraphFromUrl(window.location.pathname + "/people-graph.ttl")}
                             >
                                 University
                             </MenubarItem>
@@ -83,7 +80,6 @@ export function Menu() {
                         <MenubarTrigger>Transform...</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem onClick={toggleSparqlConsole}>SPARQL console</MenubarItem>
-                            <MenubarItem>Define transformation</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </div>
@@ -94,13 +90,9 @@ export function Menu() {
                     <MenubarContent>
                         <MenubarCheckboxItem
                             checked={!!sigmaSettings.renderEdgeLabels}
-                            onClick={() => {
-                                useGraphStore.setState({
-                                    sigmaSettings: { renderEdgeLabels: !sigmaSettings.renderEdgeLabels },
-                                });
-                            }}
+                            onClick={() => toggleSigmaSetting("renderEdgeLabels")}
                         >
-                            Show edge labels
+                            Show edge labelsMenu
                         </MenubarCheckboxItem>
                     </MenubarContent>
                 </MenubarMenu>
@@ -112,7 +104,7 @@ export function Menu() {
                     <Input
                         onInput={(ev) => setGraphUrl(ev.currentTarget.value)}
                         value={graphUrl}
-                        onKeyDown={(ev) => ev.key === "Enter" && loadFromUrl(ev)}
+                        onKeyDown={(ev) => ev.key === "Enter" && submitUrlForLoad()}
                         className={cn("w-sm rounded-r-none border-r-0", {
                             "underline decoration-wavy decoration-destructive": !isUrlCorrect,
                         })}
@@ -144,7 +136,7 @@ export function Menu() {
                                 className="rounded-l-none border-l-0"
                                 variant="outline"
                                 size="icon"
-                                onClick={() => loadGraphFromUrl(graphUrl)}
+                                onClick={() => submitUrlForLoad()}
                             >
                                 <ArrowDownTrayIcon />
                             </Button>

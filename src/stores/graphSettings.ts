@@ -1,4 +1,5 @@
 import { RdfReader } from "@/util/rdf-reader";
+import type { OmitNever } from "@/util/types";
 import { useQuery } from "@tanstack/react-query";
 import { Store } from "n3";
 import type { Settings as SigmaSettings } from "sigma/settings";
@@ -11,7 +12,13 @@ type GraphSettingsStore = {
     sigmaSettings: Partial<SigmaSettings>;
 
     loadGraphFromUrl: (url: string) => void;
+    updateSigmaSettings: (updated: Partial<SigmaSettings>) => void;
+    toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
 };
+
+type BoolSetting = OmitNever<{
+    [TKey in keyof SigmaSettings]: SigmaSettings[TKey] extends boolean ? TKey : never;
+}>;
 
 const HISTORY_MAX_SIZE = 20;
 
@@ -29,6 +36,21 @@ export const useGraphStore = create<GraphSettingsStore>()(
                         graphUrlHistory: Array.from(new Set([url, ...prev.graphUrlHistory])).slice(0, HISTORY_MAX_SIZE),
                     };
                 });
+            },
+
+            updateSigmaSettings: (updated: Partial<SigmaSettings>) => {
+                set((prev) => ({
+                    ...prev,
+                    ...updated,
+                }));
+            },
+            toggleSetting: (setting, defaultVal = true) => {
+                set((prev) => ({
+                    sigmaSettings: {
+                        ...prev.sigmaSettings,
+                        [setting]: !(prev.sigmaSettings[setting] ?? !defaultVal),
+                    },
+                }));
             },
         }),
         {

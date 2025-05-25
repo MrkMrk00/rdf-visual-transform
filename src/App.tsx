@@ -3,8 +3,7 @@ import { SigmaContainer } from "@react-sigma/core";
 import "@react-sigma/core/lib/style.css";
 import { NodeSquareProgram } from "@sigma/node-square";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense, useRef } from "react";
-import { Sigma } from "sigma";
+import { lazy, memo, Suspense } from "react";
 import { DEFAULT_NODE_PROGRAM_CLASSES } from "sigma/settings";
 import { Menu } from "./components/Menu";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./components/ui/resizable";
@@ -26,12 +25,29 @@ const queryClient = new QueryClient({
     },
 });
 
-export function App() {
+const GraphMain = memo(function GraphMain() {
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
-    const showSparqlConsole = useUiControlStore((store) => store.showSparqlConsole);
 
-    const menuRef = useRef<HTMLDivElement>(null);
-    const sigma = useRef<Sigma>(null);
+    return (
+        <SigmaContainer
+            style={sigmaStyle}
+            settings={{
+                nodeProgramClasses: {
+                    ...DEFAULT_NODE_PROGRAM_CLASSES,
+                    square: NodeSquareProgram,
+                    ...(sigmaSettings.nodeProgramClasses ?? {}),
+                },
+                ...sigmaSettings,
+                allowInvalidContainer: true,
+            }}
+        >
+            <GraphRenderer />
+        </SigmaContainer>
+    );
+});
+
+export function App() {
+    const showSparqlConsole = useUiControlStore((store) => store.showSparqlConsole);
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -39,21 +55,7 @@ export function App() {
                 <Menu />
 
                 <ResizablePanel>
-                    <SigmaContainer
-                        ref={sigma}
-                        style={sigmaStyle}
-                        settings={{
-                            nodeProgramClasses: {
-                                ...DEFAULT_NODE_PROGRAM_CLASSES,
-                                square: NodeSquareProgram,
-                                ...(sigmaSettings.nodeProgramClasses ?? {}),
-                            },
-                            ...sigmaSettings,
-                            allowInvalidContainer: true,
-                        }}
-                    >
-                        <GraphRenderer />
-                    </SigmaContainer>
+                    <GraphMain />
                 </ResizablePanel>
 
                 {showSparqlConsole && (
