@@ -19,8 +19,6 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
 
     const objectKey = getObjectKey(subject, predicate, object);
     if (!graph.hasNode(objectKey)) {
-        console.log(objectKey);
-
         if (object.termType === "Literal") {
             graph.addNode(objectKey, <CustomNodeAttributes>{
                 type: "square",
@@ -55,7 +53,7 @@ export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
         insertQuadIntoGraph(graph, quad);
     }
 
-    // delete old
+    // delete old (TODO: delete nodes without edges)
     graph.forEachDirectedEdge((edge, attributes) => {
         const attrs = attributes as CustomEdgeAttributes;
 

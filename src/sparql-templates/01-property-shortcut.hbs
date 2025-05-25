@@ -1,3 +1,5 @@
+name: insert
+
 {{#each prefixes}}
     PREFIX {{this.prefix}}: <{{this.iri}}>
 {{/each}}
@@ -8,9 +10,13 @@ WHERE {
     ?start  {{predicate0}} ?middle .
     ?middle {{predicate1}} ?end    .
 }
-{{#if delete}}
+---
+name: delete
+
+{{#each prefixes}}
+    PREFIX {{this.prefix}}: <{{this.iri}}>
+{{/each}}
 DELETE WHERE {
     ?start  {{predicate0}} ?middle .
     ?middle {{predicate1}} ?end    .
 }
-{{/if}}

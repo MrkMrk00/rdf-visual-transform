@@ -1,5 +1,7 @@
 import { compile } from "handlebars";
+import { load } from "js-yaml";
 import propertyChainShortcutTemplate from "./01-property-shortcut.hbs?raw";
+import linkCountingPropertyTemplate from "./06-link-counting-property.hbs?raw";
 
 export type PropertyChainShortcutOpts = {
     prefixes?: string[];
@@ -11,5 +13,51 @@ export type PropertyChainShortcutOpts = {
     delete: boolean;
 };
 
-export const propertyChainShortcut: (opts: PropertyChainShortcutOpts) => string =
-    compile(propertyChainShortcutTemplate);
+export const propertyChainShortcut = (opts: PropertyChainShortcutOpts) =>
+    parseTemplateOutput(compile(propertyChainShortcutTemplate)(opts));
+
+export type LinkCountingPropertyOpts = {
+    newProperty: string;
+    sourceProperty: string;
+};
+
+export const linkCountingProperty = (opts: LinkCountingPropertyOpts) =>
+    parseTemplateOutput(compile(linkCountingPropertyTemplate)(opts));
+
+export type TemplateOutput = {
+    header: Record<string, any>;
+    body: string;
+};
+
+function parseTemplateOutput(rawOutput: string) {
+    const subtempltes = rawOutput
+        .trim()
+        .split("---")
+        .map((sub) => sub.trim())
+        .filter(Boolean);
+
+    const templates: TemplateOutput[] = [];
+
+    for (const sub of subtempltes) {
+        let header: TemplateOutput["header"] = {};
+        let body = "";
+
+        for (let i = 0; i < sub.length - 1; i++) {
+            if (sub[i] === "\n" && sub[i + 1] === "\n") {
+                const headerSource = sub.slice(0, i + 1).trim();
+
+                header = load(headerSource) as any;
+                body = sub.slice(i + 2).trim();
+
+                break;
+            }
+        }
+
+        templates.push({
+            header,
+            body,
+        });
+    }
+
+    return templates;
+}

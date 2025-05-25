@@ -56,21 +56,43 @@ export function SparqlConsole() {
 
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const data = Object.fromEntries(new FormData(ev.currentTarget)) as Record<string, any>;
-                            data["delete"] = !!data["delete"];
 
-                            editorRef.current?.setValue(
-                                templates.propertyChainShortcut(data as unknown as templates.PropertyChainShortcutOpts),
-                            );
+                            const renderedTemplates = templates[chosenPattern](data as any);
+
+                            let template: string;
+                            if (data["delete"]) {
+                                template = renderedTemplates.find(({ header }) => header.name === "delete")?.body ?? "";
+                            } else {
+                                template = renderedTemplates[0].body;
+                            }
+
+                            editorRef.current?.setValue(template);
                         }}
                     >
                         <div className="font-bold text-xl">{chosenPattern}</div>
-                        <Input name="result" placeholder="result" />
-                        <Input name="predicate0" placeholder="predicate0" />
-                        <Input name="predicate1" placeholder="predicate1" />
-                        <label className="text-center inline-flex items-center gap-2">
-                            Delete:
-                            <Checkbox name="delete" />
-                        </label>
+
+                        {chosenPattern === "propertyChainShortcut" && (
+                            <>
+                                <Input name="result" placeholder="result" />
+                                <Input name="predicate0" placeholder="predicate0" />
+                                <Input name="predicate1" placeholder="predicate1" />
+                                <label className="text-center inline-flex items-center gap-2">
+                                    Delete:
+                                    <Checkbox name="delete" />
+                                </label>
+                            </>
+                        )}
+
+                        {chosenPattern === "linkCountingProperty" && (
+                            <>
+                                <Input name="newProperty" placeholder="newProperty" />
+                                <Input name="sourceProperty" placeholder="sourceProperty" />
+                                <label className="text-center inline-flex items-center gap-2">
+                                    Delete:
+                                    <Checkbox name="delete" />
+                                </label>
+                            </>
+                        )}
 
                         <Button type="submit">Compile template</Button>
                     </form>
@@ -108,6 +130,19 @@ export function SparqlConsole() {
                         }}
                     >
                         property chain shortcut
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            if (!editorRef.current) {
+                                return;
+                            }
+
+                            setChosenPattern("linkCountingProperty");
+                        }}
+                    >
+                        link counting property
                     </Button>
                 </div>
             </CardContent>
