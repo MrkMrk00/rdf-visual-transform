@@ -48,7 +48,7 @@ export class RdfReader {
                     reject(err);
                 })
                 .on("end", resolve);
-        });
+        }, reject);
 
         return promise;
     }

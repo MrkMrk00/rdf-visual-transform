@@ -9,11 +9,11 @@ import {
     MenubarTrigger,
 } from "@/components/ui/menubar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useGraphIsLoading } from "@/contexts/tripple-store";
 import { cn } from "@/lib/utils";
 import { useGraphStore } from "@/stores/graphSettings";
 import { useUiControlStore } from "@/stores/uiControl";
-import { ArrowDownTrayIcon, EllipsisVerticalIcon } from "@heroicons/react/20/solid";
-import { Cog8ToothIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ArrowPathIcon, Cog8ToothIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import { UrlHistoryPopover } from "./UrlHistoryPopover";
 
@@ -21,6 +21,8 @@ export function Menu() {
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
     const toggleSigmaSetting = useGraphStore((store) => store.toggleSetting);
     const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
+
+    const isLoading = useGraphIsLoading();
 
     const graph = useGraphStore((store) => store.graph);
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
@@ -83,19 +85,26 @@ export function Menu() {
                         </MenubarContent>
                     </MenubarMenu>
                 </div>
-                <MenubarMenu>
-                    <MenubarTrigger className="h-full inline-flex items-center">
-                        <Cog8ToothIcon className="h-6 w-6" />
-                    </MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarCheckboxItem
-                            checked={!!sigmaSettings.renderEdgeLabels}
-                            onClick={() => toggleSigmaSetting("renderEdgeLabels")}
-                        >
-                            Show edge labelsMenu
-                        </MenubarCheckboxItem>
-                    </MenubarContent>
-                </MenubarMenu>
+                <div className="flex items-center gap-2">
+                    {isLoading && (
+                        <MenubarMenu>
+                            <ArrowPathIcon className="h-6 w-6 animate-spin" />
+                        </MenubarMenu>
+                    )}
+                    <MenubarMenu>
+                        <MenubarTrigger className="h-full inline-flex items-center">
+                            <Cog8ToothIcon className="h-6 w-6" />
+                        </MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarCheckboxItem
+                                checked={!!sigmaSettings.renderEdgeLabels}
+                                onClick={() => toggleSigmaSetting("renderEdgeLabels")}
+                            >
+                                Show edge labels
+                            </MenubarCheckboxItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                </div>
             </Menubar>
 
             <div className="flex items-center">

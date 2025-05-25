@@ -7,6 +7,8 @@ import { lazy, memo, Suspense } from "react";
 import { DEFAULT_NODE_PROGRAM_CLASSES } from "sigma/settings";
 import { Menu } from "./components/Menu";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./components/ui/resizable";
+import { Toaster } from "./components/ui/sonner";
+import { StoreProvider } from "./contexts/tripple-store";
 import { useGraphStore } from "./stores/graphSettings";
 import { useUiControlStore } from "./stores/uiControl";
 
@@ -21,6 +23,7 @@ const queryClient = new QueryClient({
         queries: {
             refetchOnWindowFocus: false,
             refetchOnReconnect: false,
+            throwOnError: false,
         },
     },
 });
@@ -51,25 +54,29 @@ export function App() {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ResizablePanelGroup direction="vertical">
-                <Menu />
+            <StoreProvider>
+                <ResizablePanelGroup direction="vertical">
+                    <Menu />
 
-                <ResizablePanel>
-                    <GraphMain />
-                </ResizablePanel>
+                    <ResizablePanel id="rpanel-main" order={0}>
+                        <GraphMain />
+                    </ResizablePanel>
 
-                {showSparqlConsole && (
-                    <>
-                        <ResizableHandle withHandle />
+                    {showSparqlConsole && (
+                        <>
+                            <ResizableHandle withHandle />
 
-                        <ResizablePanel defaultSize={30}>
-                            <Suspense fallback={<div className="flex h-full w-full p-8">Loading...</div>}>
-                                <SparqlConsole />
-                            </Suspense>
-                        </ResizablePanel>
-                    </>
-                )}
-            </ResizablePanelGroup>
+                            <ResizablePanel defaultSize={30} id="rpanel-bottom" order={1}>
+                                <Suspense fallback={<div className="flex h-full w-full p-8">Loading...</div>}>
+                                    <SparqlConsole />
+                                </Suspense>
+                            </ResizablePanel>
+                        </>
+                    )}
+                </ResizablePanelGroup>
+
+                <Toaster />
+            </StoreProvider>
         </QueryClientProvider>
     );
 }

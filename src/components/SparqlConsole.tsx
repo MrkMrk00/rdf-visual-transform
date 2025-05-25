@@ -1,9 +1,10 @@
 import * as templates from "@/sparql-templates";
 import { useUiControlStore } from "@/stores/uiControl";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import MonacoEditor, { type Monaco as MonacoInstance } from "@monaco-editor/react";
+import MonacoEditor, { type Monaco as MonacoInstance, loader } from "@monaco-editor/react";
 import { shikiToMonaco } from "@shikijs/monaco";
 import type Monaco from "monaco-editor";
+import * as monaco from "monaco-editor";
 import { use, useRef, useState } from "react";
 import { createHighlighter } from "shiki";
 import { Button } from "./ui/button";
@@ -15,6 +16,8 @@ const highlighterPromise = createHighlighter({
     themes: ["github-light"],
     langs: ["sparql"],
 });
+
+loader.config({ monaco });
 
 export function SparqlConsole() {
     const highlighter = use(highlighterPromise);

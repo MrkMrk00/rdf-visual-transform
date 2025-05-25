@@ -1,8 +1,8 @@
-import { useTripleStore } from "@/stores/graphSettings";
+import { useTripleStore } from "@/contexts/tripple-store";
 import { insertQuadIntoGraph } from "@/util/graphology";
 import { useLoadGraph } from "@react-sigma/core";
 import { DirectedGraph } from "graphology";
-import { random as randomLayout } from "graphology-layout";
+import { circular } from "graphology-layout";
 import forceAtlas2Layout from "graphology-layout-forceatlas2";
 import { Store } from "n3";
 import { useEffect, useMemo } from "react";
@@ -13,7 +13,7 @@ function intoGraph(store: Store) {
         insertQuadIntoGraph(graph, quad);
     }
 
-    randomLayout.assign(graph);
+    circular.assign(graph);
 
     const settings = forceAtlas2Layout.inferSettings(graph);
     forceAtlas2Layout.assign(graph, { ...settings, iterations: 5 });
@@ -23,7 +23,7 @@ function intoGraph(store: Store) {
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
-    const { data: store } = useTripleStore();
+    const store = useTripleStore();
 
     const graph = useMemo(() => {
         if (!store) {
