@@ -1,3 +1,4 @@
+import { useTransformer } from "@/hooks/useTransformer";
 import * as templates from "@/sparql-templates";
 import { useUiControlStore } from "@/stores/uiControl";
 import { XMarkIcon } from "@heroicons/react/20/solid";
@@ -26,6 +27,7 @@ export function SparqlConsole() {
     const [chosenPattern, setChosenPattern] = useState<keyof typeof templates>("propertyChainShortcut");
 
     const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+    const { update } = useTransformer();
 
     function initMonaco(monaco: MonacoInstance) {
         monaco.languages.register({ id: "sparql" });
@@ -82,7 +84,14 @@ export function SparqlConsole() {
                     />
 
                     <div className="flex flex-col gap-2 h-full">
-                        <Button variant="success">Execute</Button>
+                        <Button
+                            onClick={() => {
+                                update(editorRef.current?.getValue() ?? "");
+                            }}
+                            variant="success"
+                        >
+                            Execute
+                        </Button>
                     </div>
                 </div>
 

@@ -3,7 +3,7 @@ import type { Settings as SigmaSettings } from "sigma/settings";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type GraphSettingsStore = {
+export type GraphSettingsStore = {
     graph: { url: string } | { data: string; name: string } | null;
     graphUrlHistory: string[];
     sigmaSettings: Partial<SigmaSettings>;

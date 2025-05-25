@@ -1,37 +1,26 @@
-import { useTripleStore } from "@/contexts/tripple-store";
-import { insertQuadIntoGraph } from "@/util/graphology";
+import { useGraphologyGraph } from "@/contexts/tripple-store";
+import { useTransformer } from "@/hooks/useTransformer";
 import { useLoadGraph } from "@react-sigma/core";
-import { DirectedGraph } from "graphology";
-import { circular } from "graphology-layout";
-import forceAtlas2Layout from "graphology-layout-forceatlas2";
-import { Store } from "n3";
-import { useEffect, useMemo } from "react";
-
-function intoGraph(store: Store) {
-    const graph = new DirectedGraph();
-    for (const quad of store.toArray()) {
-        insertQuadIntoGraph(graph, quad);
-    }
-
-    circular.assign(graph);
-
-    const settings = forceAtlas2Layout.inferSettings(graph);
-    forceAtlas2Layout.assign(graph, { ...settings, iterations: 5 });
-
-    return graph;
-}
+import { useEffect } from "react";
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
-    const store = useTripleStore();
+    const graph = useGraphologyGraph();
+    const { eventBus } = useTransformer();
 
-    const graph = useMemo(() => {
-        if (!store) {
-            return null;
+    useEffect(() => {
+        if (!graph) {
+            return;
         }
 
-        return intoGraph(store);
-    }, [store]);
+        function loader() {
+            loadGraph(graph);
+        }
+
+        eventBus.addEventListener("change", loader);
+
+        return () => eventBus.removeEventListener("change", loader);
+    }, [eventBus, graph, loadGraph]);
 
     useEffect(() => {
         if (!graph) {

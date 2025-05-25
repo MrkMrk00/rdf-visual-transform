@@ -1,5 +1,6 @@
 import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from "@rdfjs/types";
 import type { DirectedGraph } from "graphology";
+import { Store } from "n3";
 
 export const NODE_DEFAULT_SIZE = 15;
 
@@ -17,23 +18,25 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 
     const objectKey = getObjectKey(subject, predicate, object);
-    if (object.termType === "Literal") {
-        graph.addNode(objectKey, <CustomNodeAttributes>{
-            type: "square",
-            label: object.value,
-            size: NODE_DEFAULT_SIZE,
+    if (!graph.hasNode(objectKey)) {
+        console.log(objectKey);
 
-            self: object,
-            quad: quad,
-        });
-    } else if (!graph.hasNode(object.value)) {
-        graph.addNode(objectKey, <CustomNodeAttributes>{
-            label: object.value,
-            size: NODE_DEFAULT_SIZE,
+        if (object.termType === "Literal") {
+            graph.addNode(objectKey, <CustomNodeAttributes>{
+                type: "square",
+                label: object.value,
+                size: NODE_DEFAULT_SIZE,
 
-            self: object,
-            quad: quad,
-        });
+                self: object,
+            });
+        } else {
+            graph.addNode(object.value, <CustomNodeAttributes>{
+                label: object.value,
+                size: NODE_DEFAULT_SIZE,
+
+                self: object,
+            });
+        }
     }
 
     if (!graph.hasDirectedEdge(subject.value, objectKey)) {
@@ -46,10 +49,25 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 }
 
+export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
+    // insert new
+    for (const quad of store) {
+        insertQuadIntoGraph(graph, quad);
+    }
+
+    // delete old
+    graph.forEachDirectedEdge((edge, attributes) => {
+        const attrs = attributes as CustomEdgeAttributes;
+
+        if (!store.has(attrs.quad)) {
+            graph.dropEdge(edge);
+        }
+    });
+}
+
 export interface CustomNodeAttributes {
     label: string;
     self: Quad_Subject | Quad_Object;
-    quad: Quad;
 }
 
 export interface CustomEdgeAttributes {
