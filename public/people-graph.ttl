@@ -27,11 +27,13 @@ uni:David rdf:type foaf:Person ;
     uni:teaches uni:Mathematics ;
     uni:worksAt uni:ExampleUniversity .
 
-uni:ComputerScience rdf:type uni:Course ;
-    rdfs:label "Computer Science" .
+uni:ComputerScience a uni:Course ;
+    rdfs:label "Computer Science" ;
+    uni:hasProfessor uni:Bob .
 
 uni:Mathematics rdf:type uni:Course ;
-    rdfs:label "Mathematics" .
+    rdfs:label "Mathematics" ;
+    uni:hasProfessor uni:David .
 
 uni:ExampleUniversity rdf:type uni:University ;
     rdfs:label "Example University" .

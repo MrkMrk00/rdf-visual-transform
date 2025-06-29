@@ -34,7 +34,7 @@
         "vite-tsconfig-paths": "^5.1.4",
         "vitest": "^3.1.4"
     },
-    "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f",
+    "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417",
     "pnpm": {
         "onlyBuiltDependencies": [
             "@tailwindcss/oxide",
@@ -52,6 +52,7 @@
         "@radix-ui/react-tooltip": "^1.2.7",
         "@react-sigma/core": "^5.0.2",
         "@shikijs/monaco": "^3.4.2",
+        "@sigma/edge-curve": "^3.1.0",
         "@sigma/node-square": "^3.0.0",
         "@sigma/utils": "^3.0.0",
         "@tanstack/react-query": "^5.77.0",

@@ -57,6 +57,7 @@ export function SparqlConsole() {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const data = Object.fromEntries(new FormData(ev.currentTarget)) as Record<string, any>;
 
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const renderedTemplates = templates[chosenPattern](data as any);
 
                             let template: string;

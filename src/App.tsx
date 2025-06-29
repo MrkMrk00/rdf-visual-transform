@@ -11,6 +11,7 @@ import { Toaster } from "./components/ui/sonner";
 import { StoreProvider } from "./contexts/tripple-store";
 import { useGraphStore } from "./stores/graphSettings";
 import { useUiControlStore } from "./stores/uiControl";
+import CurvedEdgeProgram from '@sigma/edge-curve';
 
 const SparqlConsole = lazy(() =>
     import("./components/SparqlConsole").then((module) => ({ default: module.SparqlConsole })),
@@ -39,6 +40,9 @@ const GraphMain = memo(function GraphMain() {
                     ...DEFAULT_NODE_PROGRAM_CLASSES,
                     square: NodeSquareProgram,
                     ...(sigmaSettings.nodeProgramClasses ?? {}),
+                },
+                edgeProgramClasses: {
+                    curved: CurvedEdgeProgram,
                 },
                 ...sigmaSettings,
                 allowInvalidContainer: true,

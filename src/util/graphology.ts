@@ -37,12 +37,19 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
         }
     }
 
-    if (!graph.hasDirectedEdge(subject.value, objectKey)) {
-        graph.addDirectedEdge(subject.value, objectKey, <CustomEdgeAttributes>{
+    const edgeKey = `${subject.value}-${predicate.value}-${objectKey}`;
+    if (!graph.hasDirectedEdge(edgeKey)) {
+        let displayType: undefined | string = undefined;
+        if (graph.hasDirectedEdge(subject.value, objectKey) || graph.hasDirectedEdge(objectKey, subject.value)) {
+            displayType = "curved";
+        }
+
+        graph.addDirectedEdgeWithKey(edgeKey, subject.value, objectKey, <CustomEdgeAttributes>{
             label: predicate.value,
 
             self: predicate,
             quad: quad,
+            type: displayType,
         });
     }
 }
