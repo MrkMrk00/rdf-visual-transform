@@ -36,7 +36,12 @@ export function useTransformer() {
                 syncGraphWithStore(graph, store);
                 eventBus.dispatchEvent(new Event("change"));
             },
-            eventBus,
+            onError: (callback: (ev: CustomEvent<unknown>) => void, signal?: AbortSignal) => {
+                eventBus.addEventListener("error", callback as EventListener, { signal });
+            },
+            onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
+                eventBus.addEventListener("change", callback, { signal });
+            },
         };
     }, [store, graph]);
 }

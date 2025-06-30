@@ -33,8 +33,6 @@ export function SparqlConsole() {
         return queryNames;
     }, [chosenPatternName]);
 
-    const [enabledTemplates, setEnabledTemplates] = useState<string[]>([]);
-
     const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
     const { update } = useTransformer();
 

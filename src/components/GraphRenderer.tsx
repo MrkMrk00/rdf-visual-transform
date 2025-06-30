@@ -7,7 +7,7 @@ import { useEffect } from "react";
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
     const graph = useGraphologyGraph();
-    const { eventBus } = useTransformer();
+    const { onChange } = useTransformer();
 
     const sigma = useSigma();
     useDoubleClickToCopy(sigma);
@@ -17,14 +17,11 @@ export function GraphRenderer() {
             return;
         }
 
-        function loader() {
-            loadGraph(graph);
-        }
+        const abortContoller = new AbortController();
+        onChange(() => loadGraph(graph), abortContoller.signal);
 
-        eventBus.addEventListener("change", loader);
-
-        return () => eventBus.removeEventListener("change", loader);
-    }, [eventBus, graph, loadGraph]);
+        return () => abortContoller.abort();
+    }, [onChange, graph, loadGraph]);
 
     useEffect(() => {
         if (!graph) {
