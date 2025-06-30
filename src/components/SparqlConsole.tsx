@@ -6,7 +6,7 @@ import MonacoEditor, { type Monaco as MonacoInstance, loader } from "@monaco-edi
 import { shikiToMonaco } from "@shikijs/monaco";
 import type Monaco from "monaco-editor";
 import * as monaco from "monaco-editor";
-import { use, useRef, useState } from "react";
+import { use, useMemo, useRef, useState } from "react";
 import { createHighlighter } from "shiki";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
@@ -24,7 +24,16 @@ export function SparqlConsole() {
     const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
 
-    const [chosenPattern, setChosenPattern] = useState<keyof typeof templates>("propertyChainShortcut");
+    const [chosenPatternName, setChosenPatternName] = useState<keyof typeof templates>("propertyChainShortcut");
+
+    const queryTemplateNames = useMemo(() => {
+        const templ = templates[chosenPatternName]();
+        const queryNames = templ.map((t) => (t.header as Record<string, string>).name ?? "<unknown>");
+
+        return queryNames;
+    }, [chosenPatternName]);
+
+    const [enabledTemplates, setEnabledTemplates] = useState<string[]>([]);
 
     const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
     const { update } = useTransformer();
@@ -57,43 +66,41 @@ export function SparqlConsole() {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const data = Object.fromEntries(new FormData(ev.currentTarget)) as Record<string, any>;
 
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const renderedTemplates = templates[chosenPattern](data as any);
+                            const templs = templates[chosenPatternName]()
+                                .filter((t) => (t.header as Record<string, string>).name in data)
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .map((t) => t.body(data as any))
+                                .join("\n");
 
-                            let template: string;
-                            if (data["delete"]) {
-                                template = renderedTemplates.find(({ header }) => header.name === "delete")?.body ?? "";
-                            } else {
-                                template = renderedTemplates[0].body;
-                            }
-
-                            editorRef.current?.setValue(template);
+                            editorRef.current?.setValue(templs);
                         }}
                     >
-                        <div className="font-bold text-xl">{chosenPattern}</div>
+                        <div className="font-bold text-xl">{chosenPatternName}</div>
 
-                        {chosenPattern === "propertyChainShortcut" && (
+                        {chosenPatternName === "propertyChainShortcut" && (
                             <>
                                 <Input name="result" placeholder="result" />
                                 <Input name="predicate0" placeholder="predicate0" />
                                 <Input name="predicate1" placeholder="predicate1" />
-                                <label className="text-center inline-flex items-center gap-2">
-                                    Delete:
-                                    <Checkbox name="delete" />
-                                </label>
                             </>
                         )}
 
-                        {chosenPattern === "linkCountingProperty" && (
+                        {chosenPatternName === "linkCountingProperty" && (
                             <>
                                 <Input name="newProperty" placeholder="newProperty" />
                                 <Input name="sourceProperty" placeholder="sourceProperty" />
-                                <label className="text-center inline-flex items-center gap-2">
-                                    Delete:
-                                    <Checkbox name="delete" />
-                                </label>
                             </>
                         )}
+
+                        {queryTemplateNames.map((templateName) => (
+                            <label
+                                key={`template-${templateName}`}
+                                className="text-center inline-flex items-center gap-2"
+                            >
+                                {templateName}:
+                                <Checkbox name={templateName} />
+                            </label>
+                        ))}
 
                         <Button type="submit">Compile template</Button>
                     </form>
@@ -127,7 +134,7 @@ export function SparqlConsole() {
                                 return;
                             }
 
-                            setChosenPattern("propertyChainShortcut");
+                            setChosenPatternName("propertyChainShortcut");
                         }}
                     >
                         property chain shortcut
@@ -140,7 +147,7 @@ export function SparqlConsole() {
                                 return;
                             }
 
-                            setChosenPattern("linkCountingProperty");
+                            setChosenPatternName("linkCountingProperty");
                         }}
                     >
                         link counting property

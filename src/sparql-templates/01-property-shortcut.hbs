@@ -1,4 +1,8 @@
 name: insert
+inputs:
+    - name: "result"
+    - name: "predicate0"
+    - name: "predicate1"
 
 {{#each prefixes}}
     PREFIX {{this.prefix}}: <{{this.iri}}>
@@ -12,6 +16,9 @@ WHERE {
 }
 ---
 name: delete
+inputs:
+    - name: "predicate0"
+    - name: "predicate1"
 
 {{#each prefixes}}
     PREFIX {{this.prefix}}: <{{this.iri}}>

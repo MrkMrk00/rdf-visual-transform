@@ -13,23 +13,23 @@ export type PropertyChainShortcutOpts = {
     delete: boolean;
 };
 
-export const propertyChainShortcut = (opts: PropertyChainShortcutOpts) =>
-    parseTemplateOutput(compile(propertyChainShortcutTemplate)(opts));
+export const propertyChainShortcut = (): TemplateOutput<PropertyChainShortcutOpts>[] =>
+    parseTemplate(propertyChainShortcutTemplate);
 
 export type LinkCountingPropertyOpts = {
     newProperty: string;
     sourceProperty: string;
 };
 
-export const linkCountingProperty = (opts: LinkCountingPropertyOpts) =>
-    parseTemplateOutput(compile(linkCountingPropertyTemplate)(opts));
+export const linkCountingProperty = (): TemplateOutput<LinkCountingPropertyOpts>[] =>
+    parseTemplate(linkCountingPropertyTemplate);
 
-export type TemplateOutput = {
-    header: Record<string, any>;
-    body: string;
+export type TemplateOutput<TOpts extends object = object> = {
+    header: object;
+    body: (opts: TOpts) => string;
 };
 
-function parseTemplateOutput(rawOutput: string) {
+function parseTemplate(rawOutput: string) {
     const subtempltes = rawOutput
         .trim()
         .split("---")
@@ -55,7 +55,7 @@ function parseTemplateOutput(rawOutput: string) {
 
         templates.push({
             header,
-            body,
+            body: (opts) => compile(body)(opts),
         });
     }
 
