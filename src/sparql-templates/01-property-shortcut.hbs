@@ -5,14 +5,14 @@ inputs:
     - name: "predicate1"
 
 {{#each prefixes}}
-    PREFIX {{this.prefix}}: <{{this.iri}}>
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
 {{/each}}
 INSERT {
-    ?start {{result}} ?end .
+    ?start {{{result}}} ?end .
 }
 WHERE {
-    ?start  {{predicate0}} ?middle .
-    ?middle {{predicate1}} ?end    .
+    ?start  {{{predicate0}}} ?middle .
+    ?middle {{{predicate1}}} ?end    .
 }
 ---
 name: delete
@@ -21,9 +21,9 @@ inputs:
     - name: "predicate1"
 
 {{#each prefixes}}
-    PREFIX {{this.prefix}}: <{{this.iri}}>
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
 {{/each}}
 DELETE WHERE {
-    ?start  {{predicate0}} ?middle .
-    ?middle {{predicate1}} ?end    .
+    ?start  {{{predicate0}}} ?middle .
+    ?middle {{{predicate1}}} ?end    .
 }

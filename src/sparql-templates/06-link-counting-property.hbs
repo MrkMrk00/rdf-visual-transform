@@ -1,14 +1,14 @@
 name: insert
 
 INSERT {
-    ?x {{newProperty}} ?count .
+    ?x {{{newProperty}}} ?count .
 }
 WHERE {
     {
         SELECT ?x (COUNT(?y) AS ?count)
         WHERE {
             ?x ?p ?y .
-            FILTER(?p = {{sourceProperty}})
+            FILTER(?p = {{{sourceProperty}}})
         }
         GROUP BY ?x
     }
@@ -21,5 +21,5 @@ DELETE {
 }
 WHERE {
     ?x ?p ?y .
-    FILTER(?p = {{sourceProperty}})
+    FILTER(?p = {{{sourceProperty}}})
 }

@@ -1,12 +1,16 @@
 import { useGraphologyGraph } from "@/contexts/tripple-store";
+import { useDoubleClickToCopy } from "@/hooks/ui/useDoubleClickToCopy";
 import { useTransformer } from "@/hooks/useTransformer";
-import { useLoadGraph } from "@react-sigma/core";
+import { useLoadGraph, useSigma } from "@react-sigma/core";
 import { useEffect } from "react";
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
     const graph = useGraphologyGraph();
     const { eventBus } = useTransformer();
+
+    const sigma = useSigma();
+    useDoubleClickToCopy(sigma);
 
     useEffect(() => {
         if (!graph) {
