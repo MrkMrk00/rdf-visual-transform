@@ -1,5 +1,6 @@
 import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from "@rdfjs/types";
-import type { DirectedGraph } from "graphology";
+import { NotFoundGraphError, type DirectedGraph } from "graphology";
+import type { NeighborEntry } from "graphology-types";
 import { Store } from "n3";
 
 export const NODE_DEFAULT_SIZE = 15;
@@ -54,7 +55,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 }
 
-function findBestPositionForNewNode(graph: DirectedGraph, node: string) {
+function collectNeighborPositions(graph: DirectedGraph, rootNode: string, depth: number = 2) {
     let neighborCount = 0;
 
     let xSum = 0;
@@ -65,29 +66,48 @@ function findBestPositionForNewNode(graph: DirectedGraph, node: string) {
     let xMin = Number.MAX_SAFE_INTEGER;
     let yMin = Number.MAX_SAFE_INTEGER;
 
-    graph.forEachNeighbor(node, (_, neighborAttributes) => {
+    graph.forEachNeighbor(rootNode, (neighbor, neighborAttributes) => {
         if (!neighborAttributes.x || !neighborAttributes.y) {
             return;
         }
 
-        const { x, y } = neighborAttributes;
+        const toVisit: string[] = [neighbor];
 
-        if (x > xMax) {
-            xMax = x;
-        }
-        if (x < xMin) {
-            xMin = x;
-        }
-        if (y > yMax) {
-            yMax = y;
-        }
-        if (y < yMin) {
-            yMin = y;
-        }
+        let currentDepth = depth;
+        while (currentDepth-- > 0) {
+            console.log("[collectNeighborPositions] visiting", toVisit);
 
-        xSum += x;
-        ySum += y;
-        neighborCount++;
+            const lenBefore = toVisit.length;
+            for (let i = 0; i < lenBefore; ++i) {
+                const current = toVisit.pop();
+
+                const { x, y } = graph.getNodeAttributes(current);
+                if (!x || !y) {
+                    continue;
+                }
+
+                if (x > xMax) {
+                    xMax = x;
+                }
+                if (x < xMin) {
+                    xMin = x;
+                }
+                if (y > yMax) {
+                    yMax = y;
+                }
+                if (y < yMin) {
+                    yMin = y;
+                }
+
+                xSum += x;
+                ySum += y;
+                neighborCount++;
+
+                if (currentDepth > 0) {
+                    toVisit.unshift(...graph.neighbors(current));
+                }
+            }
+        }
     });
 
     return {
@@ -96,7 +116,52 @@ function findBestPositionForNewNode(graph: DirectedGraph, node: string) {
     };
 }
 
+function findBestPositionForNewNode(oldGraph: DirectedGraph, graph: DirectedGraph, node: string) {
+    let oldNeighbors: NeighborEntry[] = [];
+    try {
+        oldNeighbors = Array.from(oldGraph.neighborEntries(node));
+    } catch (e) {
+        if (!(e instanceof NotFoundGraphError)) {
+            throw e;
+        }
+    }
+
+    // TODO: get deleted nodes from the old graph somehow - this is wrong
+    // if (oldNeighbors.length <= 0) {
+    //     toast.error(
+    //         `❌ Trying to calculate position for an unconnected part of the graph. Using random coords. node=${node}`,
+    //     );
+    //
+    //     return {
+    //         x: Math.random() * 100,
+    //         y: Math.random() * 100,
+    //     };
+    // }
+
+    // Try to find the position from a deleted neighbor...
+    const newNeighbors = new Set(graph.neighborEntries(node));
+    for (const oldNeighbor of oldNeighbors) {
+        // If the neighbor still exists...
+        if (newNeighbors.has(oldNeighbor)) {
+            continue;
+        }
+
+        // If there was a neighboring node, that was deleted by the transformation,
+        // place the new node in there.
+        graph.setNodeAttribute(node, "x", graph.getNodeAttribute(oldNeighbor, "x"));
+        graph.setNodeAttribute(node, "y", graph.getNodeAttribute(oldNeighbor, "y"));
+
+        return;
+    }
+
+    const { x, y } = collectNeighborPositions(graph, node);
+
+    return { x, y };
+}
+
 export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
+    const oldGraph = graph.copy();
+
     // insert new
     for (const quad of store) {
         insertQuadIntoGraph(graph, quad);
@@ -107,7 +172,7 @@ export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
             return;
         }
 
-        const { x, y } = findBestPositionForNewNode(graph, node);
+        const { x, y } = findBestPositionForNewNode(oldGraph, graph, node);
         console.log('Assiging new positions of node "' + node + '" to ', { x, y });
         graph.setNodeAttribute(node, "x", x);
         graph.setNodeAttribute(node, "y", y);
