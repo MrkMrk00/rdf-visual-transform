@@ -54,11 +54,64 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 }
 
+function findBestPositionForNewNode(graph: DirectedGraph, node: string) {
+    let neighborCount = 0;
+
+    let xSum = 0;
+    let ySum = 0;
+
+    let xMax = 0;
+    let yMax = 0;
+    let xMin = Number.MAX_SAFE_INTEGER;
+    let yMin = Number.MAX_SAFE_INTEGER;
+
+    graph.forEachNeighbor(node, (_, neighborAttributes) => {
+        if (!neighborAttributes.x || !neighborAttributes.y) {
+            return;
+        }
+
+        const { x, y } = neighborAttributes;
+
+        if (x > xMax) {
+            xMax = x;
+        }
+        if (x < xMin) {
+            xMin = x;
+        }
+        if (y > yMax) {
+            yMax = y;
+        }
+        if (y < yMin) {
+            yMin = y;
+        }
+
+        xSum += x;
+        ySum += y;
+        neighborCount++;
+    });
+
+    return {
+        x: xMin + (xMax - xSum / neighborCount),
+        y: yMin + (yMax - ySum / neighborCount),
+    };
+}
+
 export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
     // insert new
     for (const quad of store) {
         insertQuadIntoGraph(graph, quad);
     }
+
+    graph.forEachNode((node, attributes) => {
+        if (typeof attributes.x !== "undefined" && typeof attributes.y !== "undefined") {
+            return;
+        }
+
+        const { x, y } = findBestPositionForNewNode(graph, node);
+        console.log('Assiging new positions of node "' + node + '" to ', { x, y });
+        graph.setNodeAttribute(node, "x", x);
+        graph.setNodeAttribute(node, "y", y);
+    });
 
     // delete old (TODO: delete nodes without edges)
     graph.forEachDirectedEdge((edge, attributes) => {
