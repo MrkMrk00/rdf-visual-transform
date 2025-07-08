@@ -148,10 +148,10 @@ function findBestPositionForNewNode(oldGraph: DirectedGraph, graph: DirectedGrap
 
         // If there was a neighboring node, that was deleted by the transformation,
         // place the new node in there.
-        graph.setNodeAttribute(node, "x", graph.getNodeAttribute(oldNeighbor, "x"));
-        graph.setNodeAttribute(node, "y", graph.getNodeAttribute(oldNeighbor, "y"));
-
-        return;
+        return {
+            x: graph.getNodeAttribute(oldNeighbor, "x"),
+            y: graph.getNodeAttribute(oldNeighbor, "y"),
+        };
     }
 
     const { x, y } = collectNeighborPositions(graph, node);
