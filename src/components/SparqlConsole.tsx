@@ -120,6 +120,12 @@ export function SparqlConsole() {
                         >
                             Execute
                         </Button>
+                        <Button
+                            onClick={() => {}}
+                            variant="secondary"
+                        >
+                            Save
+                        </Button>
                     </div>
                 </div>
 

@@ -6,8 +6,18 @@ import { toast } from "sonner";
 function doubleClickHandler(payload: SigmaNodeEventPayload) {
     payload.preventSigmaDefault();
 
+    if (payload.node.startsWith("lit:")) {
+        const parts = payload.node.split("-");
+
+        navigator.clipboard.writeText(parts[parts.length - 1]).then(() => {
+            toast("📋 Literal value written to clipboard.");
+        });
+
+        return;
+    }
+
     navigator.clipboard.writeText(payload.node).then(() => {
-        toast("📋 Node IRI (or value) written to clipboard.");
+        toast("📋 IRI written to clipboard.");
     });
 }
 
