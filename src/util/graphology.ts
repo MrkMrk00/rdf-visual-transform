@@ -55,7 +55,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 }
 
-function collectNeighborPositions(graph: DirectedGraph, rootNode: string, depth: number = 2) {
+function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, depth: number = 2) {
     let neighborCount = 0;
 
     let xSum = 0;
@@ -72,14 +72,18 @@ function collectNeighborPositions(graph: DirectedGraph, rootNode: string, depth:
         }
 
         const toVisit: string[] = [neighbor];
+        const visited = new Set<string>();
 
         let currentDepth = depth;
         while (currentDepth-- > 0) {
-            console.log("[collectNeighborPositions] visiting", toVisit);
+            console.log("[approximateOptimalPosition] visiting", toVisit);
 
             const lenBefore = toVisit.length;
             for (let i = 0; i < lenBefore; ++i) {
                 const current = toVisit.pop();
+                if (!current || visited.has(current)) {
+                    continue;
+                }
 
                 const { x, y } = graph.getNodeAttributes(current);
                 if (!x || !y) {
@@ -99,10 +103,29 @@ function collectNeighborPositions(graph: DirectedGraph, rootNode: string, depth:
                     yMin = y;
                 }
 
-                xSum += x;
-                ySum += y;
+                if (currentDepth + 1 < depth) {
+                    const centroidX = xMin + (xMax - xSum / neighborCount);
+                    const centroidY = yMin + (yMax - ySum / neighborCount);
+
+                    // Reduce the effect on the centroid position for nodes farther away from the root.
+                    let significanceFactor: number;
+                    if (depth > 2) {
+                        // Nonlinear reduction in significance instead of linear for 2 levels.
+                        significanceFactor = Math.pow(currentDepth / depth, 1.5);
+                    } else {
+                        significanceFactor = currentDepth / depth;
+                    }
+
+                    xSum += x - (x - centroidX) * significanceFactor;
+                    ySum += y - (y - centroidY) * significanceFactor;
+                } else {
+                    xSum += x;
+                    ySum += y;
+                }
+
                 neighborCount++;
 
+                visited.add(current);
                 if (currentDepth > 0) {
                     toVisit.unshift(...graph.neighbors(current));
                 }
@@ -126,18 +149,6 @@ function findBestPositionForNewNode(oldGraph: DirectedGraph, graph: DirectedGrap
         }
     }
 
-    // TODO: get deleted nodes from the old graph somehow - this is wrong
-    // if (oldNeighbors.length <= 0) {
-    //     toast.error(
-    //         `❌ Trying to calculate position for an unconnected part of the graph. Using random coords. node=${node}`,
-    //     );
-    //
-    //     return {
-    //         x: Math.random() * 100,
-    //         y: Math.random() * 100,
-    //     };
-    // }
-
     // Try to find the position from a deleted neighbor...
     const newNeighbors = new Set(graph.neighborEntries(node));
     for (const oldNeighbor of oldNeighbors) {
@@ -154,9 +165,7 @@ function findBestPositionForNewNode(oldGraph: DirectedGraph, graph: DirectedGrap
         };
     }
 
-    const { x, y } = collectNeighborPositions(graph, node);
-
-    return { x, y };
+    return approximateOptimalPosition(graph, node);
 }
 
 export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
@@ -173,7 +182,7 @@ export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
         }
 
         const { x, y } = findBestPositionForNewNode(oldGraph, graph, node);
-        console.log('Assiging new positions of node "' + node + '" to ', { x, y });
+        console.log('Assigning new positions of node "' + node + '" to ', { x, y });
         graph.setNodeAttribute(node, "x", x);
         graph.setNodeAttribute(node, "y", y);
     });
