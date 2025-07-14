@@ -170,6 +170,11 @@ export function springElectricalLayout(
     const options = { ...defaultSpringLayoutSettings, ...optionsOverride };
     const nodes: string[] = [];
 
+    let maxX = 0;
+    let maxY = 0;
+    let minX = Number.MAX_SAFE_INTEGER;
+    let minY = Number.MAX_SAFE_INTEGER;
+
     // Collect all new nodes (and try to place them in their deleted neighbors positions first).
     graph.forEachNode((node, attributes) => {
         if (typeof attributes.x !== "undefined" && typeof attributes.y !== "undefined") {
@@ -200,7 +205,27 @@ export function springElectricalLayout(
                 visited.add(current);
 
                 if (depth > 0) {
-                    toVisit.unshift(...graph.neighbors(current));
+                    const neighborEntries = graph.neighborEntries(current);
+                    for (const {
+                        attributes: { x, y },
+                    } of neighborEntries) {
+                        if (!x || !y) continue;
+
+                        if (x > maxX) {
+                            maxX = x;
+                        }
+                        if (y > maxY) {
+                            maxY = y;
+                        }
+                        if (x < minX) {
+                            minX = x;
+                        }
+                        if (y < minY) {
+                            minY = y;
+                        }
+                    }
+
+                    toVisit.unshift(...Array.from(neighborEntries).map((entry) => entry.neighbor));
                 }
             }
         }
@@ -223,16 +248,16 @@ export function springElectricalLayout(
 
             const af = forces.get(a)!;
             let { x: ax, y: ay } = graph.getNodeAttributes(a) as { x: number; y: number };
-            ax ||= 0;
-            ay ||= 0;
+            ax ||= minX + Math.random() * (maxX - minX);
+            ay ||= minY + Math.random() * (maxY - minY);
 
             for (let ib = ia + 1; ib < nodes.length; ++ib) {
                 const b = nodes[ib]!;
                 const bf = forces.get(b)!;
 
                 let { x: bx, y: by } = graph.getNodeAttributes(b) as { x: number; y: number };
-                bx ||= 0;
-                by ||= 0;
+                bx ||= minX + Math.random() * (maxX - minX);
+                by ||= minY + Math.random() * (maxY - minY);
 
                 const d = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
                 const dirX = ax - bx >= 0 ? 1 : -1;
@@ -243,30 +268,38 @@ export function springElectricalLayout(
                 if (aNeighbors.includes(b)) {
                     const attractionForce = options.c1 * Math.log10(d / options.c2);
 
-                    af.fx = dirX * attractionForce;
-                    af.fy = dirY * attractionForce;
-                    bf.fx = -dirX * attractionForce;
-                    bf.fy = -dirY * attractionForce;
+                    af.fx += dirX * attractionForce;
+                    af.fy += dirY * attractionForce;
+                    bf.fx += -dirX * attractionForce;
+                    bf.fy += -dirY * attractionForce;
 
+                    continue;
+                }
+
+                if (d === 0) {
                     continue;
                 }
 
                 // 2) Electrical repulsion for non-adjacent vertices. := c3/(d^2)
                 const repultion = options.c3 / (d * d);
 
-                af.fx = -dirX * repultion;
-                af.fy = -dirY * repultion;
-                bf.fx = dirX * repultion;
-                bf.fy = dirY * repultion;
+                af.fx += -dirX * repultion;
+                af.fy += -dirY * repultion;
+                bf.fx += dirX * repultion;
+                bf.fy += dirY * repultion;
             }
         }
 
         // 3) Move the vertex := c4 ∗ (force on vertex)
         for (const [node, { fx, fy }] of forces.entries()) {
             let { x, y } = graph.getNodeAttributes(node) as { x: number; y: number };
+            x ||= minX + Math.random() * (maxX - minX);
+            y ||= minY + Math.random() * (maxY - minY);
 
-            x ||= 0;
-            y ||= 0;
+            console.log({
+                fx: options.c4 * fx,
+                fy: options.c4 * fy,
+            });
 
             graph.setNodeAttribute(node, "x", x + options.c4 * fx);
             graph.setNodeAttribute(node, "y", y + options.c4 * fy);

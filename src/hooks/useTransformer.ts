@@ -52,5 +52,5 @@ export function useTransformer() {
                 eventBus.addEventListener("change", callback, { signal });
             },
         };
-    }, [store, graph]);
+    }, [store, graph, positioningFunction]);
 }
