@@ -6,6 +6,9 @@ import {
     MenubarContent,
     MenubarItem,
     MenubarMenu,
+    MenubarSub,
+    MenubarSubContent,
+    MenubarSubTrigger,
     MenubarTrigger,
 } from "@/components/ui/menubar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,6 +29,9 @@ export function Menu() {
 
     const graph = useGraphStore((store) => store.graph);
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
+
+    const positioningFunction = useGraphStore((store) => store.positioningFunction);
+    const setPositioningFunction = useGraphStore((store) => store.setPositioningFunction);
 
     useEffect(() => {
         if (!graph) {
@@ -95,13 +101,31 @@ export function Menu() {
                         <MenubarTrigger className="h-full inline-flex items-center">
                             <Cog8ToothIcon className="h-6 w-6" />
                         </MenubarTrigger>
-                        <MenubarContent>
+                        <MenubarContent className="mr-4">
                             <MenubarCheckboxItem
                                 checked={!!sigmaSettings.renderEdgeLabels}
                                 onClick={() => toggleSigmaSetting("renderEdgeLabels")}
                             >
                                 Show edge labels
                             </MenubarCheckboxItem>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>Positioning function</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarCheckboxItem
+                                        checked={positioningFunction === "inverse-centroid-heuristic"}
+                                        onClick={() => setPositioningFunction("inverse-centroid-heuristic")}
+                                    >
+                                        Inverse centroid heuristic
+                                    </MenubarCheckboxItem>
+                                    <MenubarCheckboxItem
+                                        checked={positioningFunction === "spring-electric"}
+                                        onClick={() => setPositioningFunction("spring-electric")}
+                                    >
+                                        Spring-electric
+                                    </MenubarCheckboxItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
                         </MenubarContent>
                     </MenubarMenu>
                 </div>

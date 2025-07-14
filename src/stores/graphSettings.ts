@@ -3,14 +3,18 @@ import type { Settings as SigmaSettings } from "sigma/settings";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type PositioningFunction = "inverse-centroid-heuristic" | "spring-electric";
+
 export type GraphSettingsStore = {
     graph: { url: string } | { data: string; name: string } | null;
     graphUrlHistory: string[];
     sigmaSettings: Partial<SigmaSettings>;
+    positioningFunction: PositioningFunction;
 
     loadGraphFromUrl: (url: string) => void;
     updateSigmaSettings: (updated: Partial<SigmaSettings>) => void;
     toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
+    setPositioningFunction: (value: PositioningFunction) => void;
 };
 
 type BoolSetting = OmitNever<{
@@ -25,6 +29,7 @@ export const useGraphStore = create<GraphSettingsStore>()(
             graph: { url: "https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf" },
             graphUrlHistory: ["https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf"],
             sigmaSettings: {},
+            positioningFunction: "inverse-centroid-heuristic",
 
             loadGraphFromUrl: (url) => {
                 set((prev) => {
@@ -49,6 +54,7 @@ export const useGraphStore = create<GraphSettingsStore>()(
                     },
                 }));
             },
+            setPositioningFunction: (positioningFunction) => set({ positioningFunction }),
         }),
         {
             name: "graph-settings",

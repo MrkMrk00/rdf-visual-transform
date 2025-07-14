@@ -1,7 +1,7 @@
 import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from "@rdfjs/types";
 import { type DirectedGraph } from "graphology";
 import { Store } from "n3";
-import { springElectricalLayout } from "./node-placement";
+import { inverseCentroidHeuristicLayout } from "./node-placement";
 
 export const NODE_DEFAULT_SIZE = 15;
 
@@ -55,7 +55,11 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     }
 }
 
-export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
+export function syncGraphWithStore(
+    graph: DirectedGraph,
+    store: Store,
+    positioningFunction: (oldGraph: DirectedGraph, newGraph: DirectedGraph) => void = inverseCentroidHeuristicLayout,
+) {
     const oldGraph = graph.copy();
 
     // insert new
@@ -63,8 +67,7 @@ export function syncGraphWithStore(graph: DirectedGraph, store: Store) {
         insertQuadIntoGraph(graph, quad);
     }
 
-    // iterativeInsertionHeuristicLayout(oldGraph, graph);
-    springElectricalLayout(oldGraph, graph);
+    positioningFunction(oldGraph, graph);
 
     // delete old (TODO: delete nodes without edges)
     graph.forEachDirectedEdge((edge, attributes) => {

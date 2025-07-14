@@ -114,7 +114,7 @@ function tryReplaceNeighbor(node: string, oldGraph: DirectedGraph, graph: Direct
     return undefined;
 }
 
-export function iterativeInsertionHeuristicLayout(oldGraph: DirectedGraph, graph: DirectedGraph) {
+export function inverseCentroidHeuristicLayout(oldGraph: DirectedGraph, graph: DirectedGraph) {
     graph.forEachNode((node, attributes) => {
         if (typeof attributes.x !== "undefined" && typeof attributes.y !== "undefined") {
             return;
