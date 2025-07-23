@@ -1,5 +1,11 @@
 name: insert
+inputs:
+    - name: "newProperty"
+    - name: "sourceProperty"
 
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
 INSERT {
     ?x {{{newProperty}}} ?count .
 }
@@ -15,7 +21,12 @@ WHERE {
 };
 ---
 name: delete
+inputs:
+    - name: "sourceProperty"
 
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
 DELETE {
     ?x ?p ?y .
 }
