@@ -1,10 +1,13 @@
-import { useGraphologyGraph, useTripleStore } from "@/contexts/tripple-store";
-import { useGraphStore } from "@/stores/graphSettings";
-import { syncGraphWithStore } from "@/util/graphology";
-import { inverseCentroidHeuristicLayout, springElectricalLayout } from "@/util/node-placement";
-import { QueryEngine } from "@comunica/query-sparql";
-import { useMemo } from "react";
-import { toast } from "sonner";
+import { useGraphologyGraph, useTripleStore } from '@/contexts/tripple-store';
+import { useGraphStore } from '@/stores/graphSettings';
+import { syncGraphWithStore } from '@/util/graphology';
+import {
+    inverseCentroidHeuristicLayout,
+    springElectricalLayout,
+} from '@/util/node-placement';
+import { QueryEngine } from '@comunica/query-sparql';
+import { useMemo } from 'react';
+import { toast } from 'sonner';
 
 const sparqlQueryEngine = new QueryEngine();
 
@@ -14,7 +17,9 @@ export function useTransformer() {
     const graph = useGraphologyGraph();
     const store = useTripleStore();
 
-    const positioningFunction = useGraphStore((store) => store.positioningFunction);
+    const positioningFunction = useGraphStore(
+        (store) => store.positioningFunction,
+    );
 
     return useMemo(() => {
         return {
@@ -24,7 +29,7 @@ export function useTransformer() {
                         sources: [store],
                     });
                 } catch (err) {
-                    const event = new CustomEvent("error", {
+                    const event = new CustomEvent('error', {
                         detail: err,
                         cancelable: true,
                     });
@@ -40,16 +45,23 @@ export function useTransformer() {
                 syncGraphWithStore(
                     graph,
                     store,
-                    positioningFunction === "spring-electric" ? springElectricalLayout : inverseCentroidHeuristicLayout,
+                    positioningFunction === 'spring-electric'
+                        ? springElectricalLayout
+                        : inverseCentroidHeuristicLayout,
                 );
 
-                eventBus.dispatchEvent(new Event("change"));
+                eventBus.dispatchEvent(new Event('change'));
             },
-            onError: (callback: (ev: CustomEvent<unknown>) => void, signal?: AbortSignal) => {
-                eventBus.addEventListener("error", callback as EventListener, { signal });
+            onError: (
+                callback: (ev: CustomEvent<unknown>) => void,
+                signal?: AbortSignal,
+            ) => {
+                eventBus.addEventListener('error', callback as EventListener, {
+                    signal,
+                });
             },
             onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
-                eventBus.addEventListener("change", callback, { signal });
+                eventBus.addEventListener('change', callback, { signal });
             },
         };
     }, [store, graph, positioningFunction]);

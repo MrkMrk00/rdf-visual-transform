@@ -1,4 +1,4 @@
-import { PassThrough, Readable } from "readable-stream";
+import { PassThrough, Readable } from 'readable-stream';
 
 export function webStreamToNodeStream(webStream: ReadableStream) {
     const pass = new PassThrough();

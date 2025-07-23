@@ -1,23 +1,27 @@
-import { stringToStream, webStreamToNodeStream } from "@/util/streams";
-import type { Quad } from "@rdfjs/types";
-import { rdfParser } from "rdf-parse";
+import { stringToStream, webStreamToNodeStream } from '@/util/streams';
+import type { Quad } from '@rdfjs/types';
+import { rdfParser } from 'rdf-parse';
 
 export class RdfReader {
-    constructor(private fallbackContentType = "application/rdf+xml") {}
+    constructor(private fallbackContentType = 'application/rdf+xml') {}
 
-    readFromString(data: string, contentType: string, onData: (quad: Quad) => void) {
+    readFromString(
+        data: string,
+        contentType: string,
+        onData: (quad: Quad) => void,
+    ) {
         const { promise, resolve, reject } = Promise.withResolvers<void>();
 
         const parser = rdfParser.parse(stringToStream(data), { contentType });
 
         parser
-            .on("data", onData)
-            .on("error", (err) => {
+            .on('data', onData)
+            .on('error', (err) => {
                 parser.destroy();
 
                 reject(err);
             })
-            .on("end", resolve);
+            .on('end', resolve);
 
         return promise;
     }
@@ -31,23 +35,25 @@ export class RdfReader {
             }
 
             const stream = webStreamToNodeStream(response.body!);
-            let contentType = response.headers.get("Content-Type") ?? this.fallbackContentType;
+            let contentType =
+                response.headers.get('Content-Type') ??
+                this.fallbackContentType;
 
             // content type can include charset etc. after semi
-            if (contentType.includes(";")) {
-                contentType = contentType.split(";")[0];
+            if (contentType.includes(';')) {
+                contentType = contentType.split(';')[0];
             }
 
             const parser = rdfParser.parse(stream, { contentType });
 
             parser
-                .on("data", onData)
-                .on("error", (err) => {
+                .on('data', onData)
+                .on('error', (err) => {
                     parser.destroy();
 
                     reject(err);
                 })
-                .on("end", resolve);
+                .on('end', resolve);
         }, reject);
 
         return promise;

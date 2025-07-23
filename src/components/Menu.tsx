@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Menubar,
     MenubarCheckboxItem,
@@ -10,36 +10,52 @@ import {
     MenubarSubContent,
     MenubarSubTrigger,
     MenubarTrigger,
-} from "@/components/ui/menubar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useGraphIsLoading } from "@/contexts/tripple-store";
-import { cn } from "@/lib/utils";
-import { useGraphStore } from "@/stores/graphSettings";
-import { useUiControlStore } from "@/stores/uiControl";
-import { ArrowDownTrayIcon, ArrowPathIcon, Cog8ToothIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { useEffect, useMemo, useState } from "react";
-import { UrlHistoryPopover } from "./UrlHistoryPopover";
+} from '@/components/ui/menubar';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useGraphIsLoading } from '@/contexts/tripple-store';
+import { cn } from '@/lib/utils';
+import { useGraphStore } from '@/stores/graphSettings';
+import { useUiControlStore } from '@/stores/uiControl';
+import {
+    ArrowDownTrayIcon,
+    ArrowPathIcon,
+    Cog8ToothIcon,
+    EllipsisVerticalIcon,
+} from '@heroicons/react/24/outline';
+import { useEffect, useMemo, useState } from 'react';
+import { UrlHistoryPopover } from './UrlHistoryPopover';
 
 export function Menu() {
     const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
     const toggleSigmaSetting = useGraphStore((store) => store.toggleSetting);
-    const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
+    const toggleSparqlConsole = useUiControlStore(
+        (store) => store.toggleSparqlConsole,
+    );
 
     const isLoading = useGraphIsLoading();
 
     const graph = useGraphStore((store) => store.graph);
     const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
 
-    const positioningFunction = useGraphStore((store) => store.positioningFunction);
-    const setPositioningFunction = useGraphStore((store) => store.setPositioningFunction);
+    const positioningFunction = useGraphStore(
+        (store) => store.positioningFunction,
+    );
+    const setPositioningFunction = useGraphStore(
+        (store) => store.setPositioningFunction,
+    );
 
     useEffect(() => {
         if (!graph) {
             return;
         }
 
-        if (!("url" in graph)) {
-            setGraphUrl("");
+        if (!('url' in graph)) {
+            setGraphUrl('');
 
             return;
         }
@@ -47,7 +63,9 @@ export function Menu() {
         setGraphUrl(graph.url);
     }, [graph]);
 
-    const [graphUrl, setGraphUrl] = useState<string>(!!graph && "url" in graph ? graph.url : "");
+    const [graphUrl, setGraphUrl] = useState<string>(
+        !!graph && 'url' in graph ? graph.url : '',
+    );
     const isUrlCorrect = useMemo(() => {
         if (!graphUrl) {
             return false;
@@ -78,7 +96,12 @@ export function Menu() {
                         <MenubarTrigger>Example data</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem
-                                onSelect={() => loadGraphFromUrl(window.location.pathname + "/people-graph.ttl")}
+                                onSelect={() =>
+                                    loadGraphFromUrl(
+                                        window.location.pathname +
+                                            '/people-graph.ttl',
+                                    )
+                                }
                             >
                                 University
                             </MenubarItem>
@@ -87,7 +110,9 @@ export function Menu() {
                     <MenubarMenu>
                         <MenubarTrigger>Transform...</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={toggleSparqlConsole}>SPARQL console</MenubarItem>
+                            <MenubarItem onClick={toggleSparqlConsole}>
+                                SPARQL console
+                            </MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </div>
@@ -104,23 +129,41 @@ export function Menu() {
                         <MenubarContent className="mr-4">
                             <MenubarCheckboxItem
                                 checked={!!sigmaSettings.renderEdgeLabels}
-                                onClick={() => toggleSigmaSetting("renderEdgeLabels")}
+                                onClick={() =>
+                                    toggleSigmaSetting('renderEdgeLabels')
+                                }
                             >
                                 Show edge labels
                             </MenubarCheckboxItem>
 
                             <MenubarSub>
-                                <MenubarSubTrigger>Positioning function</MenubarSubTrigger>
+                                <MenubarSubTrigger>
+                                    Positioning function
+                                </MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarCheckboxItem
-                                        checked={positioningFunction === "inverse-centroid-heuristic"}
-                                        onClick={() => setPositioningFunction("inverse-centroid-heuristic")}
+                                        checked={
+                                            positioningFunction ===
+                                            'inverse-centroid-heuristic'
+                                        }
+                                        onClick={() =>
+                                            setPositioningFunction(
+                                                'inverse-centroid-heuristic',
+                                            )
+                                        }
                                     >
                                         Inverse centroid heuristic
                                     </MenubarCheckboxItem>
                                     <MenubarCheckboxItem
-                                        checked={positioningFunction === "spring-electric"}
-                                        onClick={() => setPositioningFunction("spring-electric")}
+                                        checked={
+                                            positioningFunction ===
+                                            'spring-electric'
+                                        }
+                                        onClick={() =>
+                                            setPositioningFunction(
+                                                'spring-electric',
+                                            )
+                                        }
                                     >
                                         Spring-electric
                                     </MenubarCheckboxItem>
@@ -137,9 +180,12 @@ export function Menu() {
                     <Input
                         onInput={(ev) => setGraphUrl(ev.currentTarget.value)}
                         value={graphUrl}
-                        onKeyDown={(ev) => ev.key === "Enter" && submitUrlForLoad()}
-                        className={cn("w-sm rounded-r-none border-r-0", {
-                            "underline decoration-wavy decoration-destructive": !isUrlCorrect,
+                        onKeyDown={(ev) =>
+                            ev.key === 'Enter' && submitUrlForLoad()
+                        }
+                        className={cn('w-sm rounded-r-none border-r-0', {
+                            'underline decoration-wavy decoration-destructive':
+                                !isUrlCorrect,
                         })}
                         placeholder="Graph URL"
                     />
@@ -151,7 +197,11 @@ export function Menu() {
                             triggerAsChild
                             trigger={
                                 <TooltipTrigger asChild>
-                                    <Button className="rounded-none" variant="outline" size="icon">
+                                    <Button
+                                        className="rounded-none"
+                                        variant="outline"
+                                        size="icon"
+                                    >
                                         <EllipsisVerticalIcon />
                                     </Button>
                                 </TooltipTrigger>

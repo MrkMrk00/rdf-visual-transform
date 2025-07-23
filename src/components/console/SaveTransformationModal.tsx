@@ -1,6 +1,3 @@
-export type SaveTransformationModalProps = {
-};
+export type SaveTransformationModalProps = {};
 
-export function SaveTransformationModal() {
-}
-
+export function SaveTransformationModal() {}

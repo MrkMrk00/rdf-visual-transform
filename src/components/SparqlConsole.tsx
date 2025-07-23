@@ -1,21 +1,24 @@
-import { useTransformer } from "@/hooks/useTransformer";
-import * as templates from "@/sparql-templates";
-import { useUiControlStore } from "@/stores/uiControl";
-import { XMarkIcon } from "@heroicons/react/20/solid";
-import MonacoEditor, { type Monaco as MonacoInstance, loader } from "@monaco-editor/react";
-import { shikiToMonaco } from "@shikijs/monaco";
-import type Monaco from "monaco-editor";
-import * as monaco from "monaco-editor";
-import { use, useMemo, useRef, useState } from "react";
-import { createHighlighter } from "shiki";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
-import { Input } from "./ui/input";
+import { useTransformer } from '@/hooks/useTransformer';
+import * as templates from '@/sparql-templates';
+import { useUiControlStore } from '@/stores/uiControl';
+import { XMarkIcon } from '@heroicons/react/20/solid';
+import MonacoEditor, {
+    type Monaco as MonacoInstance,
+    loader,
+} from '@monaco-editor/react';
+import { shikiToMonaco } from '@shikijs/monaco';
+import type Monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor';
+import { use, useMemo, useRef, useState } from 'react';
+import { createHighlighter } from 'shiki';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import { Input } from './ui/input';
 
 const highlighterPromise = createHighlighter({
-    themes: ["github-light"],
-    langs: ["sparql"],
+    themes: ['github-light'],
+    langs: ['sparql'],
 });
 
 loader.config({ monaco });
@@ -24,11 +27,15 @@ export function SparqlConsole() {
     const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
 
-    const [chosenPatternName, setChosenPatternName] = useState<keyof typeof templates>("propertyChainShortcut");
+    const [chosenPatternName, setChosenPatternName] = useState<
+        keyof typeof templates
+    >('propertyChainShortcut');
 
     const queryTemplateNames = useMemo(() => {
         const templ = templates[chosenPatternName]();
-        const queryNames = templ.map((t) => (t.header as Record<string, string>).name ?? "<unknown>");
+        const queryNames = templ.map(
+            (t) => (t.header as Record<string, string>).name ?? '<unknown>',
+        );
 
         return queryNames;
     }, [chosenPatternName]);
@@ -37,7 +44,7 @@ export function SparqlConsole() {
     const { update } = useTransformer();
 
     function initMonaco(monaco: MonacoInstance) {
-        monaco.languages.register({ id: "sparql" });
+        monaco.languages.register({ id: 'sparql' });
 
         shikiToMonaco(highlighter, monaco);
     }
@@ -62,31 +69,51 @@ export function SparqlConsole() {
                             ev.preventDefault();
 
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const data = Object.fromEntries(new FormData(ev.currentTarget)) as Record<string, any>;
+                            const data = Object.fromEntries(
+                                new FormData(ev.currentTarget),
+                            ) as Record<string, any>;
 
                             const templs = templates[chosenPatternName]()
-                                .filter((t) => (t.header as Record<string, string>).name in data)
+                                .filter(
+                                    (t) =>
+                                        (t.header as Record<string, string>)
+                                            .name in data,
+                                )
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 .map((t) => t.body(data as any))
-                                .join("\n");
+                                .join('\n');
 
                             editorRef.current?.setValue(templs);
                         }}
                     >
-                        <div className="font-bold text-xl">{chosenPatternName}</div>
+                        <div className="font-bold text-xl">
+                            {chosenPatternName}
+                        </div>
 
-                        {chosenPatternName === "propertyChainShortcut" && (
+                        {chosenPatternName === 'propertyChainShortcut' && (
                             <>
                                 <Input name="result" placeholder="result" />
-                                <Input name="predicate0" placeholder="predicate0" />
-                                <Input name="predicate1" placeholder="predicate1" />
+                                <Input
+                                    name="predicate0"
+                                    placeholder="predicate0"
+                                />
+                                <Input
+                                    name="predicate1"
+                                    placeholder="predicate1"
+                                />
                             </>
                         )}
 
-                        {chosenPatternName === "linkCountingProperty" && (
+                        {chosenPatternName === 'linkCountingProperty' && (
                             <>
-                                <Input name="newProperty" placeholder="newProperty" />
-                                <Input name="sourceProperty" placeholder="sourceProperty" />
+                                <Input
+                                    name="newProperty"
+                                    placeholder="newProperty"
+                                />
+                                <Input
+                                    name="sourceProperty"
+                                    placeholder="sourceProperty"
+                                />
                             </>
                         )}
 
@@ -114,16 +141,13 @@ export function SparqlConsole() {
                     <div className="flex flex-col gap-2 h-full">
                         <Button
                             onClick={() => {
-                                update(editorRef.current?.getValue() ?? "");
+                                update(editorRef.current?.getValue() ?? '');
                             }}
                             variant="success"
                         >
                             Execute
                         </Button>
-                        <Button
-                            onClick={() => {}}
-                            variant="secondary"
-                        >
+                        <Button onClick={() => {}} variant="secondary">
                             Save
                         </Button>
                     </div>
@@ -138,7 +162,7 @@ export function SparqlConsole() {
                                 return;
                             }
 
-                            setChosenPatternName("propertyChainShortcut");
+                            setChosenPatternName('propertyChainShortcut');
                         }}
                     >
                         property chain shortcut
@@ -151,7 +175,7 @@ export function SparqlConsole() {
                                 return;
                             }
 
-                            setChosenPatternName("linkCountingProperty");
+                            setChosenPatternName('linkCountingProperty');
                         }}
                     >
                         link counting property

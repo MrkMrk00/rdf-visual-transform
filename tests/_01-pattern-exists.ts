@@ -1,9 +1,9 @@
-import { QueryEngine } from "@comunica/query-sparql";
-import { Bindings } from "@rdfjs/types";
-import * as n3 from "n3";
-import * as fs from "node:fs";
-import { rdfParser } from "rdf-parse";
-import { describe, it } from "vitest";
+import { QueryEngine } from '@comunica/query-sparql';
+import { Bindings } from '@rdfjs/types';
+import * as n3 from 'n3';
+import * as fs from 'node:fs';
+import { rdfParser } from 'rdf-parse';
+import { describe, it } from 'vitest';
 
 const ONE_GIGABYTE = Math.pow(2, 30);
 
@@ -13,25 +13,25 @@ function loadIntoStore(stream: NodeJS.ReadableStream) {
 
         let i = 0;
         const self = rdfParser
-            .parse(stream, { contentType: "application/rdf+xml" })
-            .on("data", (quad) => {
+            .parse(stream, { contentType: 'application/rdf+xml' })
+            .on('data', (quad) => {
                 store.add(quad);
 
                 if (i++ > 100_000 || process.memoryUsage().rss > ONE_GIGABYTE) {
-                    self.emit("end");
+                    self.emit('end');
                     self.destroy();
                 }
             })
-            .on("error", reject)
-            .on("end", () => {
+            .on('error', reject)
+            .on('end', () => {
                 resolve(store);
             });
     });
 }
 
-describe("Pattern exists 01", () => {
-    it("loads dataset", async () => {
-        const stream = fs.createReadStream("example-data/open-food-facts.xml");
+describe('Pattern exists 01', () => {
+    it('loads dataset', async () => {
+        const stream = fs.createReadStream('example-data/open-food-facts.xml');
         const store = await loadIntoStore(stream);
         const qe = new QueryEngine();
 
@@ -55,14 +55,15 @@ describe("Pattern exists 01", () => {
             },
         );
 
-        const r = (await result.execute()) as unknown as AsyncIterableIterator<Bindings>;
+        const r =
+            (await result.execute()) as unknown as AsyncIterableIterator<Bindings>;
 
         for await (const a of r) {
-            console.log(a.get("from")?.value);
-            console.log("\t ->", a.get("p1")?.value);
-            console.log("\t ->", a.get("middle")?.value);
-            console.log("\t ->", a.get("p2")?.value);
-            console.log("\t ->", a.get("to")?.value);
+            console.log(a.get('from')?.value);
+            console.log('\t ->', a.get('p1')?.value);
+            console.log('\t ->', a.get('middle')?.value);
+            console.log('\t ->', a.get('p2')?.value);
+            console.log('\t ->', a.get('to')?.value);
         }
 
         stream.destroy();

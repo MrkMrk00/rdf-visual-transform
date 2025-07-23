@@ -1,7 +1,11 @@
-import { NotFoundGraphError, type DirectedGraph } from "graphology";
-import { NeighborEntry } from "graphology-types";
+import { NotFoundGraphError, type DirectedGraph } from 'graphology';
+import { NeighborEntry } from 'graphology-types';
 
-function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, depth: number = 2) {
+function approximateOptimalPosition(
+    graph: DirectedGraph,
+    rootNode: string,
+    depth: number = 2,
+) {
     let neighborCount = 0;
 
     let xSum = 0;
@@ -22,8 +26,6 @@ function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, dept
 
         let currentDepth = depth;
         while (currentDepth-- > 0) {
-            console.log("[approximateOptimalPosition] visiting", toVisit);
-
             const lenBefore = toVisit.length;
             for (let i = 0; i < lenBefore; ++i) {
                 const current = toVisit.pop();
@@ -57,7 +59,10 @@ function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, dept
                     let significanceFactor: number;
                     if (depth > 2) {
                         // Nonlinear reduction in significance instead of linear for 2 levels.
-                        significanceFactor = Math.pow(currentDepth / depth, 1.5);
+                        significanceFactor = Math.pow(
+                            currentDepth / depth,
+                            1.5,
+                        );
                     } else {
                         significanceFactor = currentDepth / depth;
                     }
@@ -85,7 +90,11 @@ function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, dept
     };
 }
 
-function tryReplaceNeighbor(node: string, oldGraph: DirectedGraph, graph: DirectedGraph) {
+function tryReplaceNeighbor(
+    node: string,
+    oldGraph: DirectedGraph,
+    graph: DirectedGraph,
+) {
     let oldNeighbors: NeighborEntry[] = [];
     try {
         oldNeighbors = Array.from(oldGraph.neighborEntries(node));
@@ -106,32 +115,38 @@ function tryReplaceNeighbor(node: string, oldGraph: DirectedGraph, graph: Direct
         // If there was a neighboring node, that was deleted by the transformation,
         // place the new node in there.
         return {
-            x: graph.getNodeAttribute(oldNeighbor, "x"),
-            y: graph.getNodeAttribute(oldNeighbor, "y"),
+            x: graph.getNodeAttribute(oldNeighbor, 'x'),
+            y: graph.getNodeAttribute(oldNeighbor, 'y'),
         };
     }
 
     return undefined;
 }
 
-export function inverseCentroidHeuristicLayout(oldGraph: DirectedGraph, graph: DirectedGraph) {
+export function inverseCentroidHeuristicLayout(
+    oldGraph: DirectedGraph,
+    graph: DirectedGraph,
+) {
     graph.forEachNode((node, attributes) => {
-        if (typeof attributes.x !== "undefined" && typeof attributes.y !== "undefined") {
+        if (
+            typeof attributes.x !== 'undefined' &&
+            typeof attributes.y !== 'undefined'
+        ) {
             return;
         }
 
         const neighborsPos = tryReplaceNeighbor(node, oldGraph, graph);
         if (neighborsPos) {
             const { x, y } = neighborsPos;
-            graph.setNodeAttribute(node, "x", x);
-            graph.setNodeAttribute(node, "y", y);
+            graph.setNodeAttribute(node, 'x', x);
+            graph.setNodeAttribute(node, 'y', y);
 
             return;
         }
 
         const { x, y } = approximateOptimalPosition(graph, node);
-        graph.setNodeAttribute(node, "x", x);
-        graph.setNodeAttribute(node, "y", y);
+        graph.setNodeAttribute(node, 'x', x);
+        graph.setNodeAttribute(node, 'y', y);
     });
 }
 
@@ -177,15 +192,18 @@ export function springElectricalLayout(
 
     // Collect all new nodes (and try to place them in their deleted neighbors positions first).
     graph.forEachNode((node, attributes) => {
-        if (typeof attributes.x !== "undefined" && typeof attributes.y !== "undefined") {
+        if (
+            typeof attributes.x !== 'undefined' &&
+            typeof attributes.y !== 'undefined'
+        ) {
             return;
         }
 
         const neighborsPos = tryReplaceNeighbor(node, oldGraph, graph);
         if (neighborsPos) {
             const { x, y } = neighborsPos;
-            graph.setNodeAttribute(node, "x", x);
-            graph.setNodeAttribute(node, "y", y);
+            graph.setNodeAttribute(node, 'x', x);
+            graph.setNodeAttribute(node, 'y', y);
 
             return;
         }
@@ -225,7 +243,11 @@ export function springElectricalLayout(
                         }
                     }
 
-                    toVisit.unshift(...Array.from(neighborEntries).map((entry) => entry.neighbor));
+                    toVisit.unshift(
+                        ...Array.from(neighborEntries).map(
+                            (entry) => entry.neighbor,
+                        ),
+                    );
                 }
             }
         }
@@ -247,7 +269,10 @@ export function springElectricalLayout(
             const aNeighbors = graph.neighbors(a);
 
             const af = forces.get(a)!;
-            let { x: ax, y: ay } = graph.getNodeAttributes(a) as { x: number; y: number };
+            let { x: ax, y: ay } = graph.getNodeAttributes(a) as {
+                x: number;
+                y: number;
+            };
             ax ||= minX + Math.random() * (maxX - minX);
             ay ||= minY + Math.random() * (maxY - minY);
 
@@ -255,18 +280,24 @@ export function springElectricalLayout(
                 const b = nodes[ib]!;
                 const bf = forces.get(b)!;
 
-                let { x: bx, y: by } = graph.getNodeAttributes(b) as { x: number; y: number };
+                let { x: bx, y: by } = graph.getNodeAttributes(b) as {
+                    x: number;
+                    y: number;
+                };
                 bx ||= minX + Math.random() * (maxX - minX);
                 by ||= minY + Math.random() * (maxY - minY);
 
-                const d = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+                const d = Math.sqrt(
+                    Math.pow(ax - bx, 2) + Math.pow(ay - by, 2),
+                );
                 const dirX = ax - bx >= 0 ? 1 : -1;
                 const dirY = ay - by >= 0 ? 1 : -1;
 
                 // 1) Spring attraction force      := c1 ∗ log(d/c2)
                 // for neighboring edges.
                 if (aNeighbors.includes(b)) {
-                    const attractionForce = options.c1 * Math.log10(d / options.c2);
+                    const attractionForce =
+                        options.c1 * Math.log10(d / options.c2);
 
                     af.fx += dirX * attractionForce;
                     af.fy += dirY * attractionForce;
@@ -292,17 +323,15 @@ export function springElectricalLayout(
 
         // 3) Move the vertex := c4 ∗ (force on vertex)
         for (const [node, { fx, fy }] of forces.entries()) {
-            let { x, y } = graph.getNodeAttributes(node) as { x: number; y: number };
+            let { x, y } = graph.getNodeAttributes(node) as {
+                x: number;
+                y: number;
+            };
             x ||= minX + Math.random() * (maxX - minX);
             y ||= minY + Math.random() * (maxY - minY);
 
-            console.log({
-                fx: options.c4 * fx,
-                fy: options.c4 * fy,
-            });
-
-            graph.setNodeAttribute(node, "x", x + options.c4 * fx);
-            graph.setNodeAttribute(node, "y", y + options.c4 * fy);
+            graph.setNodeAttribute(node, 'x', x + options.c4 * fx);
+            graph.setNodeAttribute(node, 'y', y + options.c4 * fy);
         }
     }
 }

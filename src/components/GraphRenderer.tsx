@@ -1,8 +1,8 @@
-import { useGraphologyGraph } from "@/contexts/tripple-store";
-import { useDoubleClickToCopy } from "@/hooks/ui/useDoubleClickToCopy";
-import { useTransformer } from "@/hooks/useTransformer";
-import { useLoadGraph, useSigma } from "@react-sigma/core";
-import { useEffect } from "react";
+import { useGraphologyGraph } from '@/contexts/tripple-store';
+import { useDoubleClickToCopy } from '@/hooks/ui/useDoubleClickToCopy';
+import { useTransformer } from '@/hooks/useTransformer';
+import { useLoadGraph, useSigma } from '@react-sigma/core';
+import { useEffect } from 'react';
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();

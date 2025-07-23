@@ -7,7 +7,7 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "fmt": "prettier --write .",
+        "fmt": "prettier --write $(find src/* -type d -not -name '*sparql-templates*')",
         "lint": "eslint",
         "test": "vitest",
         "ts": "tsc --noEmit -p ./tsconfig.json"

@@ -1,9 +1,11 @@
-import type { OmitNever } from "@/util/types";
-import type { Settings as SigmaSettings } from "sigma/settings";
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import type { OmitNever } from '@/util/types';
+import type { Settings as SigmaSettings } from 'sigma/settings';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export type PositioningFunction = "inverse-centroid-heuristic" | "spring-electric";
+export type PositioningFunction =
+    | 'inverse-centroid-heuristic'
+    | 'spring-electric';
 
 export type GraphSettingsStore = {
     graph: { url: string } | { data: string; name: string } | null;
@@ -13,12 +15,17 @@ export type GraphSettingsStore = {
 
     loadGraphFromUrl: (url: string) => void;
     updateSigmaSettings: (updated: Partial<SigmaSettings>) => void;
-    toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
+    toggleSetting: <TKey extends keyof BoolSetting>(
+        key: TKey,
+        defaultVal?: boolean,
+    ) => void;
     setPositioningFunction: (value: PositioningFunction) => void;
 };
 
 type BoolSetting = OmitNever<{
-    [TKey in keyof SigmaSettings]: SigmaSettings[TKey] extends boolean ? TKey : never;
+    [TKey in keyof SigmaSettings]: SigmaSettings[TKey] extends boolean
+        ? TKey
+        : never;
 }>;
 
 const HISTORY_MAX_SIZE = 20;
@@ -26,16 +33,22 @@ const HISTORY_MAX_SIZE = 20;
 export const useGraphStore = create<GraphSettingsStore>()(
     persist(
         (set) => ({
-            graph: { url: "https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf" },
-            graphUrlHistory: ["https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf"],
+            graph: {
+                url: 'https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf',
+            },
+            graphUrlHistory: [
+                'https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf',
+            ],
             sigmaSettings: {},
-            positioningFunction: "inverse-centroid-heuristic",
+            positioningFunction: 'inverse-centroid-heuristic',
 
             loadGraphFromUrl: (url) => {
                 set((prev) => {
                     return {
                         graph: { url },
-                        graphUrlHistory: Array.from(new Set([url, ...prev.graphUrlHistory])).slice(0, HISTORY_MAX_SIZE),
+                        graphUrlHistory: Array.from(
+                            new Set([url, ...prev.graphUrlHistory]),
+                        ).slice(0, HISTORY_MAX_SIZE),
                     };
                 });
             },
@@ -50,14 +63,17 @@ export const useGraphStore = create<GraphSettingsStore>()(
                 set((prev) => ({
                     sigmaSettings: {
                         ...prev.sigmaSettings,
-                        [setting]: !(prev.sigmaSettings[setting] ?? !defaultVal),
+                        [setting]: !(
+                            prev.sigmaSettings[setting] ?? !defaultVal
+                        ),
                     },
                 }));
             },
-            setPositioningFunction: (positioningFunction) => set({ positioningFunction }),
+            setPositioningFunction: (positioningFunction) =>
+                set({ positioningFunction }),
         }),
         {
-            name: "graph-settings",
+            name: 'graph-settings',
         },
     ),
 );

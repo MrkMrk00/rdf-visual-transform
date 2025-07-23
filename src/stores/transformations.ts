@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type Transformation = {
     name: string;
@@ -9,7 +9,10 @@ export type Transformation = {
 export type TransformationsStore = {
     transformations: Transformation[];
 
-    saveTransformation: (name: Transformation["name"], queries: Transformation["queries"]) => void;
+    saveTransformation: (
+        name: Transformation['name'],
+        queries: Transformation['queries'],
+    ) => void;
 };
 
 export const useTransformationStore = create<TransformationsStore>()(
@@ -19,9 +22,12 @@ export const useTransformationStore = create<TransformationsStore>()(
 
             saveTransformation: (name, queries) =>
                 set((previous) => ({
-                    transformations: [...previous.transformations, { name, queries }],
+                    transformations: [
+                        ...previous.transformations,
+                        { name, queries },
+                    ],
                 })),
         }),
-        { name: "transformations" },
+        { name: 'transformations' },
     ),
 );
