@@ -1,5 +1,6 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
+import { useTransformationStore } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import MonacoEditor, {
@@ -11,10 +12,10 @@ import type Monaco from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { use, useMemo, useRef, useState } from 'react';
 import { createHighlighter } from 'shiki';
+import { SaveTransformationModal } from './console/SaveTransformationModal';
+import { TransformationInputsForm } from './console/TransformationInputsForm';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { Checkbox } from './ui/checkbox';
-import { Input } from './ui/input';
 
 const highlighterPromise = createHighlighter({
     themes: ['github-light'],
@@ -26,20 +27,20 @@ loader.config({ monaco });
 export function SparqlConsole() {
     const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
+    const saveTransformation = useTransformationStore(
+        (store) => store.saveTransformation,
+    );
 
     const [chosenPatternName, setChosenPatternName] = useState<
         keyof typeof templates
     >('propertyChainShortcut');
 
-    const queryTemplateNames = useMemo(() => {
-        const templ = templates[chosenPatternName]();
-        const queryNames = templ.map(
-            (t) => (t.header as Record<string, string>).name ?? '<unknown>',
-        );
+    const templ = useMemo(
+        () => templates[chosenPatternName](),
+        [chosenPatternName],
+    );
 
-        return queryNames;
-    }, [chosenPatternName]);
-
+    const formRef = useRef<HTMLFormElement>(null);
     const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
     const { update } = useTransformer();
 
@@ -53,6 +54,24 @@ export function SparqlConsole() {
         editorRef.current = editor;
     }
 
+    function renderQueries<T extends typeof templ = typeof templ>(
+        template: T,
+        data: Parameters<T[number]['body']>[0],
+    ) {
+        return Object.fromEntries(
+            template
+                .filter(
+                    (t) => (t.header as Record<string, string>).name in data,
+                )
+                .map((t) => {
+                    return [
+                        (t.header as any).name as string,
+                        t.body(data as any),
+                    ];
+                }),
+        );
+    }
+
     return (
         <Card className="h-full">
             <CardHeader className="flex items-center justify-between">
@@ -63,72 +82,24 @@ export function SparqlConsole() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4 h-full">
                 <div className="flex gap-4 items-center w-full h-full">
-                    <form
-                        className="h-full flex flex-col gap-2"
+                    <TransformationInputsForm
+                        ref={formRef}
+                        title={chosenPatternName}
+                        templates={templ}
                         onSubmit={(ev) => {
                             ev.preventDefault();
 
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const data = Object.fromEntries(
                                 new FormData(ev.currentTarget),
-                            ) as Record<string, any>;
+                            );
 
-                            const templs = templates[chosenPatternName]()
-                                .filter(
-                                    (t) =>
-                                        (t.header as Record<string, string>)
-                                            .name in data,
-                                )
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                .map((t) => t.body(data as any))
-                                .join('\n');
+                            const queries = renderQueries(templ, data as any);
 
-                            editorRef.current?.setValue(templs);
+                            editorRef.current?.setValue(
+                                Object.values(queries).join('\n'),
+                            );
                         }}
-                    >
-                        <div className="font-bold text-xl">
-                            {chosenPatternName}
-                        </div>
-
-                        {chosenPatternName === 'propertyChainShortcut' && (
-                            <>
-                                <Input name="result" placeholder="result" />
-                                <Input
-                                    name="predicate0"
-                                    placeholder="predicate0"
-                                />
-                                <Input
-                                    name="predicate1"
-                                    placeholder="predicate1"
-                                />
-                            </>
-                        )}
-
-                        {chosenPatternName === 'linkCountingProperty' && (
-                            <>
-                                <Input
-                                    name="newProperty"
-                                    placeholder="newProperty"
-                                />
-                                <Input
-                                    name="sourceProperty"
-                                    placeholder="sourceProperty"
-                                />
-                            </>
-                        )}
-
-                        {queryTemplateNames.map((templateName) => (
-                            <label
-                                key={`template-${templateName}`}
-                                className="text-center inline-flex items-center gap-2"
-                            >
-                                {templateName}:
-                                <Checkbox name={templateName} />
-                            </label>
-                        ))}
-
-                        <Button type="submit">Compile template</Button>
-                    </form>
+                    />
 
                     <MonacoEditor
                         defaultLanguage="sparql"
@@ -147,9 +118,25 @@ export function SparqlConsole() {
                         >
                             Execute
                         </Button>
-                        <Button onClick={() => {}} variant="secondary">
-                            Save
-                        </Button>
+                        <SaveTransformationModal
+                            onSubmit={(name) => {
+                                if (!formRef.current) {
+                                    return;
+                                }
+
+                                saveTransformation(
+                                    name,
+                                    renderQueries(
+                                        templ,
+                                        Object.entries(
+                                            new FormData(formRef.current),
+                                        ) as any,
+                                    ),
+                                );
+                            }}
+                        >
+                            <Button variant="secondary">Save</Button>
+                        </SaveTransformationModal>
                     </div>
                 </div>
 
