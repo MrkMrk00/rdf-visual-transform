@@ -23,6 +23,12 @@ const SparqlConsole = lazy(() =>
     })),
 );
 
+const TransformationsPanel = lazy(() =>
+    import('./components/TransformationsPanel').then((module) => ({
+        default: module.TransformationsPanel,
+    })),
+);
+
 const sigmaStyle = { height: '100%', width: '100%' };
 
 const queryClient = new QueryClient({
@@ -64,6 +70,10 @@ export function App() {
         (store) => store.showSparqlConsole,
     );
 
+    const showTransformationsPanel = useUiControlStore(
+        (store) => store.showTransformationsPanel,
+    );
+
     return (
         <QueryClientProvider client={queryClient}>
             <StoreProvider>
@@ -73,10 +83,31 @@ export function App() {
                         className="absolute bottom-0 flex items-end"
                         direction="vertical"
                     >
-                        <ResizablePanel order={0} id="main-panel">
-                            <div className="absolute inset-0">
-                                <GraphMain />
-                            </div>
+                        <ResizablePanel order={0} id="main-panel" className="w-full">
+                            <ResizablePanelGroup direction="horizontal">
+                                <ResizablePanel
+                                    order={100}
+                                    id="horiz-main-panel"
+                                >
+                                    <div className="absolute inset-0">
+                                        <GraphMain />
+                                    </div>
+                                </ResizablePanel>
+
+                                {showTransformationsPanel && (
+                                    <Suspense>
+                                        <ResizableHandle withHandle />
+                                        <ResizablePanel
+                                            order={101}
+                                            className="z-1 w-full"
+                                            defaultSize={30}
+                                            id="horiz-transformations-panel"
+                                        >
+                                            <TransformationsPanel />
+                                        </ResizablePanel>
+                                    </Suspense>
+                                )}
+                            </ResizablePanelGroup>
                         </ResizablePanel>
 
                         {showSparqlConsole && (

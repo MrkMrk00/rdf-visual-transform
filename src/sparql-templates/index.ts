@@ -26,7 +26,9 @@ export const linkCountingProperty =
     (): TemplateOutput<LinkCountingPropertyOpts>[] =>
         parseTemplate(linkCountingPropertyTemplate);
 
-export type TemplateOutput<TOpts extends object = object> = {
+export type TemplateOutput<
+    TOpts extends Record<string, any> = Record<string, any>,
+> = {
     header: object;
     body: (opts: TOpts) => string;
 };

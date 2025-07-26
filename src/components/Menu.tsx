@@ -36,6 +36,9 @@ export function Menu() {
     const toggleSparqlConsole = useUiControlStore(
         (store) => store.toggleSparqlConsole,
     );
+    const toggleTransformationsPanel = useUiControlStore(
+        (store) => store.toggleTransformationsPanel,
+    );
 
     const isLoading = useGraphIsLoading();
 
@@ -112,6 +115,9 @@ export function Menu() {
                         <MenubarContent>
                             <MenubarItem onClick={toggleSparqlConsole}>
                                 SPARQL console
+                            </MenubarItem>
+                            <MenubarItem onClick={toggleTransformationsPanel}>
+                                Show Transformations panel
                             </MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>

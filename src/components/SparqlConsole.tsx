@@ -2,6 +2,7 @@ import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
 import { useTransformationStore } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
+import { renderQueries } from '@/util/transformations/renderQueries';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import MonacoEditor, {
     type Monaco as MonacoInstance,
@@ -16,6 +17,7 @@ import { SaveTransformationModal } from './console/SaveTransformationModal';
 import { TransformationInputsForm } from './console/TransformationInputsForm';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
+import { TemplateOutput } from '@/sparql-templates';
 
 const highlighterPromise = createHighlighter({
     themes: ['github-light'],
@@ -54,24 +56,6 @@ export function SparqlConsole() {
         editorRef.current = editor;
     }
 
-    function renderQueries<T extends typeof templ = typeof templ>(
-        template: T,
-        data: Parameters<T[number]['body']>[0],
-    ) {
-        return Object.fromEntries(
-            template
-                .filter(
-                    (t) => (t.header as Record<string, string>).name in data,
-                )
-                .map((t) => {
-                    return [
-                        (t.header as any).name as string,
-                        t.body(data as any),
-                    ];
-                }),
-        );
-    }
-
     return (
         <Card className="h-full">
             <CardHeader className="flex items-center justify-between">
@@ -87,13 +71,14 @@ export function SparqlConsole() {
                         title={chosenPatternName}
                         templates={templ}
                         onSubmit={(ev) => {
-                            ev.preventDefault();
-
                             const data = Object.fromEntries(
                                 new FormData(ev.currentTarget),
                             );
 
-                            const queries = renderQueries(templ, data as any);
+                            const queries = renderQueries(
+                                templ as TemplateOutput<Record<string, any>>[],
+                                data as any,
+                            );
 
                             editorRef.current?.setValue(
                                 Object.values(queries).join('\n'),
@@ -126,12 +111,10 @@ export function SparqlConsole() {
 
                                 saveTransformation(
                                     name,
-                                    renderQueries(
-                                        templ,
-                                        Object.entries(
-                                            new FormData(formRef.current),
-                                        ) as any,
-                                    ),
+                                    chosenPatternName,
+                                    Object.entries(
+                                        new FormData(formRef.current),
+                                    ) as any,
                                 );
                             }}
                         >

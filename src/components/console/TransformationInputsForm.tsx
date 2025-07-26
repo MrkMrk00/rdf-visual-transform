@@ -64,7 +64,7 @@ export const TransformationInputsForm = forwardRef<
                         key={`subtempl-name-${subtemplName}`}
                     >
                         {subtemplName}:
-                        <Checkbox defaultChecked name={subtemplName} />
+                        <Checkbox defaultChecked name={`_${subtemplName}`} />
                     </label>
                 ))}
 
