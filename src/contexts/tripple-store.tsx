@@ -1,5 +1,5 @@
 import { useGraphStore, type GraphSettingsStore } from '@/stores/graphSettings';
-import { insertQuadIntoGraph } from '@/util/graphology';
+import { insertQuadIntoGraph } from '@/util/graph/graphology';
 import { RdfReader } from '@/util/rdf-reader';
 import { useQuery } from '@tanstack/react-query';
 import { DirectedGraph } from 'graphology';

@@ -1,10 +1,10 @@
 import { useGraphologyGraph, useTripleStore } from '@/contexts/tripple-store';
 import { useGraphStore } from '@/stores/graphSettings';
-import { syncGraphWithStore } from '@/util/graphology';
+import { syncGraphWithStore } from '@/util/graph/graphology';
 import {
     inverseCentroidHeuristicLayout,
     springElectricalLayout,
-} from '@/util/node-placement';
+} from '@/util/graph/node-placement';
 import { QueryEngine } from '@comunica/query-sparql';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
