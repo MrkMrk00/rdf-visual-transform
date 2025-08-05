@@ -4,6 +4,7 @@ import {
 } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { truncateText } from '@/util/ui/truncateText';
+import { ArrowDownIcon } from '@heroicons/react/20/solid';
 import { CodeBracketIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { PlayIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import {
@@ -24,6 +25,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '../ui/dialog';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '../ui/tooltip';
 
 type PartitionedTransformations = Partial<
     Record<Transformation['meta']['patternName'], Transformation[]>
@@ -55,6 +62,10 @@ export function TransformationsPanel() {
         [transformations],
     );
 
+    const exportToJson = useTransformationsStore(
+        (store) => store.exportToJsonFile,
+    );
+
     const editModalRef = useRef<EditTransformationHandle>(null);
     const deleteModalRef = useRef<DeleteTransformationHandle>(null);
 
@@ -65,9 +76,35 @@ export function TransformationsPanel() {
 
             {/* TODO: style -> not to cover up the UI under */}
             <div className="absolute right-0 top-0 px-2">
-                <Button variant="ghost" onClick={close} type="button">
-                    <XMarkIcon />
-                </Button>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                onClick={exportToJson}
+                                type="button"
+                            >
+                                <ArrowDownIcon />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Export as JSON</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                onClick={close}
+                                type="button"
+                            >
+                                <XMarkIcon />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Close panel</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
 
             {Object.entries(transformationsByPattern).map(

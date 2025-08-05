@@ -2,8 +2,14 @@ import {
     Transformation,
     useTransformationsStore,
 } from '@/stores/transformations';
-import { useMemo } from 'react';
-import { Input } from '../ui/input';
+import { lazy, Suspense, useMemo, useRef } from 'react';
+import type { EditorHandle } from '../SparqlEditor';
+
+const SparqlEditor = lazy(() =>
+    import('@/components/SparqlEditor').then((module) => ({
+        default: module.SparqlEditor,
+    })),
+);
 
 export type EditTransformationProps = {
     transformationId?: string;
@@ -17,6 +23,10 @@ export function EditTransformation(props: EditTransformationProps) {
     );
 
     const transformation = useMemo(() => {
+        if (!props.transformationId) {
+            return undefined;
+        }
+
         const tf = allTransformations.find(
             (it) => it.id === props.transformationId,
         );
@@ -30,11 +40,15 @@ export function EditTransformation(props: EditTransformationProps) {
         return tf;
     }, [props, allTransformations]);
 
+    const editorRef = useRef<EditorHandle>(undefined);
+
     return (
         <form onSubmit={(ev) => ev.preventDefault()}>
-            <label>
-                <Input />
-            </label>
+            {transformation?.meta.patternName === 'custom' && (
+                <Suspense fallback={<div className="w-full h-full"></div>}>
+                    <SparqlEditor ref={editorRef} width="100%" height="100%" />
+                </Suspense>
+            )}
         </form>
     );
 }

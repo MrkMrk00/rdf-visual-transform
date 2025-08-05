@@ -1,12 +1,16 @@
 import * as templates from '@/sparql-templates';
 import { Draft, produce } from 'immer';
+import { toast } from 'sonner';
 import { type ULID, ulid } from 'ulid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type TransformationMeta = { priority: number } & (
     | {
-          patternName: keyof typeof templates;
+          patternName:
+              | 'propertyChainShortcut'
+              | 'relationshipDereification'
+              | 'linkCountingProperty';
           parameters: Record<string, string>;
       }
     | {
@@ -42,7 +46,11 @@ export type TransformationsStore = {
         id: ULID,
         patchFunction: (transformation: Draft<Transformation>) => void,
     ) => void;
+
+    exportToJsonFile: () => void;
 };
+
+export const LOCAL_STORAGE_NAME = 'transformations';
 
 export const useTransformationsStore = create<TransformationsStore>()(
     persist(
@@ -130,7 +138,34 @@ export const useTransformationsStore = create<TransformationsStore>()(
                     };
                 });
             },
+
+            exportToJsonFile: () => {
+                const storeValue =
+                    window.localStorage.getItem(LOCAL_STORAGE_NAME);
+
+                if (!storeValue) {
+                    toast.error(
+                        'failed to export transformations - empty store',
+                    );
+
+                    return;
+                }
+
+                const blob = new Blob([storeValue], {
+                    type: 'application/json',
+                });
+                const fileUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = fileUrl;
+                a.download = 'transformations.json';
+
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            },
         }),
-        { name: 'transformations' },
+        { name: LOCAL_STORAGE_NAME },
     ),
 );

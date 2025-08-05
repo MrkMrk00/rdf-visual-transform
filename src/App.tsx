@@ -18,7 +18,7 @@ import { useGraphStore } from './stores/graphSettings';
 import { useUiControlStore } from './stores/uiControl';
 
 const SparqlConsole = lazy(() =>
-    import('./components/SparqlConsole').then((module) => ({
+    import('./components/panes/SparqlConsole').then((module) => ({
         default: module.SparqlConsole,
     })),
 );
