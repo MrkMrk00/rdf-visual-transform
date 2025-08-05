@@ -1,3 +1,4 @@
+import { inverseCentroidHeuristicLayout } from '@/util/graph/node-placement';
 import type {
     Quad,
     Quad_Object,
@@ -6,7 +7,6 @@ import type {
 } from '@rdfjs/types';
 import { type DirectedGraph } from 'graphology';
 import { Store } from 'n3';
-import { inverseCentroidHeuristicLayout } from '@/util/graph/node-placement';
 
 export const NODE_DEFAULT_SIZE = 15;
 

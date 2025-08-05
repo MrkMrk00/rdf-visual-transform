@@ -1,4 +1,6 @@
 import * as templates from '@/sparql-templates';
+import { Draft, produce } from 'immer';
+import { type ULID, ulid } from 'ulid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -13,6 +15,7 @@ export type TransformationMeta = { priority: number } & (
 );
 
 export type Transformation = {
+    readonly id: ULID;
     name: string;
     meta: TransformationMeta;
     queries: Record<string, string>;
@@ -33,12 +36,26 @@ export type TransformationsStore = {
         parameters: Record<string, string>,
         priority?: number,
     ) => void;
+
+    deleteTransformation: (id: Transformation['id']) => void;
+    patchTransformation: (
+        id: ULID,
+        patchFunction: (transformation: Draft<Transformation>) => void,
+    ) => void;
 };
 
-export const useTransformationStore = create<TransformationsStore>()(
+export const useTransformationsStore = create<TransformationsStore>()(
     persist(
         (set) => ({
             transformations: [],
+
+            deleteTransformation: (id) => {
+                set((prev) => ({
+                    transformations: prev.transformations.filter(
+                        (it) => it.id !== id,
+                    ),
+                }));
+            },
 
             saveCustomTransformation: (name, queries, priority = 0) => {
                 set((previous) => {
@@ -46,6 +63,7 @@ export const useTransformationStore = create<TransformationsStore>()(
                         transformations: [
                             ...previous.transformations,
                             {
+                                id: ulid(),
                                 name,
                                 queries,
                                 meta: {
@@ -78,6 +96,7 @@ export const useTransformationStore = create<TransformationsStore>()(
                         transformations: [
                             ...previous.transformations,
                             {
+                                id: ulid(),
                                 name,
                                 queries,
                                 meta: {
@@ -87,6 +106,27 @@ export const useTransformationStore = create<TransformationsStore>()(
                                 },
                             },
                         ],
+                    };
+                });
+            },
+
+            patchTransformation: (id, patchFunc) => {
+                set((previousState) => {
+                    return {
+                        transformations: produce(
+                            previousState.transformations,
+                            (draft) => {
+                                const toTransform = draft.find(
+                                    (it) => it.id === id,
+                                );
+
+                                if (!toTransform) {
+                                    return;
+                                }
+
+                                patchFunc(toTransform);
+                            },
+                        ),
                     };
                 });
             },

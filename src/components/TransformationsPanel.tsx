@@ -1,13 +1,13 @@
+import { Button } from '@/components/ui/button';
 import {
     type Transformation,
-    useTransformationStore,
+    useTransformationsStore,
 } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { truncateText } from '@/util/ui/truncateText';
 import { CodeBracketIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { PlayIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { Fragment, useMemo } from 'react';
-import { Button } from '../ui/button';
 
 type PartitionedTransformations = Partial<
     Record<Transformation['meta']['patternName'], Transformation[]>
@@ -27,7 +27,7 @@ function partitionTransformations(transformations: Transformation[]) {
 }
 
 export function TransformationsPanel() {
-    const transformations = useTransformationStore(
+    const transformations = useTransformationsStore(
         (store) => store.transformations,
     );
     const close = useUiControlStore(

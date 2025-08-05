@@ -1,7 +1,7 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
 import { TemplateOutput } from '@/sparql-templates';
-import { useTransformationStore } from '@/stores/transformations';
+import { useTransformationsStore } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { renderQueries } from '@/util/transformations/renderQueries';
 import { XMarkIcon } from '@heroicons/react/20/solid';
@@ -29,7 +29,7 @@ loader.config({ monaco });
 export function SparqlConsole() {
     const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
-    const saveTransformation = useTransformationStore(
+    const saveTransformation = useTransformationsStore(
         (store) => store.saveTransformation,
     );
 
@@ -71,6 +71,8 @@ export function SparqlConsole() {
                         title={chosenPatternName}
                         templates={templ}
                         onSubmit={(ev) => {
+                            ev.preventDefault();
+
                             const data = Object.fromEntries(
                                 new FormData(ev.currentTarget),
                             );
