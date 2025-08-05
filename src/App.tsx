@@ -14,6 +14,7 @@ import {
 } from './components/ui/resizable';
 import { Toaster } from './components/ui/sonner';
 import { StoreProvider } from './contexts/tripple-store';
+import { useIsMobile, WindowSizeProvider } from './contexts/window-size';
 import { useGraphStore } from './stores/graphSettings';
 import { useUiControlStore } from './stores/uiControl';
 
@@ -24,9 +25,11 @@ const SparqlConsole = lazy(() =>
 );
 
 const TransformationsPanel = lazy(() =>
-    import('./components/transformations/TransformationsPanel').then((module) => ({
-        default: module.TransformationsPanel,
-    })),
+    import('./components/transformations/TransformationsPanel').then(
+        (module) => ({
+            default: module.TransformationsPanel,
+        }),
+    ),
 );
 
 const sigmaStyle = { height: '100%', width: '100%' };
@@ -65,76 +68,146 @@ const GraphMain = memo(function GraphMain() {
     );
 });
 
-export function App() {
+function MobileLayout() {
     const showSparqlConsole = useUiControlStore(
         (store) => store.showSparqlConsole,
+    );
+    const hideSparqlConsole = useUiControlStore(
+        (store) => store.toggleSparqlConsole,
+    );
+
+    const showTransformations = useUiControlStore(
+        (store) => store.showTransformationsPanel,
+    );
+    const hideTransformationsPanel = useUiControlStore(
+        (store) => store.toggleTransformationsPanel,
+    );
+
+    return (
+        <div className="relative flex flex-col w-full h-full">
+            <Menu />
+            <GraphMain />
+
+            {showSparqlConsole && (
+                <Suspense>
+                    <div className="absolute inset-0 z-100">
+                        <SparqlConsole close={hideSparqlConsole} />
+                    </div>
+                </Suspense>
+            )}
+
+            {showTransformations && (
+                <Suspense>
+                    <div className="absolute inset-0 z-110">
+                        <TransformationsPanel
+                            close={hideTransformationsPanel}
+                        />
+                    </div>
+                </Suspense>
+            )}
+        </div>
+    );
+}
+
+function DesktopLayout() {
+    const showSparqlConsole = useUiControlStore(
+        (store) => store.showSparqlConsole,
+    );
+    const hideSparqlConsole = useUiControlStore(
+        (store) => store.toggleSparqlConsole,
     );
 
     const showTransformationsPanel = useUiControlStore(
         (store) => store.showTransformationsPanel,
     );
+    const hideTransformationsPanel = useUiControlStore(
+        (store) => store.toggleTransformationsPanel,
+    );
 
+    return (
+        <>
+            <Menu />
+            <div className="relative w-full h-full">
+                <ResizablePanelGroup
+                    className="absolute bottom-0 flex items-end"
+                    direction="vertical"
+                >
+                    <ResizablePanel
+                        order={0}
+                        id="main-panel"
+                        className="w-full"
+                    >
+                        <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel order={100} id="horiz-main-panel">
+                                <div className="absolute inset-0">
+                                    <GraphMain />
+                                </div>
+                            </ResizablePanel>
+
+                            {showTransformationsPanel && (
+                                <Suspense>
+                                    <ResizableHandle withHandle />
+                                    <ResizablePanel
+                                        order={101}
+                                        className="z-1 w-full"
+                                        defaultSize={30}
+                                        id="horiz-transformations-panel"
+                                    >
+                                        <TransformationsPanel
+                                            close={hideTransformationsPanel}
+                                        />
+                                    </ResizablePanel>
+                                </Suspense>
+                            )}
+                        </ResizablePanelGroup>
+                    </ResizablePanel>
+
+                    {showSparqlConsole && (
+                        <>
+                            <ResizableHandle withHandle />
+
+                            <ResizablePanel
+                                className="z-1 w-full bg-white"
+                                defaultSize={30}
+                                id="rpanel-bottom"
+                                order={1}
+                            >
+                                <Suspense
+                                    fallback={
+                                        <div className="flex h-full w-full p-8">
+                                            Loading...
+                                        </div>
+                                    }
+                                >
+                                    <SparqlConsole close={hideSparqlConsole} />
+                                </Suspense>
+                            </ResizablePanel>
+                        </>
+                    )}
+                </ResizablePanelGroup>
+            </div>
+        </>
+    );
+}
+
+function Layout() {
+    const isMobile = useIsMobile();
+    console.log({ isMobile });
+
+    if (isMobile) {
+        return <MobileLayout />;
+    }
+
+    return <DesktopLayout />;
+}
+
+export function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <StoreProvider>
-                <Menu />
-                <div className="relative w-full h-full">
-                    <ResizablePanelGroup
-                        className="absolute bottom-0 flex items-end"
-                        direction="vertical"
-                    >
-                        <ResizablePanel order={0} id="main-panel" className="w-full">
-                            <ResizablePanelGroup direction="horizontal">
-                                <ResizablePanel
-                                    order={100}
-                                    id="horiz-main-panel"
-                                >
-                                    <div className="absolute inset-0">
-                                        <GraphMain />
-                                    </div>
-                                </ResizablePanel>
-
-                                {showTransformationsPanel && (
-                                    <Suspense>
-                                        <ResizableHandle withHandle />
-                                        <ResizablePanel
-                                            order={101}
-                                            className="z-1 w-full"
-                                            defaultSize={30}
-                                            id="horiz-transformations-panel"
-                                        >
-                                            <TransformationsPanel />
-                                        </ResizablePanel>
-                                    </Suspense>
-                                )}
-                            </ResizablePanelGroup>
-                        </ResizablePanel>
-
-                        {showSparqlConsole && (
-                            <>
-                                <ResizableHandle withHandle />
-
-                                <ResizablePanel
-                                    className="z-1 w-full"
-                                    defaultSize={30}
-                                    id="rpanel-bottom"
-                                    order={1}
-                                >
-                                    <Suspense
-                                        fallback={
-                                            <div className="flex h-full w-full p-8">
-                                                Loading...
-                                            </div>
-                                        }
-                                    >
-                                        <SparqlConsole />
-                                    </Suspense>
-                                </ResizablePanel>
-                            </>
-                        )}
-                    </ResizablePanelGroup>
-                </div>
-
+                <WindowSizeProvider>
+                    <Layout />
+                </WindowSizeProvider>
                 <Toaster />
             </StoreProvider>
         </QueryClientProvider>

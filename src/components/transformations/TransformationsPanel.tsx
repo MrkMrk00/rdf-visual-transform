@@ -2,7 +2,6 @@ import {
     type Transformation,
     useTransformationsStore,
 } from '@/stores/transformations';
-import { useUiControlStore } from '@/stores/uiControl';
 import { truncateText } from '@/util/ui/truncateText';
 import { ArrowDownIcon } from '@heroicons/react/20/solid';
 import { CodeBracketIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -49,12 +48,9 @@ function partitionTransformations(transformations: Transformation[]) {
     return groups;
 }
 
-export function TransformationsPanel() {
+export function TransformationsPanel({ close }: { close: VoidFunction }) {
     const transformations = useTransformationsStore(
         (store) => store.transformations,
-    );
-    const close = useUiControlStore(
-        (store) => store.toggleTransformationsPanel,
     );
 
     const transformationsByPattern = useMemo(
@@ -70,12 +66,12 @@ export function TransformationsPanel() {
     const deleteModalRef = useRef<DeleteTransformationHandle>(null);
 
     return (
-        <div className="relative w-full h-full bg-white flex flex-col gap-2">
+        <div className="relative w-full h-full bg-white flex flex-col gap-2 p-4">
             <EditTransformationModal ref={editModalRef} />
             <DeleteTransformationModal ref={deleteModalRef} />
 
             {/* TODO: style -> not to cover up the UI under */}
-            <div className="absolute right-0 top-0 px-2">
+            <div className="absolute right-0 top-0 p-4">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>

@@ -2,7 +2,6 @@ import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
 import { TemplateOutput } from '@/sparql-templates';
 import { useTransformationsStore } from '@/stores/transformations';
-import { useUiControlStore } from '@/stores/uiControl';
 import { renderQueries } from '@/util/transformations/renderQueries';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { lazy, Suspense, useMemo, useRef, useState } from 'react';
@@ -18,8 +17,7 @@ const SparqlEditor = lazy(() =>
     })),
 );
 
-export function SparqlConsole() {
-    const close = useUiControlStore((store) => store.toggleSparqlConsole);
+export function SparqlConsole({ close }: { close: VoidFunction }) {
     const saveTransformation = useTransformationsStore(
         (store) => store.saveTransformation,
     );
