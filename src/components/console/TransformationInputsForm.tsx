@@ -46,7 +46,12 @@ export const TransformationInputsForm = forwardRef<
     }, [templates]);
 
     return (
-        <div className="flex flex-col gap-2">
+        <div
+            className="flex flex-col gap-2 shrink-0 h-full max-h-fit overflow-y-scroll px-4"
+            style={{
+                scrollbarGutter: 'stable',
+            }}
+        >
             <div className="font-bold text-xl">{title}</div>
 
             <form {...formProps} className="flex flex-col gap-2" ref={ref}>

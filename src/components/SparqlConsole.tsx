@@ -1,5 +1,6 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
+import { TemplateOutput } from '@/sparql-templates';
 import { useTransformationStore } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { renderQueries } from '@/util/transformations/renderQueries';
@@ -17,7 +18,6 @@ import { SaveTransformationModal } from './console/SaveTransformationModal';
 import { TransformationInputsForm } from './console/TransformationInputsForm';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { TemplateOutput } from '@/sparql-templates';
 
 const highlighterPromise = createHighlighter({
     themes: ['github-light'],
@@ -136,6 +136,19 @@ export function SparqlConsole() {
                         }}
                     >
                         property chain shortcut
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            if (!editorRef.current) {
+                                return;
+                            }
+
+                            setChosenPatternName('relationshipDereification');
+                        }}
+                    >
+                        relationship dereification
                     </Button>
 
                     <Button

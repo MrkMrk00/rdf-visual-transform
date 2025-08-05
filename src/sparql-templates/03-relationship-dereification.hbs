@@ -1,0 +1,29 @@
+name: insert
+inputs:
+    - name: "result"
+    - name: "predicate0"
+    - name: "predicate1"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+INSERT {
+    ?start {{{result}}} ?end .
+}
+WHERE {
+    ?middle {{{predicate0}}} ?start .
+    ?middle {{{predicate1}}} ?end    .
+};
+---
+name: delete
+inputs:
+    - name: "predicate0"
+    - name: "predicate1"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+WHERE {
+    ?middle {{{predicate0}}} ?start .
+    ?middle {{{predicate1}}} ?end    .
+};

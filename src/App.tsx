@@ -24,7 +24,7 @@ const SparqlConsole = lazy(() =>
 );
 
 const TransformationsPanel = lazy(() =>
-    import('./components/TransformationsPanel').then((module) => ({
+    import('./components/transformations/TransformationsPanel').then((module) => ({
         default: module.TransformationsPanel,
     })),
 );

@@ -1,6 +1,7 @@
 import { compile } from 'handlebars';
 import { load } from 'js-yaml';
 import propertyChainShortcutTemplate from './01-property-shortcut.hbs?raw';
+import relationshipDereificationTemplate from './03-relationship-dereification.hbs?raw';
 import linkCountingPropertyTemplate from './06-link-counting-property.hbs?raw';
 
 export type PropertyChainShortcutOpts = {
@@ -16,6 +17,20 @@ export type PropertyChainShortcutOpts = {
 export const propertyChainShortcut =
     (): TemplateOutput<PropertyChainShortcutOpts>[] =>
         parseTemplate(propertyChainShortcutTemplate);
+
+export type RelationshipDereificationOpts = {
+    prefixes?: string[];
+
+    predicate0: string;
+    predicate1: string;
+    result: string;
+
+    delete: boolean;
+};
+
+export const relationshipDereification =
+    (): TemplateOutput<RelationshipDereificationOpts>[] =>
+        parseTemplate(relationshipDereificationTemplate);
 
 export type LinkCountingPropertyOpts = {
     newProperty: string;
