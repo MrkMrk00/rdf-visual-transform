@@ -5,29 +5,20 @@ import { useTransformationsStore } from '@/stores/transformations';
 import { useUiControlStore } from '@/stores/uiControl';
 import { renderQueries } from '@/util/transformations/renderQueries';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import MonacoEditor, {
-    type Monaco as MonacoInstance,
-    loader,
-} from '@monaco-editor/react';
-import { shikiToMonaco } from '@shikijs/monaco';
-import type Monaco from 'monaco-editor';
-import * as monaco from 'monaco-editor';
-import { use, useMemo, useRef, useState } from 'react';
-import { createHighlighter } from 'shiki';
-import { SaveTransformationModal } from './console/SaveTransformationModal';
-import { TransformationInputsForm } from './console/TransformationInputsForm';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { lazy, Suspense, useMemo, useRef, useState } from 'react';
+import { SaveTransformationModal } from '../console/SaveTransformationModal';
+import { TransformationInputsForm } from '../console/TransformationInputsForm';
+import type { EditorHandle } from '../SparqlEditor';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader } from '../ui/card';
 
-const highlighterPromise = createHighlighter({
-    themes: ['github-light'],
-    langs: ['sparql'],
-});
-
-loader.config({ monaco });
+const SparqlEditor = lazy(() =>
+    import('../SparqlEditor').then(({ SparqlEditor }) => ({
+        default: SparqlEditor,
+    })),
+);
 
 export function SparqlConsole() {
-    const highlighter = use(highlighterPromise);
     const close = useUiControlStore((store) => store.toggleSparqlConsole);
     const saveTransformation = useTransformationsStore(
         (store) => store.saveTransformation,
@@ -43,18 +34,9 @@ export function SparqlConsole() {
     );
 
     const formRef = useRef<HTMLFormElement>(null);
-    const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
     const { update } = useTransformer();
 
-    function initMonaco(monaco: MonacoInstance) {
-        monaco.languages.register({ id: 'sparql' });
-
-        shikiToMonaco(highlighter, monaco);
-    }
-
-    function editorMount(editor: Monaco.editor.IStandaloneCodeEditor) {
-        editorRef.current = editor;
-    }
+    const editorRef = useRef<EditorHandle>(undefined);
 
     return (
         <Card className="h-full">
@@ -71,6 +53,7 @@ export function SparqlConsole() {
                         title={chosenPatternName}
                         templates={templ}
                         onSubmit={(ev) => {
+                            console.log(editorRef);
                             ev.preventDefault();
 
                             const data = Object.fromEntries(
@@ -88,13 +71,9 @@ export function SparqlConsole() {
                         }}
                     />
 
-                    <MonacoEditor
-                        defaultLanguage="sparql"
-                        height="80%"
-                        theme="github-light"
-                        beforeMount={initMonaco}
-                        onMount={editorMount}
-                    />
+                    <Suspense fallback={<div className="w-full"></div>}>
+                        <SparqlEditor ref={editorRef} height="80%" />
+                    </Suspense>
 
                     <div className="flex flex-col gap-2 h-full">
                         <Button
