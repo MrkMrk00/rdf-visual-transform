@@ -3,6 +3,7 @@ import { useDoubleClickToCopy } from '@/hooks/ui/useDoubleClickToCopy';
 import { useTransformer } from '@/hooks/useTransformer';
 import { useLoadGraph, useSigma } from '@react-sigma/core';
 import { useEffect } from 'react';
+import { NodeContextMenu } from './NodeContextMenu';
 
 export function GraphRenderer() {
     const loadGraph = useLoadGraph();
@@ -31,5 +32,9 @@ export function GraphRenderer() {
         loadGraph(graph);
     }, [loadGraph, graph]);
 
-    return null;
+    return (
+        <>
+            <NodeContextMenu sigma={sigma} />
+        </>
+    );
 }
