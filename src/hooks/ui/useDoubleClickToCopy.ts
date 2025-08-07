@@ -25,7 +25,6 @@ export function useDoubleClickToCopy(sigma: Sigma) {
     useEffect(() => {
         sigma.on('doubleClickNode', doubleClickHandler);
 
-        return () =>
-            void sigma.removeListener('doubleClickNode', doubleClickHandler);
+        return () => void sigma.removeListener('doubleClickNode', doubleClickHandler);
     }, [sigma]);
 }

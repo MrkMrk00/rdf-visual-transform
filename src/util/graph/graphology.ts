@@ -1,10 +1,5 @@
 import { inverseCentroidHeuristicLayout } from '@/util/graph/node-placement';
-import type {
-    Quad,
-    Quad_Object,
-    Quad_Predicate,
-    Quad_Subject,
-} from '@rdfjs/types';
+import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from '@rdfjs/types';
 import { type DirectedGraph } from 'graphology';
 import { Store } from 'n3';
 
@@ -46,16 +41,11 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     const edgeKey = `${subject.value}-${predicate.value}-${objectKey}`;
     if (!graph.hasDirectedEdge(edgeKey)) {
         let displayType: undefined | string = undefined;
-        if (
-            graph.hasDirectedEdge(subject.value, objectKey) ||
-            graph.hasDirectedEdge(objectKey, subject.value)
-        ) {
+        if (graph.hasDirectedEdge(subject.value, objectKey) || graph.hasDirectedEdge(objectKey, subject.value)) {
             displayType = 'curved';
         }
 
-        graph.addDirectedEdgeWithKey(edgeKey, subject.value, objectKey, <
-            CustomEdgeAttributes
-        >{
+        graph.addDirectedEdgeWithKey(edgeKey, subject.value, objectKey, <CustomEdgeAttributes>{
             label: predicate.value,
 
             self: predicate,
@@ -68,10 +58,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
 export function syncGraphWithStore(
     graph: DirectedGraph,
     store: Store,
-    positioningFunction: (
-        oldGraph: DirectedGraph,
-        newGraph: DirectedGraph,
-    ) => void = inverseCentroidHeuristicLayout,
+    positioningFunction: (oldGraph: DirectedGraph, newGraph: DirectedGraph) => void = inverseCentroidHeuristicLayout,
 ) {
     const oldGraph = graph.copy();
 
@@ -103,11 +90,7 @@ export interface CustomEdgeAttributes {
     quad: Quad;
 }
 
-export function getObjectKey(
-    subject: Quad_Subject,
-    predicate: Quad_Predicate,
-    object: Quad_Object,
-) {
+export function getObjectKey(subject: Quad_Subject, predicate: Quad_Predicate, object: Quad_Object) {
     if (object.termType === 'Literal') {
         return `lit:${subject.value}-${predicate.value}-${object.value}`;
     }

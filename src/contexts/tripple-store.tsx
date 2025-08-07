@@ -6,13 +6,7 @@ import { DirectedGraph } from 'graphology';
 import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { Store } from 'n3';
-import {
-    createContext,
-    PropsWithChildren,
-    useContext,
-    useEffect,
-    useMemo,
-} from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 type StoreContext = { store: Store; isLoading: boolean; graph: DirectedGraph };
@@ -23,11 +17,7 @@ const trippleStoreContext = createContext<StoreContext>({
     graph: new DirectedGraph(),
 });
 
-async function loadDataIntoStore({
-    queryKey,
-}: {
-    queryKey: [string, GraphSettingsStore['graph']];
-}) {
+async function loadDataIntoStore({ queryKey }: { queryKey: [string, GraphSettingsStore['graph']] }) {
     const [, graph] = queryKey;
 
     const store = new Store();
@@ -95,11 +85,7 @@ export const StoreProvider = ({ children }: PropsWithChildren) => {
         [store, graph, isLoading],
     );
 
-    return (
-        <trippleStoreContext.Provider value={context}>
-            {children}
-        </trippleStoreContext.Provider>
-    );
+    return <trippleStoreContext.Provider value={context}>{children}</trippleStoreContext.Provider>;
 };
 
 const rdfReader = new RdfReader();

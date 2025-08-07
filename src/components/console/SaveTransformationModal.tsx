@@ -1,11 +1,4 @@
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { ReactNode, useState } from 'react';
 import { Button } from '../ui/button';
@@ -16,10 +9,7 @@ export type SaveTransformationModalProps = {
     onSubmit?: (name: string) => void;
 };
 
-export function SaveTransformationModal({
-    children,
-    ...props
-}: SaveTransformationModalProps) {
+export function SaveTransformationModal({ children, ...props }: SaveTransformationModalProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -31,25 +21,17 @@ export function SaveTransformationModal({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Save transformation</DialogTitle>
-                    {error !== null && (
-                        <DialogDescription className="text-red-500">
-                            {error}
-                        </DialogDescription>
-                    )}
+                    {error !== null && <DialogDescription className="text-red-500">{error}</DialogDescription>}
                 </DialogHeader>
                 <form
                     className="flex flex-col gap-2"
                     onSubmit={(ev) => {
                         ev.preventDefault();
 
-                        const name = new FormData(ev.currentTarget).get(
-                            'name',
-                        ) as string;
+                        const name = new FormData(ev.currentTarget).get('name') as string;
 
                         if (!name) {
-                            setError(
-                                'A transformation must have a valid name.',
-                            );
+                            setError('A transformation must have a valid name.');
 
                             return;
                         }

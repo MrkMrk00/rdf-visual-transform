@@ -6,9 +6,7 @@ export function renderQueries<T extends TemplateOutput[] = TemplateOutput[]>(
 ) {
     return Object.fromEntries(
         template
-            .filter(
-                (t) => `_${(t.header as Record<string, string>).name}` in data,
-            )
+            .filter((t) => `_${(t.header as Record<string, string>).name}` in data)
             .map((t) => {
                 return [(t.header as any).name as string, t.body(data as any)];
             }),

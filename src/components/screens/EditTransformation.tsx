@@ -1,7 +1,4 @@
-import {
-    Transformation,
-    useTransformationsStore,
-} from '@/stores/transformations';
+import { Transformation, useTransformationsStore } from '@/stores/transformations';
 import { lazy, Suspense, useMemo, useRef } from 'react';
 import type { EditorHandle } from '../SparqlEditor';
 
@@ -18,23 +15,17 @@ export type EditTransformationProps = {
 };
 
 export function EditTransformation(props: EditTransformationProps) {
-    const allTransformations = useTransformationsStore(
-        (store) => store.transformations,
-    );
+    const allTransformations = useTransformationsStore((store) => store.transformations);
 
     const transformation = useMemo(() => {
         if (!props.transformationId) {
             return undefined;
         }
 
-        const tf = allTransformations.find(
-            (it) => it.id === props.transformationId,
-        );
+        const tf = allTransformations.find((it) => it.id === props.transformationId);
 
         if (!tf) {
-            props.onError(
-                `Transformation with id ${props.transformationId} not found`,
-            );
+            props.onError(`Transformation with id ${props.transformationId} not found`);
         }
 
         return tf;

@@ -1,51 +1,39 @@
-import * as templates from '@/sparql-templates';
 import { Draft, produce } from 'immer';
 import { toast } from 'sonner';
 import { type ULID, ulid } from 'ulid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type TransformationMeta = { priority: number } & (
-    | {
-          patternName:
-              | 'propertyChainShortcut'
-              | 'relationshipDereification'
-              | 'linkCountingProperty';
-          parameters: Record<string, string>;
-      }
-    | {
-          patternName: 'custom';
-      }
-);
+export type TransformationPattern =
+    | 'propertyChainShortcut'
+    | 'relationshipDereification'
+    | 'linkCountingProperty'
+    | 'custom';
 
-export type Transformation = {
+export type Transformation<TPattern extends TransformationPattern = TransformationPattern> = {
     readonly id: ULID;
     name: string;
-    meta: TransformationMeta;
-    queries: Record<string, string>;
+    patternName: TPattern;
+    priority: number;
+
+    parameters: TPattern extends 'custom' ? never : Record<string, string | number>;
+    queries: TPattern extends 'custom' ? Record<string, string> : never;
 };
 
 export type TransformationsStore = {
     transformations: Transformation[];
 
-    saveCustomTransformation: (
-        name: string,
-        queries: Record<string, string>,
-        priority?: number,
-    ) => void;
+    saveCustomTransformation: (name: string, queries: Record<string, string>, priority?: number) => void;
 
     saveTransformation: (
         name: string,
-        patternName: Exclude<Transformation['meta']['patternName'], 'custom'>,
+        patternName: Exclude<TransformationPattern, 'custom'>,
         parameters: Record<string, string>,
         priority?: number,
     ) => void;
 
     deleteTransformation: (id: Transformation['id']) => void;
-    patchTransformation: (
-        id: ULID,
-        patchFunction: (transformation: Draft<Transformation>) => void,
-    ) => void;
+    patchTransformation: (id: ULID, patchFunction: (transformation: Draft<Transformation>) => void) => void;
 
     exportToJsonFile: () => void;
 };
@@ -59,9 +47,7 @@ export const useTransformationsStore = create<TransformationsStore>()(
 
             deleteTransformation: (id) => {
                 set((prev) => ({
-                    transformations: prev.transformations.filter(
-                        (it) => it.id !== id,
-                    ),
+                    transformations: prev.transformations.filter((it) => it.id !== id),
                 }));
             },
 
@@ -74,31 +60,16 @@ export const useTransformationsStore = create<TransformationsStore>()(
                                 id: ulid(),
                                 name,
                                 queries,
-                                meta: {
-                                    patternName: 'custom',
-                                    priority,
-                                },
+                                patternName: 'custom',
+                                parameters: undefined as never,
+                                priority,
                             },
                         ],
                     };
                 });
             },
 
-            saveTransformation: (
-                name,
-                patternName,
-                parameters,
-                priority = 0,
-            ) => {
-                const queries = Object.fromEntries(
-                    templates[patternName]().map((template) => {
-                        return [
-                            (template.header as any).name,
-                            template.body(parameters as any),
-                        ];
-                    }),
-                );
-
+            saveTransformation: (name, patternName, parameters, priority = 0) => {
                 set((previous) => {
                     return {
                         transformations: [
@@ -106,12 +77,10 @@ export const useTransformationsStore = create<TransformationsStore>()(
                             {
                                 id: ulid(),
                                 name,
-                                queries,
-                                meta: {
-                                    patternName,
-                                    parameters,
-                                    priority,
-                                },
+                                patternName,
+                                parameters,
+                                priority,
+                                queries: undefined as never,
                             },
                         ],
                     };
@@ -121,32 +90,24 @@ export const useTransformationsStore = create<TransformationsStore>()(
             patchTransformation: (id, patchFunc) => {
                 set((previousState) => {
                     return {
-                        transformations: produce(
-                            previousState.transformations,
-                            (draft) => {
-                                const toTransform = draft.find(
-                                    (it) => it.id === id,
-                                );
+                        transformations: produce(previousState.transformations, (draft) => {
+                            const toTransform = draft.find((it) => it.id === id);
 
-                                if (!toTransform) {
-                                    return;
-                                }
+                            if (!toTransform) {
+                                return;
+                            }
 
-                                patchFunc(toTransform);
-                            },
-                        ),
+                            patchFunc(toTransform);
+                        }),
                     };
                 });
             },
 
             exportToJsonFile: () => {
-                const storeValue =
-                    window.localStorage.getItem(LOCAL_STORAGE_NAME);
+                const storeValue = window.localStorage.getItem(LOCAL_STORAGE_NAME);
 
                 if (!storeValue) {
-                    toast.error(
-                        'failed to export transformations - empty store',
-                    );
+                    toast.error('failed to export transformations - empty store');
 
                     return;
                 }

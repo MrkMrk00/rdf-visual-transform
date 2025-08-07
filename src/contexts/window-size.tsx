@@ -1,10 +1,4 @@
-import {
-    createContext,
-    PropsWithChildren,
-    useContext,
-    useEffect,
-    useState,
-} from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 const windowWidthContext = createContext<number>(window.innerWidth);
 
@@ -40,11 +34,7 @@ export function WindowSizeProvider({ children }: PropsWithChildren) {
         };
     }, []);
 
-    return (
-        <windowWidthContext.Provider value={width}>
-            {children}
-        </windowWidthContext.Provider>
-    );
+    return <windowWidthContext.Provider value={width}>{children}</windowWidthContext.Provider>;
 }
 
 export function useIsMobile() {

@@ -1,11 +1,7 @@
 import { NotFoundGraphError, type DirectedGraph } from 'graphology';
 import { NeighborEntry } from 'graphology-types';
 
-function approximateOptimalPosition(
-    graph: DirectedGraph,
-    rootNode: string,
-    depth: number = 2,
-) {
+function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, depth: number = 2) {
     let neighborCount = 0;
 
     let xSum = 0;
@@ -59,10 +55,7 @@ function approximateOptimalPosition(
                     let significanceFactor: number;
                     if (depth > 2) {
                         // Nonlinear reduction in significance instead of linear for 2 levels.
-                        significanceFactor = Math.pow(
-                            currentDepth / depth,
-                            1.5,
-                        );
+                        significanceFactor = Math.pow(currentDepth / depth, 1.5);
                     } else {
                         significanceFactor = currentDepth / depth;
                     }
@@ -90,11 +83,7 @@ function approximateOptimalPosition(
     };
 }
 
-function tryReplaceNeighbor(
-    node: string,
-    oldGraph: DirectedGraph,
-    graph: DirectedGraph,
-) {
+function tryReplaceNeighbor(node: string, oldGraph: DirectedGraph, graph: DirectedGraph) {
     let oldNeighbors: NeighborEntry[] = [];
     try {
         oldNeighbors = Array.from(oldGraph.neighborEntries(node));
@@ -123,15 +112,9 @@ function tryReplaceNeighbor(
     return undefined;
 }
 
-export function inverseCentroidHeuristicLayout(
-    oldGraph: DirectedGraph,
-    graph: DirectedGraph,
-) {
+export function inverseCentroidHeuristicLayout(oldGraph: DirectedGraph, graph: DirectedGraph) {
     graph.forEachNode((node, attributes) => {
-        if (
-            typeof attributes.x !== 'undefined' &&
-            typeof attributes.y !== 'undefined'
-        ) {
+        if (typeof attributes.x !== 'undefined' && typeof attributes.y !== 'undefined') {
             return;
         }
 
@@ -192,10 +175,7 @@ export function springElectricalLayout(
 
     // Collect all new nodes (and try to place them in their deleted neighbors positions first).
     graph.forEachNode((node, attributes) => {
-        if (
-            typeof attributes.x !== 'undefined' &&
-            typeof attributes.y !== 'undefined'
-        ) {
+        if (typeof attributes.x !== 'undefined' && typeof attributes.y !== 'undefined') {
             return;
         }
 
@@ -243,11 +223,7 @@ export function springElectricalLayout(
                         }
                     }
 
-                    toVisit.unshift(
-                        ...Array.from(neighborEntries).map(
-                            (entry) => entry.neighbor,
-                        ),
-                    );
+                    toVisit.unshift(...Array.from(neighborEntries).map((entry) => entry.neighbor));
                 }
             }
         }
@@ -287,17 +263,14 @@ export function springElectricalLayout(
                 bx ||= minX + Math.random() * (maxX - minX);
                 by ||= minY + Math.random() * (maxY - minY);
 
-                const d = Math.sqrt(
-                    Math.pow(ax - bx, 2) + Math.pow(ay - by, 2),
-                );
+                const d = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
                 const dirX = ax - bx >= 0 ? 1 : -1;
                 const dirY = ay - by >= 0 ? 1 : -1;
 
                 // 1) Spring attraction force      := c1 ∗ log(d/c2)
                 // for neighboring edges.
                 if (aNeighbors.includes(b)) {
-                    const attractionForce =
-                        options.c1 * Math.log10(d / options.c2);
+                    const attractionForce = options.c1 * Math.log10(d / options.c2);
 
                     af.fx += dirX * attractionForce;
                     af.fy += dirY * attractionForce;

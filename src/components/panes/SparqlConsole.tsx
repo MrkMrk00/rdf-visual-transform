@@ -18,18 +18,11 @@ const SparqlEditor = lazy(() =>
 );
 
 export function SparqlConsole({ close }: { close: VoidFunction }) {
-    const saveTransformation = useTransformationsStore(
-        (store) => store.saveTransformation,
-    );
+    const saveTransformation = useTransformationsStore((store) => store.saveTransformation);
 
-    const [chosenPatternName, setChosenPatternName] = useState<
-        keyof typeof templates
-    >('propertyChainShortcut');
+    const [chosenPatternName, setChosenPatternName] = useState<keyof typeof templates>('propertyChainShortcut');
 
-    const templ = useMemo(
-        () => templates[chosenPatternName](),
-        [chosenPatternName],
-    );
+    const templ = useMemo(() => templates[chosenPatternName](), [chosenPatternName]);
 
     const formRef = useRef<HTMLFormElement>(null);
     const { update } = useTransformer();
@@ -54,18 +47,11 @@ export function SparqlConsole({ close }: { close: VoidFunction }) {
                             console.log(editorRef);
                             ev.preventDefault();
 
-                            const data = Object.fromEntries(
-                                new FormData(ev.currentTarget),
-                            );
+                            const data = Object.fromEntries(new FormData(ev.currentTarget));
 
-                            const queries = renderQueries(
-                                templ as TemplateOutput<Record<string, any>>[],
-                                data as any,
-                            );
+                            const queries = renderQueries(templ as TemplateOutput<Record<string, any>>[], data as any);
 
-                            editorRef.current?.setValue(
-                                Object.values(queries).join('\n'),
-                            );
+                            editorRef.current?.setValue(Object.values(queries).join('\n'));
                         }}
                     />
 
@@ -91,9 +77,7 @@ export function SparqlConsole({ close }: { close: VoidFunction }) {
                                 saveTransformation(
                                     name,
                                     chosenPatternName,
-                                    Object.entries(
-                                        new FormData(formRef.current),
-                                    ) as any,
+                                    Object.fromEntries(new FormData(formRef.current)) as any,
                                 );
                             }}
                         >

@@ -5,11 +5,7 @@ import { rdfParser } from 'rdf-parse';
 export class RdfReader {
     constructor(private fallbackContentType = 'application/rdf+xml') {}
 
-    readFromString(
-        data: string,
-        contentType: string,
-        onData: (quad: Quad) => void,
-    ) {
+    readFromString(data: string, contentType: string, onData: (quad: Quad) => void) {
         const { promise, resolve, reject } = Promise.withResolvers<void>();
 
         const parser = rdfParser.parse(stringToStream(data), { contentType });
@@ -35,9 +31,7 @@ export class RdfReader {
             }
 
             const stream = webStreamToNodeStream(response.body!);
-            let contentType =
-                response.headers.get('Content-Type') ??
-                this.fallbackContentType;
+            let contentType = response.headers.get('Content-Type') ?? this.fallbackContentType;
 
             // content type can include charset etc. after semi
             if (contentType.includes(';')) {
