@@ -208,11 +208,15 @@ const EditTransformationModal = forwardRef<EditTransformationHandle>(function Ed
             }}
         >
             <DialogContent>
-                <EditTransformation
-                    onError={(errorMessage) => {
-                        toast.error(errorMessage);
-                    }}
-                />
+                <DialogTitle>Edit transformation</DialogTitle>
+                {transformationId && (
+                    <EditTransformation
+                        onError={(errorMessage) => {
+                            toast.error(errorMessage);
+                        }}
+                        transformationId={transformationId}
+                    />
+                )}
             </DialogContent>
         </Dialog>
     );
