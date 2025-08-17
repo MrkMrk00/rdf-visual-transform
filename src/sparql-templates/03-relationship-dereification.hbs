@@ -23,7 +23,8 @@ inputs:
 {{#each prefixes}}
     PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
 {{/each}}
+DELETE
 WHERE {
     ?middle {{{predicate0}}} ?start .
-    ?middle {{{predicate1}}} ?end    .
+    ?middle {{{predicate1}}} ?end   .
 };
