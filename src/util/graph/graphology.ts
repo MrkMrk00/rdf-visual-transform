@@ -1,7 +1,7 @@
 import { inverseCentroidHeuristicLayout } from '@/util/graph/node-placement';
-import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from '@rdfjs/types';
+import type { Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from '@rdfjs/types';
 import { type DirectedGraph } from 'graphology';
-import { NamedNode, Quad_Graph, Quad as QuadCls, Store, Term } from 'n3';
+import { DataFactory, NamedNode, Store } from 'n3';
 
 export const NODE_DEFAULT_SIZE = 15;
 
@@ -58,7 +58,6 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
 export const GRAPH_DELETED: Quad_Graph = new NamedNode('https://graph.example.com/graph-of-deleted-tripples');
 export const ANONYMOUS_IRI = 'https://example.com/ANONYMOUS';
 
-// TODO: do not copy, instantiate classes
 function backpatch(newQuad: Quad, store: Store): { replacement: Quad; deleted: Quad } | undefined {
     let foundDeleted: Quad[];
 
@@ -66,18 +65,44 @@ function backpatch(newQuad: Quad, store: Store): { replacement: Quad; deleted: Q
         newQuad.subject.value === ANONYMOUS_IRI &&
         (foundDeleted = store.getQuads(null, newQuad.predicate, newQuad.object, GRAPH_DELETED)).length > 0
     ) {
-        return { replacement: { ...foundDeleted[0], graph: newQuad.graph }, deleted: foundDeleted[0] };
+        return {
+            replacement: DataFactory.quad(
+                foundDeleted[0].subject,
+                foundDeleted[0].predicate,
+                foundDeleted[0].object,
+                newQuad.graph,
+            ),
+            deleted: foundDeleted[0],
+        };
     } else if (
         newQuad.predicate.value === ANONYMOUS_IRI &&
         (foundDeleted = store.getQuads(newQuad.subject, null, newQuad.object, GRAPH_DELETED)).length > 0
     ) {
-        return { replacement: { ...foundDeleted[0], graph: newQuad.graph }, deleted: foundDeleted[0] };
+        return {
+            replacement: DataFactory.quad(
+                foundDeleted[0].subject,
+                foundDeleted[0].predicate,
+                foundDeleted[0].object,
+                newQuad.graph,
+            ),
+            deleted: foundDeleted[0],
+        };
     } else if (
         newQuad.object.value === ANONYMOUS_IRI &&
         (foundDeleted = store.getQuads(newQuad.subject, newQuad.predicate, null, GRAPH_DELETED)).length > 0
     ) {
-        return { replacement: { ...foundDeleted[0], graph: newQuad.graph }, deleted: foundDeleted[0] };
+        return {
+            replacement: DataFactory.quad(
+                foundDeleted[0].subject,
+                foundDeleted[0].predicate,
+                foundDeleted[0].object,
+                newQuad.graph,
+            ),
+            deleted: foundDeleted[0],
+        };
     }
+
+    return undefined;
 }
 
 export function syncGraphWithStore(
@@ -106,14 +131,7 @@ export function syncGraphWithStore(
 
         if (!store.has(attrs.quad)) {
             // add into the deleted named graph
-            store.add(
-                new QuadCls(
-                    attrs.quad.subject as Term,
-                    attrs.quad.predicate as Term,
-                    attrs.quad.subject as Term,
-                    GRAPH_DELETED,
-                ),
-            );
+            store.add(DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.subject, GRAPH_DELETED));
 
             graph.dropEdge(edge);
         }
