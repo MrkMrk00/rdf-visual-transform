@@ -7,11 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, memo, Suspense } from 'react';
 import { DEFAULT_NODE_PROGRAM_CLASSES } from 'sigma/settings';
 import { Menu } from './components/Menu';
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-} from './components/ui/resizable';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './components/ui/resizable';
 import { Toaster } from './components/ui/sonner';
 import { StoreProvider } from './contexts/tripple-store';
 import { useIsMobile, WindowSizeProvider } from './contexts/window-size';
@@ -25,11 +21,9 @@ const SparqlConsole = lazy(() =>
 );
 
 const TransformationsPanel = lazy(() =>
-    import('./components/transformations/TransformationsPanel').then(
-        (module) => ({
-            default: module.TransformationsPanel,
-        }),
-    ),
+    import('./components/transformations/TransformationsPanel').then((module) => ({
+        default: module.TransformationsPanel,
+    })),
 );
 
 const sigmaStyle = { height: '100%', width: '100%' };
@@ -69,19 +63,11 @@ const GraphMain = memo(function GraphMain() {
 });
 
 function MobileLayout() {
-    const showSparqlConsole = useUiControlStore(
-        (store) => store.showSparqlConsole,
-    );
-    const hideSparqlConsole = useUiControlStore(
-        (store) => store.toggleSparqlConsole,
-    );
+    const showSparqlConsole = useUiControlStore((store) => store.showSparqlConsole);
+    const hideSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
 
-    const showTransformations = useUiControlStore(
-        (store) => store.showTransformationsPanel,
-    );
-    const hideTransformationsPanel = useUiControlStore(
-        (store) => store.toggleTransformationsPanel,
-    );
+    const showTransformations = useUiControlStore((store) => store.showTransformationsPanel);
+    const hideTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
 
     return (
         <div className="relative flex flex-col w-full h-full">
@@ -99,9 +85,7 @@ function MobileLayout() {
             {showTransformations && (
                 <Suspense>
                     <div className="absolute inset-0 z-110">
-                        <TransformationsPanel
-                            close={hideTransformationsPanel}
-                        />
+                        <TransformationsPanel close={hideTransformationsPanel} />
                     </div>
                 </Suspense>
             )}
@@ -110,33 +94,18 @@ function MobileLayout() {
 }
 
 function DesktopLayout() {
-    const showSparqlConsole = useUiControlStore(
-        (store) => store.showSparqlConsole,
-    );
-    const hideSparqlConsole = useUiControlStore(
-        (store) => store.toggleSparqlConsole,
-    );
+    const showSparqlConsole = useUiControlStore((store) => store.showSparqlConsole);
+    const hideSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
 
-    const showTransformationsPanel = useUiControlStore(
-        (store) => store.showTransformationsPanel,
-    );
-    const hideTransformationsPanel = useUiControlStore(
-        (store) => store.toggleTransformationsPanel,
-    );
+    const showTransformationsPanel = useUiControlStore((store) => store.showTransformationsPanel);
+    const hideTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
 
     return (
         <>
             <Menu />
             <div className="relative w-full h-full">
-                <ResizablePanelGroup
-                    className="absolute bottom-0 flex items-end"
-                    direction="vertical"
-                >
-                    <ResizablePanel
-                        order={0}
-                        id="main-panel"
-                        className="w-full"
-                    >
+                <ResizablePanelGroup className="absolute bottom-0 flex items-end" direction="vertical">
+                    <ResizablePanel order={0} id="main-panel" className="w-full">
                         <ResizablePanelGroup direction="horizontal">
                             <ResizablePanel order={100} id="horiz-main-panel">
                                 <div className="absolute inset-0">
@@ -153,9 +122,7 @@ function DesktopLayout() {
                                         defaultSize={30}
                                         id="horiz-transformations-panel"
                                     >
-                                        <TransformationsPanel
-                                            close={hideTransformationsPanel}
-                                        />
+                                        <TransformationsPanel close={hideTransformationsPanel} />
                                     </ResizablePanel>
                                 </Suspense>
                             )}
@@ -172,13 +139,7 @@ function DesktopLayout() {
                                 id="rpanel-bottom"
                                 order={1}
                             >
-                                <Suspense
-                                    fallback={
-                                        <div className="flex h-full w-full p-8">
-                                            Loading...
-                                        </div>
-                                    }
-                                >
+                                <Suspense fallback={<div className="flex h-full w-full p-8">Loading...</div>}>
                                     <SparqlConsole close={hideSparqlConsole} />
                                 </Suspense>
                             </ResizablePanel>
@@ -192,7 +153,6 @@ function DesktopLayout() {
 
 function Layout() {
     const isMobile = useIsMobile();
-    console.log({ isMobile });
 
     if (isMobile) {
         return <MobileLayout />;
