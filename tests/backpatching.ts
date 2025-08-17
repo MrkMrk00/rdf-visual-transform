@@ -1,5 +1,5 @@
-import * as templates from '@/sparql-templates';
 import { GRAPH_DELETED, syncGraphWithStore } from '@/util/graph/graphology';
+import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { QueryEngine } from '@comunica/query-sparql';
 import { Quad } from '@rdfjs/types';
 import { DirectedGraph } from 'graphology';
@@ -41,17 +41,12 @@ describe('backpathing from deleted', () => {
         expect(graph.edges().length).toEqual(2);
         expect(graph.nodes().length).toEqual(3);
 
-        let sparqlQuery = '';
-        for (const template of templates.relationshipDereification()) {
-            sparqlQuery += template.body({
-                predicate0: templatedIRI('isTaughtBy'),
-                predicate1: templatedIRI('isAttendedBy'),
-                result: templatedIRI('studiesUnder'),
-                delete: true,
-            });
-
-            sparqlQuery += '\n';
-        }
+        const sparqlQuery = renderTemplate('relationshipDereification', {
+            predicate0: templatedIRI('isTaughtBy'),
+            predicate1: templatedIRI('isAttendedBy'),
+            result: templatedIRI('studiesUnder'),
+            delete: true,
+        });
 
         await queryEngine.queryVoid(sparqlQuery, {
             sources: [store],
@@ -67,6 +62,22 @@ describe('backpathing from deleted', () => {
             .contains(trippleToString(profToSubject));
     });
 
-    it('backpatches is from the deleted graph', () => {
+    it('backpatches is from the deleted graph', async () => {
+        store.add(quad(exampleNode('subjectA'), exampleNode('isTaughtBy'), exampleNode('profA')));
+        store.add(quad(exampleNode('subjectA'), exampleNode('isAttendedBy'), exampleNode('studentA')));
+        syncGraphWithStore(graph, store);
+
+        const sparqlQuery = renderTemplate('relationshipDereification', {
+            predicate0: templatedIRI('isTaughtBy'),
+            predicate1: templatedIRI('isAttendedBy'),
+            result: templatedIRI('studiesUnder'),
+            delete: true,
+        });
+
+        await queryEngine.queryVoid(sparqlQuery, {
+            sources: [store],
+        });
+
+        syncGraphWithStore(graph, store);
     });
 });
