@@ -1,8 +1,7 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
-import { TemplateOutput } from '@/sparql-templates';
 import { useTransformationsStore } from '@/stores/transformations';
-import { renderQueries } from '@/util/transformations/renderQueries';
+import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { lazy, Suspense, useMemo, useRef, useState } from 'react';
 import { SaveTransformationModal } from '../console/SaveTransformationModal';
@@ -48,10 +47,9 @@ export function SparqlConsole({ close }: { close: VoidFunction }) {
                             ev.preventDefault();
 
                             const data = Object.fromEntries(new FormData(ev.currentTarget));
+                            const queries = renderTemplate(chosenPatternName, data as any);
 
-                            const queries = renderQueries(templ as TemplateOutput<Record<string, any>>[], data as any);
-
-                            editorRef.current?.setValue(Object.values(queries).join('\n'));
+                            editorRef.current?.setValue(queries);
                         }}
                     />
 
