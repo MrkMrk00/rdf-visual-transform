@@ -28,6 +28,5 @@ inputs:
 {{/each}}
 DELETE
 WHERE {
-    {{{newSubject}}} {{{predicate0}}} ?start .
-    {{{newSubject}}} {{{predicate1}}} ?end   .
+    ?start {{{shortcut}}} ?end .
 };
