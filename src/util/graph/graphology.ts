@@ -117,6 +117,11 @@ export function syncGraphWithStore(
 
         if (foundToBackpatch) {
             insertQuadIntoGraph(graph, foundToBackpatch.replacement);
+
+            // delete the quad with anonymous placeholder
+            store.delete(quad);
+
+            // remove the found quad from the deleted graph
             store.delete(foundToBackpatch.deleted);
         } else {
             insertQuadIntoGraph(graph, quad);
@@ -131,13 +136,11 @@ export function syncGraphWithStore(
 
         if (!store.has(attrs.quad)) {
             // add into the deleted named graph
-            store.add(DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.subject, GRAPH_DELETED));
+            store.add(DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.object, GRAPH_DELETED));
 
             graph.dropEdge(edge);
         }
     });
-
-    console.log(store.getQuads(null, null, null, GRAPH_DELETED));
 }
 
 export interface CustomNodeAttributes {
