@@ -43,7 +43,6 @@ export function SparqlConsole({ close }: { close: VoidFunction }) {
                         title={chosenPatternName}
                         templates={templ}
                         onSubmit={(ev) => {
-                            console.log(editorRef);
                             ev.preventDefault();
 
                             const data = Object.fromEntries(new FormData(ev.currentTarget));

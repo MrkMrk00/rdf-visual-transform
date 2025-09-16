@@ -3,6 +3,7 @@ import { useGraphStore } from '@/stores/graphSettings';
 import { Transformation } from '@/stores/transformations';
 import { syncGraphWithStore } from '@/util/graph/graphology';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
+import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { QueryEngine } from '@comunica/query-sparql';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
