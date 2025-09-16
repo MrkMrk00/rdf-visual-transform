@@ -7,6 +7,7 @@ import { persist } from 'zustand/middleware';
 export type TransformationPattern =
     | 'propertyChainShortcut'
     | 'relationshipDereification'
+    | 'relationshipReification'
     | 'linkCountingProperty'
     | 'custom';
 

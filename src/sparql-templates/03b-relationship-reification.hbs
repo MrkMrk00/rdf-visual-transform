@@ -1,0 +1,33 @@
+name: insert
+inputs:
+    - name: "shortcut"
+    - name: "newSubject"
+    - name: "predicate0"
+    - name: "predicate1"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+INSERT {
+    {{{newSubject}}} {{{predicate0}}} ?start .
+    {{{newSubject}}} {{{predicate1}}} ?end   .
+}
+WHERE {
+    ?start {{{shortcut}}} ?end .
+};
+---
+name: delete
+inputs:
+    - name: "shortcut"
+    - name: "newSubject"
+    - name: "predicate0"
+    - name: "predicate1"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+DELETE
+WHERE {
+    {{{newSubject}}} {{{predicate0}}} ?start .
+    {{{newSubject}}} {{{predicate1}}} ?end   .
+};

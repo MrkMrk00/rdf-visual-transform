@@ -1,5 +1,6 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import { type Transformation, TransformationPattern, useTransformationsStore } from '@/stores/transformations';
+import { resolveInverseTransformation } from '@/util/transformations/resolveInverseTransformation';
 import { truncateText } from '@/util/ui/truncateText';
 import { ArrowDownIcon } from '@heroicons/react/20/solid';
 import { ArrowPathIcon, CodeBracketIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -77,18 +78,46 @@ export function TransformationsPanel({ close }: { close: VoidFunction }) {
                                 key={`transformation-row-${index}`}
                             >
                                 <div className="flex items-center w-full gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setIsLoading(true);
+                                    {isLoading ? (
+                                        <Button disabled type="button" variant="ghost">
+                                            <ArrowPathIcon className="animate-spin" />
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    setIsLoading(true);
 
-                                            renderAndRun(transformation).finally(() => {
-                                                setIsLoading(false);
-                                            });
-                                        }}
-                                    >
-                                        {isLoading ? <ArrowPathIcon className="animate-spin" /> : <PlayIcon />}
-                                    </Button>
+                                                    renderAndRun(transformation).finally(() => {
+                                                        setIsLoading(false);
+                                                    });
+                                                }}
+                                            >
+                                                <PlayIcon />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    const inverse = resolveInverseTransformation(transformation);
+                                                    if (!inverse) {
+                                                        toast.error('Could not resolve inverse transformation.');
+
+                                                        return;
+                                                    }
+
+                                                    setIsLoading(true);
+
+                                                    renderAndRun(inverse).finally(() => {
+                                                        setIsLoading(false);
+                                                    });
+                                                }}
+                                            >
+                                                <PlayIcon className="rotate-180" />
+                                            </Button>
+                                        </>
+                                    )}
+
                                     <span className="max-w-1/3 text-left text-sm">
                                         {truncateText(transformation.name, 20)}
                                     </span>
