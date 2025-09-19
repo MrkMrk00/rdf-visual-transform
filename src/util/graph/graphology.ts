@@ -6,6 +6,9 @@ import { backpatch, GRAPH_DELETED } from './backpatching';
 
 export const NODE_DEFAULT_SIZE = 15;
 
+const GREEN = '#00ff00';
+const YELLOW = '#f8f800';
+
 export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     const { subject, predicate, object } = quad;
 
@@ -13,6 +16,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
         graph.addNode(subject.value, <CustomNodeAttributes>{
             label: subject.value,
             size: NODE_DEFAULT_SIZE,
+            color: GREEN,
 
             self: subject,
             quad: quad,
@@ -26,6 +30,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
                 type: 'square',
                 label: object.value,
                 size: NODE_DEFAULT_SIZE,
+                color: YELLOW,
 
                 self: object,
             });
@@ -33,6 +38,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
             graph.addNode(object.value, <CustomNodeAttributes>{
                 label: object.value,
                 size: NODE_DEFAULT_SIZE,
+                color: GREEN,
 
                 self: object,
             });
@@ -41,7 +47,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
 
     const edgeKey = `${subject.value}-${predicate.value}-${objectKey}`;
     if (!graph.hasDirectedEdge(edgeKey)) {
-        let displayType: undefined | string = undefined;
+        let displayType: string = 'arrow';
         if (graph.hasDirectedEdge(subject.value, objectKey) || graph.hasDirectedEdge(objectKey, subject.value)) {
             displayType = 'curved';
         }
@@ -66,14 +72,16 @@ export function syncGraphWithStore(
     for (const quad of store.readQuads(null, null, null, DataFactory.defaultGraph())) {
         const foundToBackpatch = backpatch(quad, store);
 
-        if (foundToBackpatch) {
-            insertQuadIntoGraph(graph, foundToBackpatch.replacement);
+        if (foundToBackpatch.length > 0) {
+            for (const { replacement, deleted } of foundToBackpatch) {
+                insertQuadIntoGraph(graph, replacement);
 
-            // delete the quad with anonymous placeholder
-            store.delete(quad);
+                // delete the quad with anonymous placeholder
+                store.delete(quad);
 
-            // remove the found quad from the deleted graph
-            store.delete(foundToBackpatch.deleted);
+                // remove the found quad from the deleted graph
+                store.delete(deleted);
+            }
         } else {
             insertQuadIntoGraph(graph, quad);
         }

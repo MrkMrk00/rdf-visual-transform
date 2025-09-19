@@ -2,7 +2,7 @@ import { useGraphStore, type GraphSettingsStore } from '@/stores/graphSettings';
 import { insertQuadIntoGraph } from '@/util/graph/graphology';
 import { RdfReader } from '@/util/rdf-reader';
 import { useQuery } from '@tanstack/react-query';
-import { DirectedGraph } from 'graphology';
+import Graph, { DirectedGraph } from 'graphology';
 import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { Store } from 'n3';
@@ -60,10 +60,10 @@ export const StoreProvider = ({ children }: PropsWithChildren) => {
 
     const graph = useMemo(() => {
         if (!store) {
-            return new DirectedGraph();
+            return new Graph({ type: 'directed', multi: true });
         }
 
-        const graph = new DirectedGraph();
+        const graph = new Graph({ type: 'directed', multi: true });
         for (const quad of store) {
             insertQuadIntoGraph(graph, quad);
         }

@@ -1,7 +1,7 @@
 import { GraphRenderer } from '@/components/GraphRenderer';
 import { SigmaContainer } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import CurvedEdgeProgram from '@sigma/edge-curve';
+import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, memo, Suspense } from 'react';
@@ -51,7 +51,7 @@ const GraphMain = memo(function GraphMain() {
                     ...(sigmaSettings.nodeProgramClasses ?? {}),
                 },
                 edgeProgramClasses: {
-                    curved: CurvedEdgeProgram,
+                    curved: EdgeCurvedArrowProgram,
                 },
                 ...sigmaSettings,
                 allowInvalidContainer: true,
