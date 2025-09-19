@@ -9,6 +9,7 @@ export type TransformationPattern =
     | 'relationshipDereification'
     | 'relationshipReification'
     | 'linkCountingProperty'
+    | 'linkMultiplyingProperty'
     | 'custom';
 
 export type Transformation<TPattern extends TransformationPattern = TransformationPattern> = {
