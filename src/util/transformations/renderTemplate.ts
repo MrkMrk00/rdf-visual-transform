@@ -6,7 +6,14 @@ export function renderTemplate<TTemplate extends keyof typeof templates>(
 ) {
     let sparql = '';
     for (const subTemplate of templates[template]()) {
+        const header = subTemplate.header;
+
+        if (!('name' in header) || !(`_${header.name}` in opts)) {
+            continue;
+        }
+
         sparql += subTemplate.body(opts as any);
+        sparql += '\n';
     }
 
     return sparql;
