@@ -46,7 +46,6 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-            delete: true,
         });
 
         await queryEngine.queryVoid(sparqlQuery, {
@@ -72,7 +71,6 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-            delete: true,
         });
 
         await queryEngine.queryVoid(sparqlQuery, {
@@ -95,7 +93,6 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-            delete: true,
         });
 
         await queryEngine.queryVoid(sparqlQuery, {
@@ -111,7 +108,6 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             shortcut: templatedIRI('studiesUnder'), // renamed from `result`
-            delete: true,
         });
 
         await queryEngine.queryVoid(inverseTransfQuery, {
