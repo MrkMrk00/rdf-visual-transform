@@ -56,7 +56,18 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
 }
 
 export const GRAPH_DELETED: Quad_Graph = new NamedNode('https://graph.example.com/graph-of-deleted-tripples');
+
+/**
+ * Placeholder for a single node to be backpatched.
+ */
 export const ANONYMOUS_IRI = 'https://example.com/ANONYMOUS';
+
+/**
+ * Used as a placeholder for `multiple` (n) nodes to be backpatched.
+ *  -> The tripple, which contains this placeholder should be replicated into the graph
+ *     n times.
+ */
+export const ANONYMOUS_NARY_IRI = 'https://example.com/ANONYMOUS_N';
 
 function backpatch(newQuad: Quad, store: Store): { replacement: Quad; deleted: Quad } | undefined {
     let foundDeleted: Quad[];
@@ -112,7 +123,7 @@ export function syncGraphWithStore(
 ) {
     const oldGraph = graph.copy();
 
-    for (const quad of store) {
+    for (const quad of store.readQuads(null, null, null, DataFactory.defaultGraph())) {
         const foundToBackpatch = backpatch(quad, store);
 
         if (foundToBackpatch) {
