@@ -1,4 +1,5 @@
-import { ANONYMOUS_IRI, GRAPH_DELETED, syncGraphWithStore } from '@/util/graph/graphology';
+import { ANONYMOUS_IRI, GRAPH_DELETED } from '@/util/graph/backpatching';
+import { syncGraphWithStore } from '@/util/graph/graphology';
 import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { QueryEngine } from '@comunica/query-sparql';
 import { Quad } from '@rdfjs/types';

@@ -1,9 +1,11 @@
 import { compile } from 'handlebars';
 import { load } from 'js-yaml';
+
 import propertyChainShortcutTemplate from './01-property-shortcut.hbs?raw';
 import relationshipDereificationTemplate from './03-relationship-dereification.hbs?raw';
 import relationshipReificationTemplate from './03b-relationship-reification.hbs?raw';
 import linkCountingPropertyTemplate from './06-link-counting-property.hbs?raw';
+import linkMultiplyingPropertyTemplate from './06b-link-multiplying-property.hbs?raw';
 
 export type PropertyChainShortcutOpts = {
     prefixes?: string[];
@@ -11,8 +13,6 @@ export type PropertyChainShortcutOpts = {
     predicate0: string;
     predicate1: string;
     result: string;
-
-    delete: boolean;
 };
 
 export const propertyChainShortcut = (): TemplateOutput<PropertyChainShortcutOpts>[] =>
@@ -26,8 +26,6 @@ export type RelationshipDereificationOpts = {
     predicate0: string;
     predicate1: string;
     result: string;
-
-    delete: boolean;
 };
 
 export const relationshipDereification = (): TemplateOutput<RelationshipDereificationOpts>[] =>
@@ -40,8 +38,6 @@ export type RelationshipReificationOpts = {
     predicate1: string;
     shortcut: string;
     newSubject: string;
-
-    delete: boolean;
 };
 
 export const relationshipReification = (): TemplateOutput<RelationshipReificationOpts>[] =>
@@ -54,6 +50,14 @@ export type LinkCountingPropertyOpts = {
 
 export const linkCountingProperty = (): TemplateOutput<LinkCountingPropertyOpts>[] =>
     parseTemplate(linkCountingPropertyTemplate);
+
+export type LinkMultiplyingPropertyOpts = {
+    countingProperty: string;
+    placeholderObject: string;
+};
+
+export const linkMultiplyingProperty = (): TemplateOutput<LinkMultiplyingPropertyOpts>[] =>
+    parseTemplate(linkMultiplyingPropertyTemplate);
 
 export type TemplateOutput<TOpts extends Record<string, any> = Record<string, any>> = {
     header: object;

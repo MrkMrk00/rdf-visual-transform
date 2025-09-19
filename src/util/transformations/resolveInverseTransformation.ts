@@ -1,6 +1,6 @@
 import { Transformation } from '@/stores/transformations';
 import { ulid } from 'ulid';
-import { ANONYMOUS_IRI } from '../graph/graphology';
+import { ANONYMOUS_IRI, ANONYMOUS_NARY_IRI } from '../graph/backpatching';
 
 type Parameters = Transformation['parameters'];
 
@@ -18,6 +18,10 @@ function renameParameters(parametersIn: Parameters, renameMap: Record<string, st
     );
 }
 
+function sparqlQuote(iri: string) {
+    return `<${iri}>`;
+}
+
 export function resolveInverseTransformation(transformation: Transformation): Transformation | undefined {
     switch (transformation.patternName) {
         case 'relationshipDereification':
@@ -27,12 +31,26 @@ export function resolveInverseTransformation(transformation: Transformation): Tr
                 patternName: 'relationshipReification',
                 priority: transformation.priority,
                 parameters: <Parameters>{
-                    newSubject: ANONYMOUS_IRI,
+                    newSubject: sparqlQuote(ANONYMOUS_IRI),
                     ...renameParameters(transformation.parameters, {
                         result: 'shortcut',
                     }),
                 },
             } as Transformation<'relationshipReification'>;
+
+        case 'linkCountingProperty':
+            return {
+                id: ulid(),
+                name: `inverse-to:${transformation.name}`,
+                patternName: 'linkMultiplyingProperty',
+                priority: transformation.priority,
+                parameters: <Parameters>{
+                    placeholderObject: sparqlQuote(ANONYMOUS_NARY_IRI),
+                    ...renameParameters(transformation.parameters, {
+                        newProperty: 'countingProperty',
+                    }),
+                },
+            } as Transformation<'linkMultiplyingProperty'>;
 
         default:
             return undefined;

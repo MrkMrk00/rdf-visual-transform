@@ -1,0 +1,29 @@
+name: insert
+inputs:
+    - name: "countingProperty"
+    - name: "placeholderObject"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+INSERT {
+    ?subject {{{countingProperty}}} {{{placeholderObject}}} .
+}
+WHERE {
+    ?subject {{{countingProperty}}} ?lit .
+};
+---
+name: delete
+inputs:
+    - name: "countingProperty"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+DELETE {
+    ?x ?p ?y .
+}
+WHERE {
+    ?x ?p ?y .
+    FILTER(?p = {{{countingProperty}}})
+};
