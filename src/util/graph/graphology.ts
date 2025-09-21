@@ -74,13 +74,14 @@ export function syncGraphWithStore(
 
         if (foundToBackpatch.length > 0) {
             for (const { replacement, deleted } of foundToBackpatch) {
-                insertQuadIntoGraph(graph, replacement);
+                // move the quad from the deleted graph into the default one
+                store.delete(deleted);
+                store.add(replacement);
 
-                // delete the quad with anonymous placeholder
+                // remove the quad with the anonymous placeholder from store
                 store.delete(quad);
 
-                // remove the found quad from the deleted graph
-                store.delete(deleted);
+                insertQuadIntoGraph(graph, replacement);
             }
         } else {
             insertQuadIntoGraph(graph, quad);

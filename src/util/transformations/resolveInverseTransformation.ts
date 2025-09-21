@@ -48,6 +48,7 @@ export function resolveInverseTransformation(transformation: Transformation): Tr
                     placeholderObject: sparqlQuote(ANONYMOUS_NARY_IRI),
                     ...renameParameters(transformation.parameters, {
                         newProperty: 'countingProperty',
+                        sourceProperty: 'originalProperty',
                     }),
                 },
             } as Transformation<'linkMultiplyingProperty'>;
