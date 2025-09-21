@@ -3,12 +3,13 @@ import * as templates from '@/sparql-templates';
 export function renderTemplate<TTemplate extends keyof typeof templates>(
     template: TTemplate,
     opts: Parameters<ReturnType<(typeof templates)[TTemplate]>[number]['body']>[0],
+    includeAll: boolean = false,
 ) {
     let sparql = '';
     for (const subTemplate of templates[template]()) {
         const header = subTemplate.header;
 
-        if (!('name' in header) || !(`_${header.name}` in opts)) {
+        if (!includeAll && (!('name' in header) || !(`_${header.name}` in opts))) {
             continue;
         }
 
