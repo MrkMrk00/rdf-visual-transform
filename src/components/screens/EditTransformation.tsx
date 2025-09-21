@@ -1,7 +1,9 @@
+import { useFormChangeset } from '@/hooks/useFormChangeset';
 import * as templates from '@/sparql-templates';
 import { Transformation, useTransformationsStore } from '@/stores/transformations';
-import { lazy, Suspense, useMemo, useRef } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useRef } from 'react';
 import type { EditorHandle } from '../SparqlEditor';
+import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { Input } from '../ui/input';
 
@@ -18,21 +20,85 @@ export type EditTransformationProps = {
 };
 
 export function EditTransformation(props: EditTransformationProps) {
+    const { fields, subtemplateNames, transformation } = usePickTransformation(props.transformationId, props.onError);
+    const patchTransformation = useTransformationsStore((store) => store.patchTransformation);
+
+    const { formRef } = useFormChangeset(
+        useCallback(
+            (values) => {
+                if (!props.transformationId) {
+                    return;
+                }
+
+                patchTransformation(props.transformationId, (transformation) => {
+                    const newParameterEntries = Object.entries({ ...transformation.parameters, ...values });
+
+                    transformation.parameters = Object.fromEntries(
+                        newParameterEntries.filter(([, value]) => typeof value !== 'undefined'),
+                    ) as Record<string, string>;
+                });
+            },
+            [patchTransformation, props.transformationId],
+        ),
+    );
+
+    const editorRef = useRef<EditorHandle>(undefined);
+
+    return (
+        <form className="flex flex-col gap-2" ref={formRef}>
+            {transformation?.patternName === 'custom' && (
+                <Suspense fallback={<div className="w-full h-full"></div>}>
+                    <SparqlEditor ref={editorRef} width="100%" height="100%" />
+                </Suspense>
+            )}
+
+            {fields.map((name) => (
+                <label key={`form-field-input-${name}`}>
+                    <code>{name}</code>
+                    <Input
+                        placeholder={name}
+                        name={name}
+                        defaultValue={transformation?.parameters[name] ?? undefined}
+                    />
+                </label>
+            ))}
+            <hr />
+            <h3 className="font-bold text-lg">Subtemplates</h3>
+            {subtemplateNames.map((subtemplName) => (
+                <label className="flex items-center gap-2" key={`subtempl-name-${subtemplName}`}>
+                    {subtemplName}:
+                    <Checkbox
+                        defaultChecked={`_${subtemplName}` in (transformation?.parameters ?? {})}
+                        name={`_${subtemplName}`}
+                    />
+                </label>
+            ))}
+            <Button type="submit" variant="success">
+                Submit
+            </Button>
+        </form>
+    );
+}
+
+function usePickTransformation(
+    transformationId: EditTransformationProps['transformationId'],
+    onError: EditTransformationProps['onError'],
+) {
     const allTransformations = useTransformationsStore((store) => store.transformations);
 
     const transformation = useMemo(() => {
-        if (!props.transformationId) {
+        if (!transformationId) {
             return undefined;
         }
 
-        const tf = allTransformations.find((it) => it.id === props.transformationId);
+        const tf = allTransformations.find((it) => it.id === transformationId);
 
         if (!tf) {
-            props.onError(`Transformation with id ${props.transformationId} not found`);
+            onError(`Transformation with id ${transformationId} not found`);
         }
 
         return tf;
-    }, [props, allTransformations]);
+    }, [transformationId, allTransformations, onError]);
 
     const subtemplates = useMemo(() => {
         if (!transformation || transformation.patternName === 'custom') {
@@ -46,8 +112,6 @@ export function EditTransformation(props: EditTransformationProps) {
         return subtemplates.map(({ header }) => (header as { name: string }).name);
     }, [subtemplates]);
 
-    const editorRef = useRef<EditorHandle>(undefined);
-
     const fields = useMemo(() => {
         const allInputs = subtemplates.flatMap((template) => {
             if (!('inputs' in template.header) || !Array.isArray(template.header.inputs)) {
@@ -60,32 +124,9 @@ export function EditTransformation(props: EditTransformationProps) {
         return Array.from(new Set(allInputs.map((input) => input.name)));
     }, [subtemplates]);
 
-    return (
-        <form onSubmit={(ev) => ev.preventDefault()}>
-            {transformation?.patternName === 'custom' && (
-                <Suspense fallback={<div className="w-full h-full"></div>}>
-                    <SparqlEditor ref={editorRef} width="100%" height="100%" />
-                </Suspense>
-            )}
-
-            {fields.map((name) => (
-                <Input
-                    key={`form-field-input-${name}`}
-                    placeholder={name}
-                    name={name}
-                    defaultValue={transformation?.parameters[name] ?? undefined}
-                />
-            ))}
-            <hr />
-            {subtemplateNames.map((subtemplName) => (
-                <label className="flex items-center gap-2" key={`subtempl-name-${subtemplName}`}>
-                    {subtemplName}:
-                    <Checkbox
-                        defaultChecked={`_${subtemplName}` in (transformation?.parameters ?? {})}
-                        name={`_${subtemplName}`}
-                    />
-                </label>
-            ))}
-        </form>
-    );
+    return {
+        transformation,
+        subtemplateNames,
+        fields,
+    };
 }

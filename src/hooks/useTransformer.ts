@@ -26,6 +26,7 @@ export function useTransformer() {
     }, [graph, store]);
 
     const positioningFunction = useGraphStore((store) => store.positioningFunction);
+
     useEffect(() => {
         if (!transformer) {
             return;
