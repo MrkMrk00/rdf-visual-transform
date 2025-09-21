@@ -1,13 +1,14 @@
 name: insert
 inputs:
     - name: "countingProperty"
+    - name: "originalProperty"
     - name: "placeholderObject"
 
 {{#each prefixes}}
     PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
 {{/each}}
 INSERT {
-    ?subject {{{countingProperty}}} {{{placeholderObject}}} .
+    ?subject {{{originalProperty}}} {{{placeholderObject}}} .
 }
 WHERE {
     ?subject {{{countingProperty}}} ?lit .
