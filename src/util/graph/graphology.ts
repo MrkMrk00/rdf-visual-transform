@@ -1,8 +1,5 @@
-import { inverseCentroidHeuristicLayout } from '@/util/graph/node-placement';
 import type { Quad, Quad_Object, Quad_Predicate, Quad_Subject } from '@rdfjs/types';
 import { type DirectedGraph } from 'graphology';
-import { DataFactory, Store } from 'n3';
-import { backpatch, GRAPH_DELETED } from './backpatching';
 
 export const NODE_DEFAULT_SIZE = 15;
 
@@ -60,47 +57,6 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
             type: displayType,
         });
     }
-}
-
-export function syncGraphWithStore(
-    graph: DirectedGraph,
-    store: Store,
-    positioningFunction = inverseCentroidHeuristicLayout,
-) {
-    const oldGraph = graph.copy();
-
-    for (const quad of store.readQuads(null, null, null, DataFactory.defaultGraph())) {
-        const foundToBackpatch = backpatch(quad, store);
-
-        if (foundToBackpatch.length > 0) {
-            for (const { replacement, deleted } of foundToBackpatch) {
-                // move the quad from the deleted graph into the default one
-                store.delete(deleted);
-                store.add(replacement);
-
-                // remove the quad with the anonymous placeholder from store
-                store.delete(quad);
-
-                insertQuadIntoGraph(graph, replacement);
-            }
-        } else {
-            insertQuadIntoGraph(graph, quad);
-        }
-    }
-
-    positioningFunction(oldGraph, graph);
-
-    // delete old (TODO: delete nodes without edges)
-    graph.forEachDirectedEdge((edge, attributes) => {
-        const attrs = attributes as CustomEdgeAttributes;
-
-        if (!store.has(attrs.quad)) {
-            // add into the deleted named graph
-            store.add(DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.object, GRAPH_DELETED));
-
-            graph.dropEdge(edge);
-        }
-    });
 }
 
 export interface CustomNodeAttributes {

@@ -1,9 +1,12 @@
 import type { Transformation } from '@/stores/transformations';
 import { QueryEngine } from '@comunica/query-sparql';
 import type { AbstractGraph } from 'graphology-types';
-import { Store } from 'n3';
-import { syncGraphWithStore } from '../graph/graphology';
+import { DataFactory, Store } from 'n3';
+import { backpatch, GRAPH_DELETED } from '../graph/backpatching';
+import { CustomEdgeAttributes, insertQuadIntoGraph } from '../graph/graphology';
 import { renderTemplate } from './renderTemplate';
+
+const { defaultGraph } = DataFactory;
 
 export const TransformerEvents = {
     change: 'change',
@@ -11,8 +14,7 @@ export const TransformerEvents = {
 } as const;
 
 export type TransformerEvent = (typeof TransformerEvents)[keyof typeof TransformerEvents];
-
-type PositioningFunction = NonNullable<Parameters<typeof syncGraphWithStore>[2]>;
+export type PositioningFunction = (oldGraph: AbstractGraph, newGraph: AbstractGraph) => void;
 
 export class GraphTransformer implements EventTarget {
     private readonly eventBus: EventTarget = new EventTarget();
@@ -50,9 +52,10 @@ export class GraphTransformer implements EventTarget {
             return false;
         }
 
-        syncGraphWithStore(this.graph, this.store, this.positioningFunction ?? undefined);
+        // this will run "async" tasks
+        this.syncGraphWithStore();
 
-        return this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+        return true;
     }
 
     async renderAndRunTransformation(transformation: Transformation) {
@@ -75,6 +78,62 @@ export class GraphTransformer implements EventTarget {
         const sparqlQuery = renderTemplate(transformation.patternName, transformation.parameters as any);
 
         return { failed: (await this.update(sparqlQuery)) ? [transformation.name] : undefined };
+    }
+
+    syncGraphWithStore() {
+        const oldGraph = this.graph.copy();
+
+        for (const quad of this.store.readQuads(null, null, null, defaultGraph())) {
+            const foundToBackpatch = backpatch(quad, this.store);
+
+            if (foundToBackpatch.length > 0) {
+                for (const { replacement, deleted } of foundToBackpatch) {
+                    // move the quad from the deleted graph into the default one
+                    this.store.delete(deleted);
+                    this.store.add(replacement);
+
+                    // remove the quad with the anonymous placeholder from store
+                    this.store.delete(quad);
+
+                    insertQuadIntoGraph(this.graph, replacement);
+                }
+            } else {
+                insertQuadIntoGraph(this.graph, quad);
+            }
+        }
+
+        // TODO: animate nodes into position?
+        if (this.positioningFunction) {
+            this.positioningFunction(oldGraph, this.graph);
+        }
+
+        // signal to render the graph in current state
+        this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+
+        // the graph is ready to be rendered
+        //  -> schedule cleanup into macrotask queue
+        setTimeout(() => {
+            this.graph.forEachDirectedEdge((edge, attributes) => {
+                const attrs = attributes as CustomEdgeAttributes;
+
+                if (!this.store.has(attrs.quad)) {
+                    // add into the deleted named graph
+                    this.store.add(
+                        DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.object, GRAPH_DELETED),
+                    );
+
+                    this.graph.dropEdge(edge);
+                }
+            });
+
+            this.graph.forEachNode((node) => {
+                if (this.graph.degree(node) <= 0) {
+                    this.graph.dropNode(node);
+                }
+            });
+
+            this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+        });
     }
 
     setPositioningFunction(func: PositioningFunction) {

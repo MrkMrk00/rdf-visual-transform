@@ -1,5 +1,5 @@
 import { ANONYMOUS_IRI, GRAPH_DELETED } from '@/util/graph/backpatching';
-import { syncGraphWithStore } from '@/util/graph/graphology';
+import { GraphTransformer } from '@/util/transformations/GraphTransformer';
 import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { QueryEngine } from '@comunica/query-sparql';
 import { Quad } from '@rdfjs/types';
@@ -24,11 +24,13 @@ function trippleToString(quad: Quad) {
 describe('backpathing from deleted', () => {
     let graph: DirectedGraph;
     let store: Store;
+    let transformer: GraphTransformer;
     const queryEngine = new QueryEngine();
 
     beforeEach(() => {
         graph = new DirectedGraph();
         store = new Store();
+        transformer = new GraphTransformer(graph, store);
     });
 
     it('should move deleted nodes into the deleted graph', async () => {
@@ -38,7 +40,7 @@ describe('backpathing from deleted', () => {
         const studentToSubject = quad(exampleNode('subjectA'), exampleNode('isAttendedBy'), exampleNode('studentA'));
         store.add(studentToSubject);
 
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
         expect(graph.edges().length).toEqual(2);
         expect(graph.nodes().length).toEqual(3);
 
@@ -46,13 +48,13 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-        });
+        }, true);
 
         await queryEngine.queryVoid(sparqlQuery, {
             sources: [store],
         });
 
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
         expect(graph.edges().length).toEqual(1);
 
         const deletedTripples = store.getQuads(null, null, null, GRAPH_DELETED);
@@ -65,19 +67,19 @@ describe('backpathing from deleted', () => {
     it('backpatches is from the deleted graph', async () => {
         store.add(quad(exampleNode('subjectA'), exampleNode('isTaughtBy'), exampleNode('profA')));
         store.add(quad(exampleNode('subjectA'), exampleNode('isAttendedBy'), exampleNode('studentA')));
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
 
         const sparqlQuery = renderTemplate('relationshipDereification', {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-        });
+        }, true);
 
         await queryEngine.queryVoid(sparqlQuery, {
             sources: [store],
         });
 
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
     });
 
     it('deleted nodes from inverse transformation gets backpatched', async () => {
@@ -87,18 +89,18 @@ describe('backpathing from deleted', () => {
         const studentToSubject = quad(exampleNode('subjectA'), exampleNode('isAttendedBy'), exampleNode('studentA'));
         store.add(studentToSubject);
 
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
 
         const sparqlQuery = renderTemplate('relationshipDereification', {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             result: templatedIRI('studiesUnder'),
-        });
+        }, true);
 
         await queryEngine.queryVoid(sparqlQuery, {
             sources: [store],
         });
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
 
         // The old nodes should be included inside the deleted graph now...
         // An inverse transformations should be able to backpatch them.
@@ -108,7 +110,7 @@ describe('backpathing from deleted', () => {
             predicate0: templatedIRI('isTaughtBy'),
             predicate1: templatedIRI('isAttendedBy'),
             shortcut: templatedIRI('studiesUnder'), // renamed from `result`
-        });
+        }, true);
 
         await queryEngine.queryVoid(inverseTransfQuery, {
             sources: [store],
@@ -126,7 +128,7 @@ describe('backpathing from deleted', () => {
             )
             .contains(trippleToString(quad(namedNode(ANONYMOUS_IRI), exampleNode('isTaughtBy'), exampleNode('profA'))));
 
-        syncGraphWithStore(graph, store);
+        transformer.syncGraphWithStore();
 
         // no anonymous tripples remanining
         expect(store.getQuads(ANONYMOUS_IRI, null, null, null)).length(0);
