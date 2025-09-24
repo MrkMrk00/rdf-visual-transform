@@ -6,6 +6,9 @@ type UiControlStore = {
     showTransformationsPanel: boolean;
     showTransformationsStack: boolean;
 
+    devMode: boolean;
+    toggleDevMode: () => void;
+
     toggleSparqlConsole: () => void;
     toggleTransformationsPanel: () => void;
     toggleTransformationsStack: () => void;
@@ -17,6 +20,7 @@ export const useUiControlStore = create<UiControlStore>()(
             showSparqlConsole: false,
             showTransformationsPanel: false,
             showTransformationsStack: false,
+            devMode: false,
 
             toggleSparqlConsole: () =>
                 set((state) => ({
@@ -31,6 +35,11 @@ export const useUiControlStore = create<UiControlStore>()(
             toggleTransformationsStack: () =>
                 set((state) => ({
                     showTransformationsStack: !state.showTransformationsStack,
+                })),
+
+            toggleDevMode: () =>
+                set((state) => ({
+                    devMode: !state.devMode,
                 })),
         }),
         {

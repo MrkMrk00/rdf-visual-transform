@@ -13,7 +13,6 @@ import { StoreProvider } from './contexts/tripple-store';
 import { useIsMobile, WindowSizeProvider } from './contexts/window-size';
 import { useGraphSettings } from './store/graphSettings';
 import { useUiControlStore } from './store/uiControl';
-import { TransformationsStack } from './components/panes/TransformationsStack';
 
 const SparqlConsole = lazy(() =>
     import('./components/panes/SparqlConsole').then((module) => ({
@@ -24,6 +23,12 @@ const SparqlConsole = lazy(() =>
 const TransformationsPanel = lazy(() =>
     import('./components/transformations/TransformationsPanel').then((module) => ({
         default: module.TransformationsPanel,
+    })),
+);
+
+const DevMode = lazy(() =>
+    import('./components/screens/DevMode').then((module) => ({
+        default: module.DevMode,
     })),
 );
 
@@ -101,12 +106,18 @@ function DesktopLayout() {
     const showTransformationsPanel = useUiControlStore((store) => store.showTransformationsPanel);
     const hideTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
 
-    const showTransformationsStack = useUiControlStore((store) => store.showTransformationsStack);
+    const devModeEnabled = useUiControlStore((store) => store.devMode);
 
     return (
         <>
             <Menu />
             <div className="relative w-full h-full">
+                {devModeEnabled && (
+                    <Suspense>
+                        <DevMode />
+                    </Suspense>
+                )}
+
                 <ResizablePanelGroup className="absolute bottom-0 flex items-end" direction="vertical">
                     <ResizablePanel order={0} id="main-panel" className="w-full">
                         <ResizablePanelGroup direction="horizontal">
@@ -126,20 +137,6 @@ function DesktopLayout() {
                                         id="horiz-transformations-panel"
                                     >
                                         <TransformationsPanel close={hideTransformationsPanel} />
-                                    </ResizablePanel>
-                                </Suspense>
-                            )}
-
-                            {showTransformationsStack && (
-                                <Suspense>
-                                    <ResizableHandle withHandle />
-                                    <ResizablePanel
-                                        order={101}
-                                        className="z-1 w-full"
-                                        defaultSize={30}
-                                        id="horiz-transformations-panel"
-                                    >
-                                        <TransformationsStack />
                                     </ResizablePanel>
                                 </Suspense>
                             )}

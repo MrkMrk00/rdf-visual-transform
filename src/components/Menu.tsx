@@ -16,7 +16,14 @@ import { useGraphIsLoading } from '@/contexts/tripple-store';
 import { useGraphSettings } from '@/store/graphSettings';
 import { useUiControlStore } from '@/store/uiControl';
 import { cn } from '@/util/ui/shadcn';
-import { ArrowDownTrayIcon, ArrowPathIcon, Cog8ToothIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import {
+    ArrowDownTrayIcon,
+    ArrowPathIcon,
+    Cog8ToothIcon,
+    CommandLineIcon,
+    EllipsisVerticalIcon,
+} from '@heroicons/react/24/outline';
+import { CommandLineIcon as CommandLineDark } from '@heroicons/react/24/solid';
 import { useEffect, useMemo, useState } from 'react';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
@@ -26,6 +33,9 @@ export function Menu() {
     const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
     const toggleTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
     const toggleTransformationsStack = useUiControlStore((store) => store.toggleTransformationsStack);
+
+    const devModeEnabled = useUiControlStore((store) => store.devMode);
+    const toggleDevMode = useUiControlStore((store) => store.toggleDevMode);
 
     const isLoading = useGraphIsLoading();
 
@@ -101,6 +111,22 @@ export function Menu() {
                             <ArrowPathIcon className="h-6 w-6 animate-spin" />
                         </MenubarMenu>
                     )}
+
+                    <MenubarMenu>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger onClick={toggleDevMode}>
+                                    {devModeEnabled ? (
+                                        <CommandLineDark className="h-6 w-6" />
+                                    ) : (
+                                        <CommandLineIcon className="h-6 w-6" />
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent>Dev mode</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </MenubarMenu>
+
                     <MenubarMenu>
                         <MenubarTrigger className="h-full inline-flex items-center">
                             <Cog8ToothIcon className="h-6 w-6" />
