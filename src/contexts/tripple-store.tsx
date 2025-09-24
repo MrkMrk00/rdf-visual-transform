@@ -1,4 +1,4 @@
-import { useGraphStore, type GraphSettingsStore } from '@/stores/graphSettings';
+import { useGraphSettings, type GraphSettingsStore } from '@/store/graphSettings';
 import { insertQuadIntoGraph } from '@/util/graph/graphology';
 import { RdfReader } from '@/util/rdf-reader';
 import { useQuery } from '@tanstack/react-query';
@@ -39,7 +39,7 @@ async function loadDataIntoStore({ queryKey }: { queryKey: [string, GraphSetting
 }
 
 export const StoreProvider = ({ children }: PropsWithChildren) => {
-    const graphDescriptor = useGraphStore((store) => store.graph);
+    const graphDescriptor = useGraphSettings((store) => store.graph);
 
     const {
         data: store,

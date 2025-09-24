@@ -1,5 +1,7 @@
 import * as trippleStore from '@/contexts/tripple-store';
-import { useGraphStore } from '@/stores/graphSettings';
+import { useGraphSettings } from '@/store/graphSettings';
+import { Transformation } from '@/store/transformations';
+import { useTransformationsStackStore } from '@/store/transformationsStack';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
 import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
 import { useEffect, useMemo } from 'react';
@@ -10,6 +12,9 @@ const eventBus = new EventTarget();
 export function useTransformer() {
     const graph = trippleStore.useGraphologyGraph();
     const store = trippleStore.useTripleStore();
+
+    const stackPush = useTransformationsStackStore((store) => store.push);
+    const stackPop = useTransformationsStackStore((store) => store.pop);
 
     const transformer = useMemo(() => {
         const transformer = new GraphTransformer(graph, store);
@@ -25,7 +30,7 @@ export function useTransformer() {
         return transformer;
     }, [graph, store]);
 
-    const positioningFunction = useGraphStore((store) => store.positioningFunction);
+    const positioningFunction = useGraphSettings((store) => store.positioningFunction);
 
     useEffect(() => {
         if (!transformer) {
@@ -45,11 +50,31 @@ export function useTransformer() {
 
     return useMemo(() => {
         return {
-            update: transformer.update.bind(transformer),
-            renderAndRun: transformer.renderAndRunTransformation.bind(transformer),
+            update: async (query: string) => {
+                const result = await transformer.update(query);
+                if (result) {
+                    stackPush(undefined, result);
+                }
+            },
+            renderAndRun: async (transformation: Transformation) => {
+                const result = await transformer.renderAndRunTransformation(transformation);
+                if (result) {
+                    stackPush(transformation.id, result);
+                }
+            },
+            popTransformationsStack: () => {
+                const diff = stackPop();
+                if (!diff) {
+                    toast.warning('No transformation left to undo.');
+
+                    return;
+                }
+
+                transformer.undoTransformation(diff);
+            },
             onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
                 eventBus.addEventListener(TransformerEvents.change, callback, { signal });
             },
         };
-    }, [transformer]);
+    }, [transformer, stackPush, stackPop]);
 }

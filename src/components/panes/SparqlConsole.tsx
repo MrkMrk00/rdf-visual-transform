@@ -1,6 +1,6 @@
 import { useTransformer } from '@/hooks/useTransformer';
 import * as templates from '@/sparql-templates';
-import { useTransformationsStore } from '@/stores/transformations';
+import { useTransformationsStore } from '@/store/transformations';
 import { renderTemplate } from '@/util/transformations/renderTemplate';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { lazy, Suspense, useMemo, useRef, useState } from 'react';

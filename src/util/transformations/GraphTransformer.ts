@@ -1,5 +1,6 @@
-import type { Transformation } from '@/stores/transformations';
+import type { Transformation } from '@/store/transformations';
 import { QueryEngine } from '@comunica/query-sparql';
+import type { Quad } from '@rdfjs/types';
 import type { AbstractGraph } from 'graphology-types';
 import { DataFactory, Store } from 'n3';
 import { backpatch, GRAPH_DELETED } from '../graph/backpatching';
@@ -16,6 +17,31 @@ export const TransformerEvents = {
 export type TransformerEvent = (typeof TransformerEvents)[keyof typeof TransformerEvents];
 export type PositioningFunction = (oldGraph: AbstractGraph, newGraph: AbstractGraph) => void;
 
+export type GraphDiff = {
+    inserted: Quad[];
+    deleted: Quad[];
+};
+
+function doDiffGraphs(original: Store, updated: Store): GraphDiff {
+    return {
+        inserted: updated.difference(original).toArray(),
+        deleted: original.difference(updated).toArray(),
+    };
+}
+
+// is needed? O(n^2) :/
+function combineGraphDiffs(...diffs: GraphDiff[]): GraphDiff {
+    return diffs.reduce(
+        (diffA, diffB) => {
+            return {
+                deleted: diffA.deleted.filter((quadA) => diffB.inserted.some((quadB) => quadB.equals(quadA))),
+                inserted: diffA.inserted.filter((quadA) => diffB.deleted.some((quadB) => quadB.equals(quadA))),
+            };
+        },
+        { deleted: [], inserted: [] },
+    );
+}
+
 export class GraphTransformer implements EventTarget {
     private readonly eventBus: EventTarget = new EventTarget();
     private readonly queryEngine: QueryEngine = new QueryEngine();
@@ -31,7 +57,9 @@ export class GraphTransformer implements EventTarget {
      * Execute a SPARQL update query against the store
      * and sync the results to the graph.
      */
-    async update(query: string) {
+    async update(query: string): Promise<GraphDiff | undefined> {
+        const originalStore = new Store(this.store);
+
         try {
             await this.queryEngine.queryVoid(query, {
                 sources: [this.store],
@@ -49,35 +77,44 @@ export class GraphTransformer implements EventTarget {
                 throw err;
             }
 
-            return false;
+            return undefined;
         }
 
         // this will run "async" tasks
         this.syncGraphWithStore();
 
-        return true;
+        return doDiffGraphs(originalStore, this.store);
     }
 
-    async renderAndRunTransformation(transformation: Transformation) {
+    async renderAndRunTransformation(transformation: Transformation): Promise<GraphDiff | undefined> {
         if (transformation.patternName === 'custom') {
-            const failed: string[] = [];
-            for (const [templateName, query] of Object.entries(transformation.queries)) {
+            let diff: GraphDiff = { deleted: [], inserted: [] };
+
+            for (const [_, query] of Object.entries(transformation.queries)) {
                 // if there is no event handler registered, this line will throw
                 const result = await this.update(query);
-
                 if (!result) {
-                    failed.push(templateName);
+                    return undefined;
                 }
+
+                diff = combineGraphDiffs(diff, result);
             }
 
-            return { failed: failed.length > 0 ? failed : undefined };
+            return diff;
         }
 
         // Shouldn't throw, but can...
         // The parameters are wrongly defined, if this does throw.
         const sparqlQuery = renderTemplate(transformation.patternName, transformation.parameters as any);
 
-        return { failed: (await this.update(sparqlQuery)) ? [transformation.name] : undefined };
+        return await this.update(sparqlQuery);
+    }
+
+    undoTransformation(diff: GraphDiff) {
+        this.store.addQuads(diff.deleted);
+        this.store.removeQuads(diff.inserted);
+
+        this.syncGraphWithStore();
     }
 
     syncGraphWithStore() {

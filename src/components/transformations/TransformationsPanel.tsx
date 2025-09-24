@@ -1,5 +1,5 @@
 import { useTransformer } from '@/hooks/useTransformer';
-import { type Transformation, TransformationPattern, useTransformationsStore } from '@/stores/transformations';
+import { type Transformation, TransformationPattern, useTransformationsStore } from '@/store/transformations';
 import { resolveInverseTransformation } from '@/util/transformations/resolveInverseTransformation';
 import { truncateText } from '@/util/ui/truncateText';
 import { ArrowDownIcon } from '@heroicons/react/20/solid';

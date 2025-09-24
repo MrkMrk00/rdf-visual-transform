@@ -1,6 +1,6 @@
 import { useFormChangeset } from '@/hooks/useFormChangeset';
 import * as templates from '@/sparql-templates';
-import { Transformation, useTransformationsStore } from '@/stores/transformations';
+import { Transformation, useTransformationsStore } from '@/store/transformations';
 import { lazy, Suspense, useCallback, useMemo, useRef } from 'react';
 import type { EditorHandle } from '../SparqlEditor';
 import { Button } from '../ui/button';
