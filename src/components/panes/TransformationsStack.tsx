@@ -1,8 +1,8 @@
+import { useGraphSettings } from '@/store/graphSettings';
 import { useTransformationsStore } from '@/store/transformations';
-import { useTransformationsStackStore } from '@/store/transformationsStack';
 
 export function TransformationsStack() {
-    const stack = useTransformationsStackStore((store) => store.performed);
+    const stack = useGraphSettings((store) => store.transformationsStack);
     const transformations = useTransformationsStore((store) => store.transformations);
 
     return (

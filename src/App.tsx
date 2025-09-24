@@ -102,7 +102,6 @@ function DesktopLayout() {
     const hideTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
 
     const showTransformationsStack = useUiControlStore((store) => store.showTransformationsStack);
-    const toggleTransformationsStack = useUiControlStore((store) => store.toggleTransformationsStack);
 
     return (
         <>
