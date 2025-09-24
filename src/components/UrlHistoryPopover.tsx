@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useGraphStore } from '@/stores/graphSettings';
+import { useGraphSettings } from '@/store/graphSettings';
 import { PopoverClose } from '@radix-ui/react-popover';
 import { type ReactNode } from 'react';
 
@@ -23,7 +23,7 @@ function formatUrl(urlStr: string) {
 }
 
 export function UrlHistoryPopover({ trigger, triggerAsChild, onSelect }: UrlHistoryPopoverProps) {
-    const urlHistory = useGraphStore((store) => store.graphUrlHistory);
+    const urlHistory = useGraphSettings((store) => store.graphUrlHistory);
 
     return (
         <Popover>

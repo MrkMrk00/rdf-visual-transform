@@ -13,26 +13,27 @@ import {
 } from '@/components/ui/menubar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGraphIsLoading } from '@/contexts/tripple-store';
-import { useGraphStore } from '@/stores/graphSettings';
-import { useUiControlStore } from '@/stores/uiControl';
+import { useGraphSettings } from '@/store/graphSettings';
+import { useUiControlStore } from '@/store/uiControl';
 import { cn } from '@/util/ui/shadcn';
 import { ArrowDownTrayIcon, ArrowPathIcon, Cog8ToothIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useState } from 'react';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
 export function Menu() {
-    const loadGraphFromUrl = useGraphStore((store) => store.loadGraphFromUrl);
-    const toggleSigmaSetting = useGraphStore((store) => store.toggleSetting);
+    const loadGraphFromUrl = useGraphSettings((store) => store.loadGraphFromUrl);
+    const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
     const toggleSparqlConsole = useUiControlStore((store) => store.toggleSparqlConsole);
     const toggleTransformationsPanel = useUiControlStore((store) => store.toggleTransformationsPanel);
+    const toggleTransformationsStack = useUiControlStore((store) => store.toggleTransformationsStack);
 
     const isLoading = useGraphIsLoading();
 
-    const graph = useGraphStore((store) => store.graph);
-    const sigmaSettings = useGraphStore((store) => store.sigmaSettings);
+    const graph = useGraphSettings((store) => store.graph);
+    const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
 
-    const positioningFunction = useGraphStore((store) => store.positioningFunction);
-    const setPositioningFunction = useGraphStore((store) => store.setPositioningFunction);
+    const positioningFunction = useGraphSettings((store) => store.positioningFunction);
+    const setPositioningFunction = useGraphSettings((store) => store.setPositioningFunction);
 
     useEffect(() => {
         if (!graph) {
@@ -90,6 +91,7 @@ export function Menu() {
                         <MenubarContent>
                             <MenubarItem onClick={toggleSparqlConsole}>SPARQL console</MenubarItem>
                             <MenubarItem onClick={toggleTransformationsPanel}>Show Transformations panel</MenubarItem>
+                            <MenubarItem onClick={toggleTransformationsStack}>Show Transformations stack</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </div>

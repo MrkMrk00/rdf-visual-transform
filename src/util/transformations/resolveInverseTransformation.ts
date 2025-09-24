@@ -1,4 +1,4 @@
-import { Transformation } from '@/stores/transformations';
+import { Transformation } from '@/store/transformations';
 import { ulid } from 'ulid';
 import { ANONYMOUS_IRI, ANONYMOUS_NARY_IRI } from '../graph/backpatching';
 

@@ -23,7 +23,7 @@ type BoolSetting = OmitNever<{
 
 const HISTORY_MAX_SIZE = 20;
 
-export const useGraphStore = create<GraphSettingsStore>()(
+export const useGraphSettings = create<GraphSettingsStore>()(
     persist(
         (set) => ({
             graph: {
