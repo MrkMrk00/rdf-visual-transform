@@ -2,6 +2,7 @@ import type { OmitNever } from '@/util/types';
 import type { Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { createTransformationsStack, TransformationsStackSlice } from './transformationsStack.slice';
 
 export type PositioningFunction = 'inverse-centroid-heuristic' | 'spring-electric';
 
@@ -23,9 +24,16 @@ type BoolSetting = OmitNever<{
 
 const HISTORY_MAX_SIZE = 20;
 
-export const useGraphSettings = create<GraphSettingsStore>()(
+function excludeKeysFromPersistence<TState extends object>(...filterKeys: (keyof TState)[]) {
+    return (state: TState) =>
+        Object.fromEntries(Object.entries(state).filter(([key]) => !filterKeys.includes(key as keyof TState)));
+}
+
+export const useGraphSettings = create<GraphSettingsStore & TransformationsStackSlice>()(
     persist(
-        (set) => ({
+        (set, ...rest) => ({
+            ...createTransformationsStack(set, ...rest),
+
             graph: {
                 url: 'https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf',
             },
@@ -38,6 +46,9 @@ export const useGraphSettings = create<GraphSettingsStore>()(
                     return {
                         graph: { url },
                         graphUrlHistory: Array.from(new Set([url, ...prev.graphUrlHistory])).slice(0, HISTORY_MAX_SIZE),
+
+                        // clear the stack of performed transformations
+                        transformationsStack: [],
                     };
                 });
             },
@@ -60,6 +71,7 @@ export const useGraphSettings = create<GraphSettingsStore>()(
         }),
         {
             name: 'graph-settings',
+            partialize: excludeKeysFromPersistence('transformationsStack'),
         },
     ),
 );

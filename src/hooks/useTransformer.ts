@@ -1,7 +1,6 @@
 import * as trippleStore from '@/contexts/tripple-store';
 import { useGraphSettings } from '@/store/graphSettings';
 import { Transformation } from '@/store/transformations';
-import { useTransformationsStackStore } from '@/store/transformationsStack';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
 import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
 import { useEffect, useMemo } from 'react';
@@ -13,8 +12,8 @@ export function useTransformer() {
     const graph = trippleStore.useGraphologyGraph();
     const store = trippleStore.useTripleStore();
 
-    const stackPush = useTransformationsStackStore((store) => store.push);
-    const stackPop = useTransformationsStackStore((store) => store.pop);
+    const stackPop = useGraphSettings((store) => store.popTransformation);
+    const stackPush = useGraphSettings((store) => store.pushTransformation);
 
     const transformer = useMemo(() => {
         const transformer = new GraphTransformer(graph, store);
