@@ -24,6 +24,21 @@ function sparqlQuote(iri: string) {
 
 export function resolveInverseTransformation(transformation: Transformation): Transformation | undefined {
     switch (transformation.patternName) {
+        case 'propertyChainShortcut':
+            return {
+                id: ulid(),
+                name: `inverse-to:${transformation.name}`,
+                patternName: 'propertyChainShortcutExpansion',
+                priority: transformation.priority,
+                parameters: <Parameters>{
+                    predicate0: sparqlQuote(ANONYMOUS_IRI),
+                    predicate1: sparqlQuote(ANONYMOUS_IRI),
+                    ...renameParameters(transformation.parameters, {
+                        result: 'shortcut',
+                    }),
+                },
+            } as Transformation<'propertyChainShortcutExpansion'>;
+
         case 'relationshipDereification':
             return {
                 id: ulid(),

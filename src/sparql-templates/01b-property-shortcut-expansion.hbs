@@ -1,0 +1,32 @@
+name: insert
+inputs:
+    - name: "shortcut"
+    - name: "through"
+      optional: yes
+    - name: "predicate0"
+    - name: "predicate1"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+INSERT {
+    ?start  {{{predicate0}}} ?middle .
+    ?middle {{{predicate1}}} ?end    .
+}
+WHERE {
+    ?start {{{shortcut}}} ?end .
+{{#if through}}
+    FILTER(?middle = {{{through}}})
+{{/if}}
+};
+---
+name: delete
+inputs:
+    - name: "shortcut"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+DELETE WHERE {
+    ?start {{{shortcut}}} ?end .
+};
