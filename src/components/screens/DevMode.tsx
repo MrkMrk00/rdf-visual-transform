@@ -25,9 +25,14 @@ function PerformedTransformations() {
 
                 {stack.length === 0 && <span>Nothing here...</span>}
                 <ul className="flex flex-col gap-2">
-                    {stack.map(({ id }, index) => (
-                        <li key={`${id}-${index}`}>{transformations.find((t) => t.id === id)?.name ?? 'unknown'}</li>
-                    ))}
+                    {stack
+                        .slice()
+                        .reverse()
+                        .map(({ id }, index) => (
+                            <li key={`${id}-${index}`}>
+                                {transformations.find((t) => t.id === id)?.name ?? 'unknown'}
+                            </li>
+                        ))}
                 </ul>
             </CardContent>
         </Card>
