@@ -2,11 +2,9 @@ import type { Transformation } from '@/store/transformations';
 import { QueryEngine } from '@comunica/query-sparql';
 import type { Quad } from '@rdfjs/types';
 import type { AbstractGraph } from 'graphology-types';
-import { DataFactory, Store } from 'n3';
+import { Store } from 'n3';
 import { CustomEdgeAttributes, insertQuadIntoGraph } from '../graph/graphology';
 import { renderTemplate } from './renderTemplate';
-
-const { defaultGraph } = DataFactory;
 
 export const TransformerEvents = {
     change: 'change',
