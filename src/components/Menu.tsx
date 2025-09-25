@@ -21,7 +21,7 @@ import { UrlHistoryPopover } from './UrlHistoryPopover';
 
 export function Menu() {
     return (
-        <nav className="flex flex-row justify-between items-center px-2 bg-white inset-shadow-md">
+        <nav className="flex flex-col-reverse justify-end md:flex-row md:justify-between md:items-center w-full px-2 bg-white inset-shadow-md">
             <GraphLoader />
             <MenuNavigator />
         </nav>
@@ -31,6 +31,8 @@ export function Menu() {
 type MenuProps = Omit<ComponentPropsWithoutRef<'nav'>, 'children'>;
 
 function MenuNavigator(props: MenuProps) {
+    const { className, ...restProps } = props;
+
     const devModeEnabled = useUiControlStore((store) => store.devMode);
     const toggleDevMode = useUiControlStore((store) => store.toggleDevMode);
 
@@ -41,10 +43,10 @@ function MenuNavigator(props: MenuProps) {
     const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
 
     return (
-        <div {...props}>
+        <div className={cn('flex flex-row justify-end items-center shrink-0', className)} {...restProps}>
             <TooltipProvider>
                 <Tooltip>
-                    <TooltipTrigger className="relative group px-2 py-2" onClick={toggleDevMode}>
+                    <TooltipTrigger className="relative group px-2 py-2 hidden md:block" onClick={toggleDevMode}>
                         {devModeEnabled ? (
                             <CommandLineDark className="h-8 w-8" />
                         ) : (
