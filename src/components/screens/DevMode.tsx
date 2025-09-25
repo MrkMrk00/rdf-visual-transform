@@ -2,8 +2,10 @@ import { AvailableTransformations } from '@/components/dev-mode/AvailableTransfo
 import { useTransformer } from '@/hooks/useTransformer';
 import { useGraphSettings } from '@/store/graphSettings';
 import { useTransformationsStore } from '@/store/transformations';
+import { SparqlConsole } from '../panes/SparqlConsole';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
 
 function PerformedTransformations() {
     const stack = useGraphSettings((store) => store.transformationsStack);
@@ -41,13 +43,21 @@ function PerformedTransformations() {
 
 export function DevMode() {
     return (
-        <main className="inset-0 absolute z-30 pointer-events-auto backdrop-blur-md bg-black/20 p-4 flex flex-row gap-4">
-            <div>
+        <ResizablePanelGroup
+            className="inset-0 absolute z-30 pointer-events-auto backdrop-blur-md bg-black/20 p-4"
+            direction="horizontal"
+        >
+            <ResizablePanel>
                 <PerformedTransformations />
-            </div>
-            <div>
+            </ResizablePanel>
+            <ResizableHandle className="bg-transparent" />
+            <ResizablePanel>
                 <AvailableTransformations />
-            </div>
-        </main>
+            </ResizablePanel>
+            <ResizableHandle className="bg-transparent" />
+            <ResizablePanel>
+                <SparqlConsole />
+            </ResizablePanel>
+        </ResizablePanelGroup>
     );
 }
