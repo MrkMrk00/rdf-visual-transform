@@ -16,7 +16,7 @@ const SparqlEditor = lazy(() =>
     })),
 );
 
-export function SparqlConsole({ close }: { close: VoidFunction }) {
+export function SparqlConsole({ close }: { close?: VoidFunction }) {
     const saveTransformation = useTransformationsStore((store) => store.saveTransformation);
 
     const [chosenPatternName, setChosenPatternName] = useState<keyof typeof templates>('propertyChainShortcut');
@@ -32,9 +32,11 @@ export function SparqlConsole({ close }: { close: VoidFunction }) {
         <Card className="h-full">
             <CardHeader className="flex items-center justify-between">
                 <span>SPARQL Console</span>
-                <Button variant="ghost" size="icon" onClick={close}>
-                    <XMarkIcon className="h-8 w-8" />
-                </Button>
+                {typeof close !== 'undefined' && (
+                    <Button variant="ghost" size="icon" onClick={close}>
+                        <XMarkIcon className="h-8 w-8" />
+                    </Button>
+                )}
             </CardHeader>
             <CardContent className="flex flex-col gap-4 h-full">
                 <div className="flex gap-4 items-center w-full h-full">
