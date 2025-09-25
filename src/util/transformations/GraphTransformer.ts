@@ -3,7 +3,6 @@ import { QueryEngine } from '@comunica/query-sparql';
 import type { Quad } from '@rdfjs/types';
 import type { AbstractGraph } from 'graphology-types';
 import { DataFactory, Store } from 'n3';
-import { backpatch, GRAPH_DELETED } from '../graph/backpatching';
 import { CustomEdgeAttributes, insertQuadIntoGraph } from '../graph/graphology';
 import { renderTemplate } from './renderTemplate';
 
@@ -110,33 +109,19 @@ export class GraphTransformer implements EventTarget {
         return await this.update(sparqlQuery);
     }
 
-    undoTransformation(diff: GraphDiff) {
+    undoTransformation(diff: GraphDiff): Promise<void> {
         this.store.addQuads(diff.deleted);
         this.store.removeQuads(diff.inserted);
 
-        this.syncGraphWithStore();
+        return this.syncGraphWithStore();
     }
 
-    syncGraphWithStore() {
+    syncGraphWithStore(): Promise<void> {
         const oldGraph = this.graph.copy();
 
-        for (const quad of this.store.readQuads(null, null, null, defaultGraph())) {
-            const foundToBackpatch = backpatch(quad, this.store);
-
-            if (foundToBackpatch.length > 0) {
-                for (const { replacement, deleted } of foundToBackpatch) {
-                    // move the quad from the deleted graph into the default one
-                    this.store.delete(deleted);
-                    this.store.add(replacement);
-
-                    // remove the quad with the anonymous placeholder from store
-                    this.store.delete(quad);
-
-                    insertQuadIntoGraph(this.graph, replacement);
-                }
-            } else {
-                insertQuadIntoGraph(this.graph, quad);
-            }
+        // add newly INSERTed tripples into the graph
+        for (const quad of this.store) {
+            insertQuadIntoGraph(this.graph, quad);
         }
 
         // TODO: animate nodes into position?
@@ -144,33 +129,34 @@ export class GraphTransformer implements EventTarget {
             this.positioningFunction(oldGraph, this.graph);
         }
 
-        // signal to render the graph in current state
+        // signal to render the graph in current state (with only the INSERTed tripples in the graph)
         this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
 
         // the graph is ready to be rendered
-        //  -> schedule cleanup into macrotask queue
-        setTimeout(() => {
-            this.graph.forEachDirectedEdge((edge, attributes) => {
-                const attrs = attributes as CustomEdgeAttributes;
+        //  -> schedule cleanup into macrotask queue (~ apply DELETE)
+        // also: wrap in promise, so the whole syncing process can be awaited
+        return new Promise<void>((resolve) =>
+            setTimeout(() => {
+                this.graph.forEachDirectedEdge((edge, attributes) => {
+                    const attrs = attributes as CustomEdgeAttributes;
 
-                if (!this.store.has(attrs.quad)) {
-                    // add into the deleted named graph
-                    this.store.add(
-                        DataFactory.quad(attrs.quad.subject, attrs.quad.predicate, attrs.quad.object, GRAPH_DELETED),
-                    );
+                    if (!this.store.has(attrs.quad)) {
+                        this.graph.dropEdge(edge);
+                    }
+                });
 
-                    this.graph.dropEdge(edge);
-                }
-            });
+                // remove nodes without (out- and in-)edges
+                this.graph.forEachNode((node) => {
+                    if (this.graph.degree(node) <= 0) {
+                        this.graph.dropNode(node);
+                    }
+                });
 
-            this.graph.forEachNode((node) => {
-                if (this.graph.degree(node) <= 0) {
-                    this.graph.dropNode(node);
-                }
-            });
+                this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
 
-            this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
-        });
+                resolve();
+            }),
+        );
     }
 
     setPositioningFunction(func: PositioningFunction) {
