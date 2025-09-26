@@ -9,6 +9,8 @@ import { Store } from 'n3';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
+const rdfReader = new RdfReader();
+
 type StoreContext = { store: Store; isLoading: boolean; graph: DirectedGraph };
 
 const trippleStoreContext = createContext<StoreContext>({
@@ -87,8 +89,6 @@ export const StoreProvider = ({ children }: PropsWithChildren) => {
 
     return <trippleStoreContext.Provider value={context}>{children}</trippleStoreContext.Provider>;
 };
-
-const rdfReader = new RdfReader();
 
 export const useTripleStore = (): Readonly<Store> => {
     return useContext(trippleStoreContext).store;

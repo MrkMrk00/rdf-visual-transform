@@ -2,7 +2,7 @@ import { AvailableTransformations } from '@/components/dev-mode/AvailableTransfo
 import { useTransformer } from '@/hooks/useTransformer';
 import { useGraphSettings } from '@/store/graphSettings';
 import { useTransformationsStore } from '@/store/transformations';
-import { SparqlConsole } from '../panes/SparqlConsole';
+import { SparqlConsole } from './SparqlConsole';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
