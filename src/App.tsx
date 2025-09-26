@@ -8,7 +8,7 @@ import { lazy, memo, Suspense } from 'react';
 import { DEFAULT_NODE_PROGRAM_CLASSES } from 'sigma/settings';
 import { Menu } from './components/Menu';
 import { Toaster } from './components/ui/sonner';
-import { ZoomButtons } from './components/ZoomButtons';
+import { UserControls } from './components/UserControls';
 import { StoreProvider } from './contexts/tripple-store';
 import { useGraphSettings } from './store/graphSettings';
 import { useUiControlStore } from './store/uiControl';
@@ -71,7 +71,7 @@ const AppLayout = memo(function AppLayout() {
                     <GraphMain />
                 </div>
 
-                <ZoomButtons className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
+                <UserControls className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
             </div>
         </>
     );
