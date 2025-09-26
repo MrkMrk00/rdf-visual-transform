@@ -2,10 +2,12 @@ import { useTransformer } from '@/hooks/useTransformer';
 import { Transformation, TransformationPattern, useTransformationsStore } from '@/store/transformations';
 import { cn } from '@/util/ui/shadcn';
 import { truncateText } from '@/util/ui/truncateText';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { CodeBracketIcon, PlayIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { type DeleteTransformationHandle, DeleteTransformationModal } from './DeleteTransformationModal';
 import { type EditTransformationHandle, EditTransformationModal } from './EditTransformationModal';
 
@@ -64,6 +66,7 @@ export function AvailableTransformations() {
     const { renderAndRun } = useTransformer();
 
     const transformationsByPattern = useMemo(() => partitionTransformations(transformationsRaw), [transformationsRaw]);
+    const download = useTransformationsStore((store) => store.exportToJsonFile);
 
     const editModalRef = useRef<EditTransformationHandle>(null);
     const deleteModalRef = useRef<DeleteTransformationHandle>(null);
@@ -86,7 +89,21 @@ export function AvailableTransformations() {
     return (
         <>
             <Card>
-                <CardTitle className="px-4">Available transformations</CardTitle>
+                <CardTitle className="px-4 w-full flex justify-between items-center">
+                    <h3>Available transformations</h3>
+                    {transformationsRaw.length > 0 && (
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button size="sm" type="button" variant="success" onClick={download}>
+                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipProvider>
+                                <TooltipContent>Export as JSON</TooltipContent>
+                            </TooltipProvider>
+                        </Tooltip>
+                    )}
+                </CardTitle>
                 <CardContent className="flex flex-col gap-2 overflow-auto">
                     {Object.entries(transformationsByPattern).map(([pattern, Transformations], index) => (
                         <section key={pattern} className={cn({ 'border-t': index !== 0 })}>
