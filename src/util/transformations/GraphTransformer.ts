@@ -1,6 +1,9 @@
 import type { Transformation } from '@/store/transformations';
 import { QueryEngine } from '@comunica/query-sparql';
 import type { Quad } from '@rdfjs/types';
+import Graph from 'graphology';
+import { circular } from 'graphology-layout';
+import forceAtlas2 from 'graphology-layout-forceatlas2';
 import type { AbstractGraph } from 'graphology-types';
 import { Store } from 'n3';
 import { CustomEdgeAttributes, insertQuadIntoGraph } from '../graph/graphology';
@@ -49,6 +52,18 @@ export class GraphTransformer implements EventTarget {
         public graph: AbstractGraph,
         public store: Store,
     ) {}
+
+    static async createGraph(store: Store) {
+        const graph = new Graph({ type: 'directed', multi: true });
+
+        const me = new GraphTransformer(graph, store);
+        me.setPositioningFunction((_, newGraph) => circular.assign(newGraph));
+
+        await me.syncGraphWithStore();
+        me.adjustLayout();
+
+        return graph;
+    }
 
     /**
      * Execute a SPARQL update query against the store
@@ -155,6 +170,13 @@ export class GraphTransformer implements EventTarget {
                 resolve();
             }),
         );
+    }
+
+    adjustLayout(iterations: number = 5) {
+        const settings = forceAtlas2.inferSettings(this.graph);
+        forceAtlas2.assign(this.graph, { ...settings, iterations });
+
+        this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
     }
 
     setPositioningFunction(func: PositioningFunction) {

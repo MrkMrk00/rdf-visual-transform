@@ -171,6 +171,7 @@ export function useTransformer() {
 
                 return renderAndRun(toRun);
             },
+            adjustLayout: transformer.adjustLayout.bind(transformer),
             onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
                 eventBus.addEventListener(TransformerEvents.change, callback, { signal });
             },

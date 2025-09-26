@@ -1,10 +1,8 @@
 import { useGraphSettings, type GraphSettingsStore } from '@/store/graphSettings';
-import { insertQuadIntoGraph } from '@/util/graph/graphology';
 import { RdfReader } from '@/util/rdf-reader';
+import { GraphTransformer } from '@/util/transformations/GraphTransformer';
 import { useQuery } from '@tanstack/react-query';
 import Graph, { DirectedGraph } from 'graphology';
-import { circular } from 'graphology-layout';
-import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { Store } from 'n3';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -52,37 +50,32 @@ export const StoreProvider = ({ children }: PropsWithChildren) => {
         queryFn: loadDataIntoStore,
     });
 
+    const { data: graph, error: graphError } = useQuery({
+        queryKey: [store],
+        queryFn: async () => {
+            if (!store) {
+                return new Graph({ type: 'directed', multi: true });
+            }
+
+            return GraphTransformer.createGraph(store);
+        },
+    });
+
     useEffect(() => {
-        if (!error) {
-            return;
+        if (error) {
+            toast(String(error));
         }
 
-        toast(String(error));
-    }, [error]);
-
-    const graph = useMemo(() => {
-        if (!store) {
-            return new Graph({ type: 'directed', multi: true });
+        if (graphError) {
+            toast(String(graphError));
         }
-
-        const graph = new Graph({ type: 'directed', multi: true });
-        for (const quad of store) {
-            insertQuadIntoGraph(graph, quad);
-        }
-
-        circular.assign(graph);
-
-        const settings = forceAtlas2.inferSettings(graph);
-        forceAtlas2.assign(graph, { ...settings, iterations: 5 });
-
-        return graph;
-    }, [store]);
+    }, [error, graphError]);
 
     const context = useMemo(
         () => ({
             store: store ?? new Store(),
             isLoading,
-            graph,
+            graph: graph ?? new Graph({ type: 'directed', multi: true }),
         }),
         [store, graph, isLoading],
     );

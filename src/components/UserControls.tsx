@@ -8,7 +8,7 @@ export type UserControlsProps = ComponentPropsWithoutRef<'div'>;
 
 export function UserControls(props: UserControlsProps) {
     const { className, ...restProps } = props;
-    const { popTransformationsStack, runNextTransformation, canPopTransformation, canRunTransformation } =
+    const { popTransformationsStack, runNextTransformation, canPopTransformation, canRunTransformation, adjustLayout } =
         useTransformer();
 
     const buttonClass =
@@ -17,7 +17,7 @@ export function UserControls(props: UserControlsProps) {
     return (
         <div className={cn('flex flex-col gap-2', className)} {...restProps}>
             <div className="flex justify-end w-full">
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" onClick={() => adjustLayout()}>
                     Adjust layout
                 </Button>
             </div>
