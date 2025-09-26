@@ -14,7 +14,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useGraphSettings } from '@/store/graphSettings';
 import { useUiControlStore } from '@/store/uiControl';
 import { cn } from '@/util/ui/shadcn';
-import { ArrowDownTrayIcon, Cog8ToothIcon, CommandLineIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import {
+    ArrowDownTrayIcon,
+    Cog8ToothIcon,
+    CommandLineIcon,
+    EllipsisVerticalIcon,
+    QuestionMarkCircleIcon,
+} from '@heroicons/react/24/outline';
 import { CommandLineIcon as CommandLineDark } from '@heroicons/react/24/solid';
 import { ComponentPropsWithoutRef, useEffect, useMemo, useState } from 'react';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
@@ -59,10 +65,17 @@ function MenuNavigator(props: MenuProps) {
             </TooltipProvider>
 
             <DropdownMenu>
-                <DropdownMenuTrigger className="relative group px-2 py-2">
-                    <Cog8ToothIcon className="h-8 w-8" />
-                    <span className="absolute bottom-0 translate-[-50%] w-[65%] bg-black h-0 group-hover:h-[2px] transition-[height]"></span>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DropdownMenuTrigger className="relative group px-2 py-2 focus:outline-none">
+                            <Cog8ToothIcon className="h-8 w-8" />
+                            <span className="absolute bottom-0 translate-[-50%] w-[65%] bg-black h-0 group-hover:h-[2px] transition-[height]"></span>
+                        </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipProvider>
+                        <TooltipContent>Layout options</TooltipContent>
+                    </TooltipProvider>
+                </Tooltip>
                 <DropdownMenuContent className="w-56">
                     <DropdownMenuCheckboxItem
                         checked={!!sigmaSettings.renderEdgeLabels}
@@ -72,7 +85,19 @@ function MenuNavigator(props: MenuProps) {
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuLabel className="font-semibold">Positioning function</DropdownMenuLabel>
+                    <DropdownMenuLabel className="font-semibold">
+                        Positioning function&nbsp;
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <QuestionMarkCircleIcon className="inline w-4 h-4" />
+                            </TooltipTrigger>
+                            <TooltipProvider>
+                                <TooltipContent>
+                                    Function to use for positioning newly added nodes in the graph.
+                                </TooltipContent>
+                            </TooltipProvider>
+                        </Tooltip>
+                    </DropdownMenuLabel>
                     <DropdownMenuRadioGroup
                         value={positioningFunction}
                         onValueChange={setPositioningFunction as (value: string) => void}

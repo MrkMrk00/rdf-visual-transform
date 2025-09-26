@@ -24,6 +24,7 @@ export function UserControls(props: UserControlsProps) {
 
             <div className="flex items-center gap-2">
                 <button
+                    title="Unzoom"
                     disabled={!canPopTransformation()}
                     className={buttonClass}
                     type="button"
@@ -33,6 +34,7 @@ export function UserControls(props: UserControlsProps) {
                 </button>
 
                 <button
+                    title="Zoom"
                     disabled={!canRunTransformation()}
                     className={buttonClass}
                     type="button"
