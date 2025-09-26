@@ -139,6 +139,14 @@ export function useTransformer() {
                 }
             },
             renderAndRun,
+            canPopTransformation: () => {
+                return performedTransformations.length > 0;
+            },
+            canRunTransformation: () => {
+                const idsOfPerformed = new Set(performedTransformations.map((tsf) => tsf.id));
+
+                return transformations.some((tsf) => !idsOfPerformed.has(tsf.id));
+            },
             popTransformationsStack: () => {
                 const diff = stackPop();
                 if (!diff) {
