@@ -18,6 +18,7 @@ import {
     ArrowDownTrayIcon,
     Cog8ToothIcon,
     CommandLineIcon,
+    EllipsisHorizontalCircleIcon,
     EllipsisVerticalIcon,
     QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -26,9 +27,24 @@ import { ComponentPropsWithoutRef, useEffect, useMemo, useState } from 'react';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
 export function Menu() {
+    const [showGraphLoader, setShowGraphLoader] = useState(false);
+
     return (
-        <nav className="flex flex-col-reverse justify-end md:flex-row md:justify-between md:items-center w-full px-2 bg-white inset-shadow-md">
-            <GraphLoader />
+        <nav className="relative flex w-full px-2 bg-white justify-between">
+            <button type="button" className="p-2 block md:hidden" onClick={() => setShowGraphLoader((prev) => !prev)}>
+                <EllipsisHorizontalCircleIcon className="w-8 h-8" />
+            </button>
+
+            <GraphLoader
+                className={cn(
+                    `bg-white z-10
+                     absolute top-12 left-[50%] translate-x-[-50%]
+                     md:static md:top-[unset] md:left-[unset] md:translate-x-[unset] md:flex`,
+                    {
+                        hidden: !showGraphLoader,
+                    },
+                )}
+            />
             <MenuNavigator />
         </nav>
     );
@@ -113,7 +129,11 @@ function MenuNavigator(props: MenuProps) {
     );
 }
 
-function GraphLoader() {
+type GraphLoaderProps = ComponentPropsWithoutRef<'div'>;
+
+function GraphLoader(props: GraphLoaderProps) {
+    const { className, ...restProps } = props;
+
     const graph = useGraphSettings((store) => store.graph);
     const loadGraphFromUrl = useGraphSettings((store) => store.loadGraphFromUrl);
 
@@ -155,14 +175,14 @@ function GraphLoader() {
     }
 
     return (
-        <div className="flex items-center">
-            <label className="inline-flex items-center gap-2">
-                <span className="text-sm min-w-fit">Graph from URL:</span>
+        <div className={cn('flex items-center w-[90%] md:w-[unset]', className)} {...restProps}>
+            <label className="w-full inline-flex items-center gap-2">
+                <span className="hidden md:inline text-sm min-w-fit">Graph from URL:</span>
                 <Input
                     onInput={(ev) => setGraphUrl(ev.currentTarget.value)}
                     value={graphUrl}
                     onKeyDown={(ev) => ev.key === 'Enter' && submitUrlForLoad()}
-                    className={cn('w-sm rounded-r-none border-r-0', {
+                    className={cn('w-full md:w-sm rounded-r-none border-r-0', {
                         'underline decoration-wavy decoration-destructive': !isUrlCorrect,
                     })}
                     placeholder="Graph URL"
