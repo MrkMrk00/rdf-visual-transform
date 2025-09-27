@@ -6,11 +6,8 @@ import { persist } from 'zustand/middleware';
 
 export type TransformationPattern =
     | 'propertyChainShortcut'
-    | 'propertyChainShortcutExpansion'
     | 'relationshipDereification'
-    | 'relationshipReification'
     | 'linkCountingProperty'
-    | 'linkMultiplyingProperty'
     | 'custom';
 
 export type Transformation<TPattern extends TransformationPattern = TransformationPattern> = {

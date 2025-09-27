@@ -2,11 +2,8 @@ import { compile } from 'handlebars';
 import { load } from 'js-yaml';
 
 import propertyChainShortcutTemplate from './01-property-shortcut.hbs?raw';
-import propertyChainShortcutExpansionTemplate from './01b-property-shortcut-expansion.hbs?raw';
 import relationshipDereificationTemplate from './03-relationship-dereification.hbs?raw';
-import relationshipReificationTemplate from './03b-relationship-reification.hbs?raw';
 import linkCountingPropertyTemplate from './06-link-counting-property.hbs?raw';
-import linkMultiplyingPropertyTemplate from './06b-link-multiplying-property.hbs?raw';
 
 export type PropertyChainShortcutOpts = {
     prefixes?: string[];
@@ -19,19 +16,6 @@ export type PropertyChainShortcutOpts = {
 export const propertyChainShortcut = (): TemplateOutput<PropertyChainShortcutOpts>[] =>
     parseTemplate(propertyChainShortcutTemplate);
 
-export type PropertyChainShortcutExpansionOpts = {
-    prefixes?: string[];
-
-    predicate0: string;
-    predicate1: string;
-    shortcut: string;
-};
-
-export const propertyChainShortcutExpansion = (): TemplateOutput<PropertyChainShortcutExpansionOpts>[] =>
-    parseTemplate(propertyChainShortcutExpansionTemplate);
-
-// ============================================================
-
 export type RelationshipDereificationOpts = {
     prefixes?: string[];
 
@@ -43,18 +27,6 @@ export type RelationshipDereificationOpts = {
 export const relationshipDereification = (): TemplateOutput<RelationshipDereificationOpts>[] =>
     parseTemplate(relationshipDereificationTemplate);
 
-export type RelationshipReificationOpts = {
-    prefixes?: string[];
-
-    predicate0: string;
-    predicate1: string;
-    shortcut: string;
-    newSubject: string;
-};
-
-export const relationshipReification = (): TemplateOutput<RelationshipReificationOpts>[] =>
-    parseTemplate(relationshipReificationTemplate);
-
 export type LinkCountingPropertyOpts = {
     newProperty: string;
     sourceProperty: string;
@@ -62,14 +34,6 @@ export type LinkCountingPropertyOpts = {
 
 export const linkCountingProperty = (): TemplateOutput<LinkCountingPropertyOpts>[] =>
     parseTemplate(linkCountingPropertyTemplate);
-
-export type LinkMultiplyingPropertyOpts = {
-    countingProperty: string;
-    placeholderObject: string;
-};
-
-export const linkMultiplyingProperty = (): TemplateOutput<LinkMultiplyingPropertyOpts>[] =>
-    parseTemplate(linkMultiplyingPropertyTemplate);
 
 export type TemplateOutput<TOpts extends Record<string, any> = Record<string, any>> = {
     header: object;
