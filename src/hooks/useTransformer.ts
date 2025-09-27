@@ -167,6 +167,7 @@ export function useTransformer() {
                 }
 
                 const priorityBucket = getNextPriorityBucket(available);
+                // TODO: do it randomly or deterministically?
                 const toRun = priorityBucket[Math.round(Math.random() * (priorityBucket.length - 1))];
 
                 return renderAndRun(toRun);
