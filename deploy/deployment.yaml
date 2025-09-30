@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rdf-visual-transform
+  namespace: argocd
+  labels:
+    app: rdf-visual-transform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rdf-visual-transform
+  template:
+    metadata:
+      labels:
+        app: rdf-visual-transform
+    spec:
+      containers:
+        - name: rdf-visual-transform
+          image: ghcr.io/mrkmrk00/rdf-visual-transform:master
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
