@@ -79,11 +79,13 @@ const AppLayout = memo(function AppLayout() {
 
 export function App() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <StoreProvider>
-                <AppLayout />
-                <Toaster position="top-center" />
-            </StoreProvider>
-        </QueryClientProvider>
+        <>
+            <QueryClientProvider client={queryClient}>
+                <StoreProvider>
+                    <AppLayout />
+                </StoreProvider>
+            </QueryClientProvider>
+            <Toaster position="top-center" />
+        </>
     );
 }
