@@ -4,9 +4,9 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import type { ComponentPropsWithoutRef } from 'react';
 import { Button } from './ui/button';
 
-export type UserControlsProps = ComponentPropsWithoutRef<'div'>;
+export type ZoomButtonsProps = ComponentPropsWithoutRef<'div'>;
 
-export function UserControls(props: UserControlsProps) {
+export function ZoomButtons(props: ZoomButtonsProps) {
     const { className, ...restProps } = props;
     const { popTransformationsStack, runNextTransformation, canPopTransformation, canRunTransformation, adjustLayout } =
         useTransformer();

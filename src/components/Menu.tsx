@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useGraphSettings } from '@/store/graphSettings';
+import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { useUiControlStore } from '@/store/uiControl';
 import { cn } from '@/util/ui/shadcn';
 import {
@@ -23,13 +23,18 @@ import {
     QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import { CommandLineIcon as CommandLineDark } from '@heroicons/react/24/solid';
-import { ComponentPropsWithoutRef, useEffect, useMemo, useState } from 'react';
+import { ComponentPropsWithoutRef, RefObject, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
-export function Menu() {
+export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
     const [showGraphLoader, setShowGraphLoader] = useState(false);
 
-    return (
+    if (!target?.current) {
+        return null;
+    }
+
+    return createPortal(
         <nav className="relative flex w-full px-2 bg-white justify-between">
             <button type="button" className="p-2 block md:hidden" onClick={() => setShowGraphLoader((prev) => !prev)}>
                 <EllipsisHorizontalCircleIcon className="w-8 h-8" />
@@ -46,7 +51,8 @@ export function Menu() {
                 )}
             />
             <MenuNavigator />
-        </nav>
+        </nav>,
+        target.current,
     );
 }
 
@@ -63,6 +69,8 @@ function MenuNavigator(props: MenuProps) {
 
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
     const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
+
+    const [shouldZoom, toggleShouldZoom] = useShouldZoomWhileTransforming();
 
     return (
         <div className={cn('flex flex-row justify-end items-center shrink-0', className)} {...restProps}>
@@ -98,6 +106,9 @@ function MenuNavigator(props: MenuProps) {
                         onClick={() => toggleSigmaSetting('renderEdgeLabels')}
                     >
                         Show edge labels
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={shouldZoom} onClick={toggleShouldZoom}>
+                        Zoom automatically after transformation
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuSeparator />
 

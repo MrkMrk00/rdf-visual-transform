@@ -12,9 +12,25 @@ import { renderTemplate } from './renderTemplate';
 export const TransformerEvents = {
     change: 'change',
     error: 'error',
+
+    kindPopState: 'popstate',
+    kindLayout: 'layout',
+    isPopStateEvent: (ev: Event): ev is CustomEvent<{ kind: 'popstate' }> => {
+        return ev instanceof CustomEvent && typeof ev.detail === 'object' && ev.detail.kind === 'popstate';
+    },
+    isLayoutAdjustmentEvent: (ev: Event): ev is CustomEvent<{ kind: 'layout' }> => {
+        return ev instanceof CustomEvent && typeof ev.detail === 'object' && ev.detail.kind === 'layout';
+    },
 } as const;
 
-export type TransformerEvent = (typeof TransformerEvents)[keyof typeof TransformerEvents];
+export type TransformerEvent = ValueOf<{
+    [key in keyof typeof TransformerEvents]: key extends `kind${string}`
+        ? never
+        : (typeof TransformerEvents)[key] extends (...args: any) => any
+          ? never
+          : (typeof TransformerEvents)[key];
+}>;
+
 export type PositioningFunction = (oldGraph: AbstractGraph, newGraph: AbstractGraph) => void;
 
 export type GraphDiff = {
@@ -126,10 +142,10 @@ export class GraphTransformer implements EventTarget {
         this.store.addQuads(diff.deleted);
         this.store.removeQuads(diff.inserted);
 
-        return this.syncGraphWithStore();
+        return this.syncGraphWithStore({ kind: TransformerEvents.kindPopState });
     }
 
-    syncGraphWithStore(): Promise<void> {
+    syncGraphWithStore<T extends Record<string, unknown>>(eventDetail?: T): Promise<void> {
         const oldGraph = this.graph.copy();
 
         // add newly INSERTed tripples into the graph
@@ -143,7 +159,7 @@ export class GraphTransformer implements EventTarget {
         }
 
         // signal to render the graph in current state (with only the INSERTed tripples in the graph)
-        this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+        this.eventBus.dispatchEvent(new CustomEvent(TransformerEvents.change, { detail: eventDetail }));
 
         // the graph is ready to be rendered
         //  -> schedule cleanup into macrotask queue (~ apply DELETE)
@@ -165,7 +181,7 @@ export class GraphTransformer implements EventTarget {
                     }
                 });
 
-                this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+                this.eventBus.dispatchEvent(new CustomEvent(TransformerEvents.change, { detail: eventDetail }));
 
                 resolve();
             }),

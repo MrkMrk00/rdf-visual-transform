@@ -1,8 +1,10 @@
 import * as trippleStore from '@/contexts/tripple-store';
-import { useGraphSettings } from '@/store/graphSettings';
+import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { Transformation, useTransformationsStore } from '@/store/transformations';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
 import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
+import { useSigma } from '@react-sigma/core';
+import type { AbstractGraph } from 'graphology-types';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
@@ -85,6 +87,8 @@ export function useTransformer() {
     const graph = trippleStore.useGraphologyGraph();
     const store = trippleStore.useTripleStore();
 
+    useAutoZoom(graph);
+
     const stackPop = useGraphSettings((store) => store.popTransformation);
     const stackPush = useGraphSettings((store) => store.pushTransformation);
 
@@ -99,7 +103,20 @@ export function useTransformer() {
 
         // Forward to the global one -> do not lose the listeners on useMemo run.
         transformer.addEventListener(TransformerEvents.change, (ev) => {
-            eventBus.dispatchEvent(new Event(ev.type));
+            let event: Event;
+
+            if (ev instanceof CustomEvent) {
+                event = new CustomEvent(ev.type, {
+                    detail: typeof ev.detail === 'object' ? { ...ev.detail } : ev.detail,
+                    bubbles: ev.bubbles,
+                    cancelable: ev.cancelable,
+                    composed: ev.composed,
+                });
+            } else {
+                event = new Event(ev.type);
+            }
+
+            eventBus.dispatchEvent(event);
         });
 
         return transformer;
@@ -178,6 +195,36 @@ export function useTransformer() {
             },
         };
     }, [transformer, stackPush, stackPop, performedTransformations, transformations]);
+}
+
+const ZOOM_RATIO = 1.15;
+
+function useAutoZoom(graph: AbstractGraph) {
+    const [shouldZoom] = useShouldZoomWhileTransforming();
+    const sigma = useSigma();
+
+    useEffect(() => {
+        if (!shouldZoom) {
+            return;
+        }
+
+        function zoomHandler(ev: Event) {
+            if (TransformerEvents.isLayoutAdjustmentEvent(ev)) {
+                return;
+            }
+
+            const camera = sigma.getCamera();
+
+            const sign = TransformerEvents.isPopStateEvent(ev) ? +1 : -1;
+            const ratio = camera.getState().ratio * (1 + sign * ZOOM_RATIO);
+
+            camera.animatedZoom(ratio);
+        }
+
+        eventBus.addEventListener(TransformerEvents.change, zoomHandler);
+
+        return () => eventBus.removeEventListener(TransformerEvents.change, zoomHandler);
+    }, [shouldZoom, graph, sigma]);
 }
 
 function getNextPriorityBucket(transformations: Transformation[]): Transformation[] {

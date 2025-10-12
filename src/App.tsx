@@ -4,11 +4,11 @@ import '@react-sigma/core/lib/style.css';
 import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, memo, Suspense } from 'react';
+import { lazy, memo, PropsWithChildren, Suspense, useRef } from 'react';
 import { DEFAULT_NODE_PROGRAM_CLASSES } from 'sigma/settings';
 import { Menu } from './components/Menu';
 import { Toaster } from './components/ui/sonner';
-import { UserControls } from './components/UserControls';
+import { ZoomButtons } from './components/ZoomButtons';
 import { StoreProvider } from './contexts/tripple-store';
 import { useGraphSettings } from './store/graphSettings';
 import { useUiControlStore } from './store/uiControl';
@@ -31,13 +31,19 @@ const queryClient = new QueryClient({
     },
 });
 
-const GraphMain = memo(function GraphMain() {
+const GraphMain = memo(function GraphMain({ children }: PropsWithChildren) {
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
 
     return (
         <SigmaContainer
             style={sigmaStyle}
             settings={{
+                enableCameraRotation: false,
+                enableCameraZooming: true,
+                enableCameraPanning: true,
+                ...sigmaSettings,
+
+                allowInvalidContainer: true,
                 nodeProgramClasses: {
                     ...DEFAULT_NODE_PROGRAM_CLASSES,
                     square: NodeSquareProgram,
@@ -46,21 +52,26 @@ const GraphMain = memo(function GraphMain() {
                 edgeProgramClasses: {
                     curved: EdgeCurvedArrowProgram,
                 },
-                ...sigmaSettings,
-                allowInvalidContainer: true,
             }}
         >
             <GraphRenderer />
+            {children}
         </SigmaContainer>
     );
 });
 
 const AppLayout = memo(function AppLayout() {
     const devModeEnabled = useUiControlStore((store) => store.devMode);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     return (
         <>
-            <Menu />
+            {/* this is awful, but the sigma-react library does not provide a way to declare the context
+                without directly rendering the graph. -> You cannot render anything before rendering the graph itself.
+                The alternative would be to have everything as `position: absolute` in the UI...
+            */}
+            <nav ref={menuRef} className="relative flex w-full px-2 bg-white justify-between"></nav>
+
             <div className="relative w-full h-full">
                 {devModeEnabled && (
                     <Suspense>
@@ -68,10 +79,11 @@ const AppLayout = memo(function AppLayout() {
                     </Suspense>
                 )}
                 <div className="absolute inset-0">
-                    <GraphMain />
+                    <GraphMain>
+                        <Menu target={menuRef} />
+                        <ZoomButtons className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
+                    </GraphMain>
                 </div>
-
-                <UserControls className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
             </div>
         </>
     );

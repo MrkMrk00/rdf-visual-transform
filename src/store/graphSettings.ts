@@ -1,4 +1,5 @@
 import type { OmitNever } from '@/util/types';
+import { useCallback, useMemo } from 'react';
 import type { Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -75,3 +76,17 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
         },
     ),
 );
+
+export function useShouldZoomWhileTransforming() {
+    const toggleSetting = useGraphSettings((store) => store.toggleSetting);
+    const shouldZoom = useGraphSettings((store) => store.sigmaSettings.enableCameraZooming === false);
+
+    const toggleShouldZoom = useCallback(
+        () => {
+            toggleSetting('enableCameraZooming', true);
+        },
+        [toggleSetting],
+    );
+
+    return useMemo(() => [shouldZoom, toggleShouldZoom] as const, [shouldZoom, toggleShouldZoom]);
+}
