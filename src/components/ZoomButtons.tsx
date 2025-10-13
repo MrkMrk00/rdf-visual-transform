@@ -25,20 +25,20 @@ export function ZoomButtons(props: ZoomButtonsProps) {
             <div className="flex items-center gap-2">
                 <button
                     title="Unzoom"
-                    disabled={!canPopTransformation()}
                     className={buttonClass}
                     type="button"
-                    onClick={popTransformationsStack}
+                    onClick={runNextTransformation}
+                    disabled={!canRunTransformation()}
                 >
                     <MagnifyingGlassMinusIcon className="h-8 w-8" />
                 </button>
 
                 <button
                     title="Zoom"
-                    disabled={!canRunTransformation()}
                     className={buttonClass}
                     type="button"
-                    onClick={runNextTransformation}
+                    onClick={popTransformationsStack}
+                    disabled={!canPopTransformation()}
                 >
                     <MagnifyingGlassPlusIcon className="h-8 w-8" />
                 </button>
