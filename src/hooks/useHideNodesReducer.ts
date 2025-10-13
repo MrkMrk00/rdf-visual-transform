@@ -10,7 +10,7 @@ export function useHideNodesReducer(): Settings['nodeReducer'] {
     const hiddenPredicates = useGraphSettings((store) => store.hiddenPredicates);
 
     return useMemo(() => {
-        if (!graph) {
+        if (!graph || graph.size === 0) {
             return null;
         }
 

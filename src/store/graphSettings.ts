@@ -3,7 +3,7 @@ import { useHideNodesReducer } from '@/hooks/useHideNodesReducer';
 import type { OmitNever } from '@/util/types';
 import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { DEFAULT_NODE_PROGRAM_CLASSES, Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -17,12 +17,14 @@ export type GraphSettingsStore = {
     sigmaSettings: Partial<SigmaSettings>;
     positioningFunction: PositioningFunction;
     hiddenPredicates: string[];
+    autoZoomOnTransformation: boolean;
 
     loadGraphFromUrl: (url: string) => void;
     updateSigmaSettings: (updated: Partial<SigmaSettings>) => void;
     toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
     setPositioningFunction: (value: PositioningFunction) => void;
     setHiddenPredicates: (valueOrPatchFunc: string[] | ((prev: string[]) => string[])) => void;
+    toggleAutoZoomOnTransformation: () => void;
 };
 
 type BoolSetting = OmitNever<{
@@ -48,6 +50,7 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
             sigmaSettings: {},
             positioningFunction: 'inverse-centroid-heuristic',
             hiddenPredicates: [],
+            autoZoomOnTransformation: true,
 
             loadGraphFromUrl: (url) => {
                 set((prev) => {
@@ -91,6 +94,9 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
                     hiddenPredicates: valueOrPatchFunc,
                 });
             },
+            toggleAutoZoomOnTransformation: () => {
+                set((prev) => ({ autoZoomOnTransformation: !prev.autoZoomOnTransformation }));
+            },
         }),
         {
             name: 'graph-settings',
@@ -100,14 +106,10 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
 );
 
 export function useShouldZoomWhileTransforming() {
-    const toggleSetting = useGraphSettings((store) => store.toggleSetting);
-    const shouldZoom = useGraphSettings((store) => store.sigmaSettings.enableCameraZooming === false);
+    const setAutoZoom = useGraphSettings((store) => store.toggleAutoZoomOnTransformation);
+    const shouldZoom = useGraphSettings((store) => store.autoZoomOnTransformation);
 
-    const toggleShouldZoom = useCallback(() => {
-        toggleSetting('enableCameraZooming', true);
-    }, [toggleSetting]);
-
-    return useMemo(() => [shouldZoom, toggleShouldZoom] as const, [shouldZoom, toggleShouldZoom]);
+    return useMemo(() => [shouldZoom, setAutoZoom] as const, [shouldZoom, setAutoZoom]);
 }
 
 export function useSigmaSettings(): Partial<SigmaSettings> {
@@ -117,10 +119,10 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
 
     return useMemo(() => {
         return {
+            ...sigmaSettings,
+            enableCameraPanning: true,
             enableCameraRotation: false,
             enableCameraZooming: true,
-            enableCameraPanning: true,
-            ...sigmaSettings,
 
             allowInvalidContainer: true,
             nodeProgramClasses: {
