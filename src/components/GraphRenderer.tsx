@@ -1,6 +1,7 @@
 import { useGraphologyGraph } from '@/contexts/tripple-store';
 import { useDoubleClickToCopy } from '@/hooks/ui/useDoubleClickToCopy';
 import { useTransformer } from '@/hooks/useTransformer';
+import { useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { useLoadGraph, useSigma } from '@react-sigma/core';
 import { memo, useEffect } from 'react';
 import { NodeContextMenu } from './NodeContextMenu';
@@ -12,6 +13,38 @@ export const GraphRenderer = memo(function GraphRenderer() {
 
     const sigma = useSigma();
     useDoubleClickToCopy(sigma);
+
+    const [shouldZoom] = useShouldZoomWhileTransforming();
+
+    // I hate this... Does not work with direct listeners with Sigma.on()
+    // f*** you Sigma - capture phase
+    // btw. this may not work on iOS Safari: https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
+    useEffect(() => {
+        if (!shouldZoom) {
+            return;
+        }
+
+        const { left, top, right, bottom } = sigma.getContainer().getBoundingClientRect();
+
+        function listener(ev: MouseEvent) {
+            const { clientX, clientY } = ev;
+
+            if (clientX >= left && clientX <= right && clientY >= top && clientY <= bottom) {
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+        }
+
+        const abortController = new AbortController();
+
+        document.addEventListener('wheel', listener, {
+            capture: true,
+            passive: false,
+            signal: abortController.signal,
+        });
+
+        return () => abortController.abort();
+    }, [shouldZoom, sigma]);
 
     useEffect(() => {
         if (!graph) {
