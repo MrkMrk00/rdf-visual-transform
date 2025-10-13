@@ -12,11 +12,13 @@ export type GraphSettingsStore = {
     graphUrlHistory: string[];
     sigmaSettings: Partial<SigmaSettings>;
     positioningFunction: PositioningFunction;
+    hiddenPredicates: string[];
 
     loadGraphFromUrl: (url: string) => void;
     updateSigmaSettings: (updated: Partial<SigmaSettings>) => void;
     toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
     setPositioningFunction: (value: PositioningFunction) => void;
+    setHiddenPredicates: (valueOrPatchFunc: string[] | ((prev: string[]) => string[])) => void;
 };
 
 type BoolSetting = OmitNever<{
@@ -41,6 +43,7 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
             graphUrlHistory: ['https://data.cityofnewyork.us/api/views/5ery-qagt/rows.rdf'],
             sigmaSettings: {},
             positioningFunction: 'inverse-centroid-heuristic',
+            hiddenPredicates: [],
 
             loadGraphFromUrl: (url) => {
                 set((prev) => {
@@ -69,6 +72,21 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
                 }));
             },
             setPositioningFunction: (positioningFunction) => set({ positioningFunction }),
+            setHiddenPredicates: (valueOrPatchFunc) => {
+                if (typeof valueOrPatchFunc === 'function') {
+                    set((prev) => {
+                        return {
+                            hiddenPredicates: valueOrPatchFunc(prev.hiddenPredicates),
+                        };
+                    });
+
+                    return;
+                }
+
+                set({
+                    hiddenPredicates: valueOrPatchFunc,
+                });
+            },
         }),
         {
             name: 'graph-settings',
@@ -81,12 +99,9 @@ export function useShouldZoomWhileTransforming() {
     const toggleSetting = useGraphSettings((store) => store.toggleSetting);
     const shouldZoom = useGraphSettings((store) => store.sigmaSettings.enableCameraZooming === false);
 
-    const toggleShouldZoom = useCallback(
-        () => {
-            toggleSetting('enableCameraZooming', true);
-        },
-        [toggleSetting],
-    );
+    const toggleShouldZoom = useCallback(() => {
+        toggleSetting('enableCameraZooming', true);
+    }, [toggleSetting]);
 
     return useMemo(() => [shouldZoom, toggleShouldZoom] as const, [shouldZoom, toggleShouldZoom]);
 }

@@ -29,6 +29,8 @@ import { ComponentPropsWithoutRef, RefObject, useEffect, useMemo, useState } fro
 import { createPortal } from 'react-dom';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
+const COMMON_PREDICATES_TO_HIDE = ['http://www.w3.org/1999/02/22-rdf-syntax-ns#type'];
+
 export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
     const [showGraphLoader, setShowGraphLoader] = useState(false);
 
@@ -83,6 +85,9 @@ function MenuNavigator(props: MenuProps) {
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
     const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
 
+    const hiddenPredicates = useGraphSettings((store) => store.hiddenPredicates);
+    const setHiddenPredicates = useGraphSettings((store) => store.setHiddenPredicates);
+
     const [shouldZoom, toggleShouldZoom] = useShouldZoomWhileTransforming();
     const isLoading = useGraphIsLoading();
 
@@ -124,7 +129,7 @@ function MenuNavigator(props: MenuProps) {
                         <TooltipContent>Layout options</TooltipContent>
                     </TooltipProvider>
                 </Tooltip>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="max-w-[calc(100vw-4em)] w-80 mx-8">
                     <DropdownMenuCheckboxItem
                         checked={!!sigmaSettings.renderEdgeLabels}
                         onClick={() => toggleSigmaSetting('renderEdgeLabels')}
@@ -133,6 +138,23 @@ function MenuNavigator(props: MenuProps) {
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem checked={shouldZoom} onClick={toggleShouldZoom}>
                         Zoom automatically after transformation
+                    </DropdownMenuCheckboxItem>
+
+                    <DropdownMenuCheckboxItem
+                        checked={hiddenPredicates.length > 0}
+                        onClick={() => {
+                            if (hiddenPredicates.length > 0) {
+                                setHiddenPredicates([]);
+
+                                return;
+                            }
+
+                            setHiddenPredicates(COMMON_PREDICATES_TO_HIDE);
+                        }}
+                    >
+                        <span>
+                            Hide common RDF predicates (e.g. <code>rdf:type</code>)
+                        </span>
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuSeparator />
 
