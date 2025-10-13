@@ -215,7 +215,17 @@ function useAutoZoom() {
                 const prevZoomSetting = sigma.getSetting('enableCameraZooming');
                 try {
                     sigma.setSetting('enableCameraZooming', true);
-                    await sigma.getCamera().animatedZoom(1 + sign * ZOOM_RATIO);
+
+                    const prevZoomRatio = sigma.getCamera().getState().ratio;
+                    await sigma.getCamera().animatedReset();
+                    const newZoomRatio = sigma.getCamera().getState().ratio;
+
+                    // popstate = zoom in (more data); the ratio should decrease (*+1 -> should be > 0)
+                    // zoom out (less data);           the ratio should increase (*-1 -> should be > 0)
+                    //  -> if not (<= 0), zoom manually
+                    if ((prevZoomRatio - newZoomRatio) * sign <= 0) {
+                        await sigma.getCamera().animatedZoom(1 + sign * ZOOM_RATIO);
+                    }
                 } finally {
                     sigma.setSetting('enableCameraZooming', prevZoomSetting);
                 }
