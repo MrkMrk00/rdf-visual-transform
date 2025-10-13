@@ -1,6 +1,10 @@
+import { useHideEdgesReducer } from '@/hooks/useHideEdgesReducer';
+import { useHideNodesReducer } from '@/hooks/useHideNodesReducer';
 import type { OmitNever } from '@/util/types';
+import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
+import { NodeSquareProgram } from '@sigma/node-square';
 import { useCallback, useMemo } from 'react';
-import type { Settings as SigmaSettings } from 'sigma/settings';
+import { DEFAULT_NODE_PROGRAM_CLASSES, Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { createTransformationsStack, TransformationsStackSlice } from './transformationsStack.slice';
@@ -104,4 +108,30 @@ export function useShouldZoomWhileTransforming() {
     }, [toggleSetting]);
 
     return useMemo(() => [shouldZoom, toggleShouldZoom] as const, [shouldZoom, toggleShouldZoom]);
+}
+
+export function useSigmaSettings(): Partial<SigmaSettings> {
+    const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
+    const edgeReducer = useHideEdgesReducer();
+    const nodeReducer = useHideNodesReducer();
+
+    return useMemo(() => {
+        return {
+            enableCameraRotation: false,
+            enableCameraZooming: true,
+            enableCameraPanning: true,
+            ...sigmaSettings,
+
+            allowInvalidContainer: true,
+            nodeProgramClasses: {
+                ...DEFAULT_NODE_PROGRAM_CLASSES,
+                square: NodeSquareProgram,
+            },
+            edgeProgramClasses: {
+                curved: EdgeCurvedArrowProgram,
+            },
+            edgeReducer,
+            nodeReducer,
+        };
+    }, [sigmaSettings, edgeReducer, nodeReducer]);
 }
