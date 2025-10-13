@@ -73,17 +73,17 @@ const AppLayout = memo(function AppLayout() {
             <nav ref={menuRef} className="relative flex w-full px-2 bg-white justify-between"></nav>
 
             <div className="relative w-full h-full">
-                {devModeEnabled && (
-                    <Suspense>
-                        <DevMode />
-                    </Suspense>
-                )}
-                <div className="absolute inset-0">
-                    <GraphMain>
-                        <Menu target={menuRef} />
-                        <ZoomButtons className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
-                    </GraphMain>
-                </div>
+                <GraphMain>
+                    <Menu target={menuRef} />
+
+                    {devModeEnabled && (
+                        <Suspense>
+                            <DevMode />
+                        </Suspense>
+                    )}
+
+                    <ZoomButtons className="absolute bottom-0 right-0 z-10 pr-4 pb-4" />
+                </GraphMain>
             </div>
         </>
     );

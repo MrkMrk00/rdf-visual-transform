@@ -93,7 +93,7 @@ export function AvailableTransformations() {
                     <h3>Available transformations</h3>
                     {transformationsRaw.length > 0 && (
                         <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                                 <Button size="sm" type="button" variant="success" onClick={download}>
                                     <ArrowDownTrayIcon className="w-4 h-4" />
                                 </Button>
