@@ -11,11 +11,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useGraphIsLoading } from '@/contexts/tripple-store';
 import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { useUiControlStore } from '@/store/uiControl';
 import { cn } from '@/util/ui/shadcn';
 import {
     ArrowDownTrayIcon,
+    ArrowPathRoundedSquareIcon,
     Cog8ToothIcon,
     CommandLineIcon,
     EllipsisHorizontalCircleIcon,
@@ -58,6 +60,17 @@ export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
 
 type MenuProps = Omit<ComponentPropsWithoutRef<'nav'>, 'children'>;
 
+function MenuItemWithUnderline(props: ComponentPropsWithoutRef<'button'>) {
+    const { className, children, ...restProps } = props;
+
+    return (
+        <button className={cn('relative group px-2 py-2 focus:outline-none', className)} {...restProps}>
+            {children}
+            <span className="absolute bottom-0 translate-[-50%] w-[65%] bg-black h-0 group-hover:h-[2px] transition-[height]"></span>
+        </button>
+    );
+}
+
 function MenuNavigator(props: MenuProps) {
     const { className, ...restProps } = props;
 
@@ -71,18 +84,28 @@ function MenuNavigator(props: MenuProps) {
     const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
 
     const [shouldZoom, toggleShouldZoom] = useShouldZoomWhileTransforming();
+    const isLoading = useGraphIsLoading();
+
+    const iconSize = 'h-8 w-8';
 
     return (
         <div className={cn('flex flex-row justify-end items-center shrink-0', className)} {...restProps}>
+            {isLoading && (
+                <span className="px-2 py-2">
+                    <ArrowPathRoundedSquareIcon className={cn(iconSize, 'animate-spin')} />
+                </span>
+            )}
+
             <TooltipProvider>
                 <Tooltip>
-                    <TooltipTrigger className="relative group px-2 py-2 hidden md:block" onClick={toggleDevMode}>
-                        {devModeEnabled ? (
-                            <CommandLineDark className="h-8 w-8" />
-                        ) : (
-                            <CommandLineIcon className="h-8 w-8" />
-                        )}
-                        <span className="absolute bottom-0 translate-[-50%] w-[65%] bg-black h-0 group-hover:h-[2px] transition-[height]"></span>
+                    <TooltipTrigger asChild>
+                        <MenuItemWithUnderline className="hidden md:block" onClick={toggleDevMode}>
+                            {devModeEnabled ? (
+                                <CommandLineDark className={iconSize} />
+                            ) : (
+                                <CommandLineIcon className={iconSize} />
+                            )}
+                        </MenuItemWithUnderline>
                     </TooltipTrigger>
                     <TooltipContent>Dev mode</TooltipContent>
                 </Tooltip>
@@ -91,9 +114,10 @@ function MenuNavigator(props: MenuProps) {
             <DropdownMenu>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <DropdownMenuTrigger className="relative group px-2 py-2 focus:outline-none">
-                            <Cog8ToothIcon className="h-8 w-8" />
-                            <span className="absolute bottom-0 translate-[-50%] w-[65%] bg-black h-0 group-hover:h-[2px] transition-[height]"></span>
+                        <DropdownMenuTrigger asChild>
+                            <MenuItemWithUnderline>
+                                <Cog8ToothIcon className={iconSize} />
+                            </MenuItemWithUnderline>
                         </DropdownMenuTrigger>
                     </TooltipTrigger>
                     <TooltipProvider>

@@ -2,10 +2,10 @@ import { useGraphologyGraph } from '@/contexts/tripple-store';
 import { useDoubleClickToCopy } from '@/hooks/ui/useDoubleClickToCopy';
 import { useTransformer } from '@/hooks/useTransformer';
 import { useLoadGraph, useSigma } from '@react-sigma/core';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { NodeContextMenu } from './NodeContextMenu';
 
-export function GraphRenderer() {
+export const GraphRenderer = memo(function GraphRenderer() {
     const loadGraph = useLoadGraph();
     const graph = useGraphologyGraph();
     const { onChange } = useTransformer();
@@ -37,4 +37,4 @@ export function GraphRenderer() {
             <NodeContextMenu sigma={sigma} />
         </>
     );
-}
+});

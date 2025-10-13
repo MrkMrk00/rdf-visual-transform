@@ -54,7 +54,6 @@ const GraphMain = memo(function GraphMain({ children }: PropsWithChildren) {
                 },
             }}
         >
-            <GraphRenderer />
             {children}
         </SigmaContainer>
     );
@@ -75,6 +74,7 @@ const AppLayout = memo(function AppLayout() {
             <div className="relative w-full h-full">
                 <GraphMain>
                     <Menu target={menuRef} />
+                    <GraphRenderer />
 
                     {devModeEnabled && (
                         <Suspense>
