@@ -40,7 +40,7 @@ importers:
         version: 1.2.8(@types/react-dom@19.2.1(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-sigma/core':
         specifier: ^5.0.4
-        version: 5.0.4(graphology@0.25.4(graphology-types@0.24.8))(react@19.2.0)(sigma@3.0.2(graphology-types@0.24.8))
+        version: 5.0.4(graphology@0.26.0(graphology-types@0.24.8))(react@19.2.0)(sigma@3.0.2(graphology-types@0.24.8))
       '@shikijs/monaco':
         specifier: ^3.13.0
         version: 3.13.0
@@ -63,8 +63,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       graphology:
-        specifier: ^0.25.4
-        version: 0.25.4(graphology-types@0.24.8)
+        specifier: ^0.26.0
+        version: 0.26.0(graphology-types@0.24.8)
       graphology-layout:
         specifier: ^0.6.1
         version: 0.6.1(graphology-types@0.24.8)
@@ -2931,8 +2931,8 @@ packages:
     peerDependencies:
       graphology-types: '>=0.23.0'
 
-  graphology@0.25.4:
-    resolution: {integrity: sha512-33g0Ol9nkWdD6ulw687viS8YJQBxqG5LWII6FI6nul0pq6iM2t5EKquOTFDbyTblRB3O9I+7KX4xI8u5ffekAQ==}
+  graphology@0.26.0:
+    resolution: {integrity: sha512-8SSImzgUUYC89Z042s+0r/vMibY7GX/Emz4LDO5e7jYXhuoWfHISPFJYjpRLUSJGq6UQ6xlenvX1p/hJdfXuXg==}
     peerDependencies:
       graphology-types: '>=0.24.0'
 
@@ -8080,9 +8080,9 @@ snapshots:
     dependencies:
       '@types/node': 24.7.2
 
-  '@react-sigma/core@5.0.4(graphology@0.25.4(graphology-types@0.24.8))(react@19.2.0)(sigma@3.0.2(graphology-types@0.24.8))':
+  '@react-sigma/core@5.0.4(graphology@0.26.0(graphology-types@0.24.8))(react@19.2.0)(sigma@3.0.2(graphology-types@0.24.8))':
     dependencies:
-      graphology: 0.25.4(graphology-types@0.24.8)
+      graphology: 0.26.0(graphology-types@0.24.8)
       react: 19.2.0
       sigma: 3.0.2(graphology-types@0.24.8)
 
@@ -9300,11 +9300,10 @@ snapshots:
     dependencies:
       graphology-types: 0.24.8
 
-  graphology@0.25.4(graphology-types@0.24.8):
+  graphology@0.26.0(graphology-types@0.24.8):
     dependencies:
       events: 3.3.0
       graphology-types: 0.24.8
-      obliterator: 2.0.5
 
   graphql-to-sparql@4.0.0:
     dependencies:
