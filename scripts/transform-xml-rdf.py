@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
+import argparse
 import os
 import random
-import argparse
+import sys
 import xml.etree.ElementTree as ET
 
 FILE_MAX_SIZE = 2_000_000
@@ -30,11 +30,11 @@ def main() -> int:
     context = ET.iterparse(input_file, events=("start", "end"))
     _, root = next(context)
 
-    attrs = " ".join(
+    attrs = ' '.join(
         f'{k}="{v}"' for k, v in root.attrib.items()
     )
     rdf_ns = 'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"'
-    sys.stdout.write(f"<rdf:RDF {attrs} {rdf_ns}>\n")
+    sys.stdout.write(f"<rdf:RDF {attrs} {rdf_ns}>")
 
     subject_count = 0
 
@@ -53,7 +53,7 @@ def main() -> int:
             elem.clear()
             root.clear()
 
-    sys.stdout.write("</rdf:RDF>\n")
+    sys.stdout.write("</rdf:RDF>")
 
     return 0
 
