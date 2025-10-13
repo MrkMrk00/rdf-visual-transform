@@ -4,9 +4,9 @@ import { Transformation, useTransformationsStore } from '@/store/transformations
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
 import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
 import { useSigma } from '@react-sigma/core';
-import type { AbstractGraph } from 'graphology-types';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
+import { useThrottledFunc } from './useDebounced';
 
 const eventBus = new EventTarget();
 
@@ -87,7 +87,7 @@ export function useTransformer() {
     const graph = trippleStore.useGraphologyGraph();
     const store = trippleStore.useTripleStore();
 
-    useAutoZoom(graph);
+    useAutoZoom();
 
     const stackPop = useGraphSettings((store) => store.popTransformation);
     const stackPush = useGraphSettings((store) => store.pushTransformation);
@@ -197,34 +197,42 @@ export function useTransformer() {
     }, [transformer, stackPush, stackPop, performedTransformations, transformations]);
 }
 
-const ZOOM_RATIO = 1.15;
+const ZOOM_RATIO = 0.15;
 
-function useAutoZoom(graph: AbstractGraph) {
+function useAutoZoom() {
     const [shouldZoom] = useShouldZoomWhileTransforming();
     const sigma = useSigma();
+
+    const zoomHandler = useThrottledFunc(
+        useCallback(
+            async (ev: Event) => {
+                if (TransformerEvents.isLayoutAdjustmentEvent(ev)) {
+                    return;
+                }
+
+                const sign = TransformerEvents.isPopStateEvent(ev) ? +1 : -1;
+
+                const prevZoomSetting = sigma.getSetting('enableCameraZooming');
+                try {
+                    sigma.setSetting('enableCameraZooming', true);
+                    await sigma.getCamera().animatedZoom(1 + sign * ZOOM_RATIO);
+                } finally {
+                    sigma.setSetting('enableCameraZooming', prevZoomSetting);
+                }
+            },
+            [sigma],
+        ),
+    );
 
     useEffect(() => {
         if (!shouldZoom) {
             return;
         }
 
-        function zoomHandler(ev: Event) {
-            if (TransformerEvents.isLayoutAdjustmentEvent(ev)) {
-                return;
-            }
-
-            const camera = sigma.getCamera();
-
-            const sign = TransformerEvents.isPopStateEvent(ev) ? +1 : -1;
-            const ratio = camera.getState().ratio * (1 + sign * ZOOM_RATIO);
-
-            camera.animatedZoom(ratio);
-        }
-
         eventBus.addEventListener(TransformerEvents.change, zoomHandler);
 
         return () => eventBus.removeEventListener(TransformerEvents.change, zoomHandler);
-    }, [shouldZoom, graph, sigma]);
+    }, [shouldZoom, zoomHandler]);
 }
 
 function getNextPriorityBucket(transformations: Transformation[]): Transformation[] {
