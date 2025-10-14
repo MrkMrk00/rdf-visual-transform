@@ -6,14 +6,15 @@ import { rdfParser } from 'rdf-parse';
 import { describe, it } from 'vitest';
 
 const ONE_GIGABYTE = Math.pow(2, 30);
+const RDF_DATA_FILE = 'example-data/food-small.ttl';
 
-function loadIntoStore(stream: NodeJS.ReadableStream) {
+function loadIntoStore(stream: NodeJS.ReadableStream, contentType: string = 'application/rdf+xml') {
     return new Promise<n3.Store>((resolve, reject) => {
         const store = new n3.Store();
 
         let i = 0;
         const self = rdfParser
-            .parse(stream, { contentType: 'application/rdf+xml' })
+            .parse(stream, { contentType })
             .on('data', (quad) => {
                 store.add(quad);
 
@@ -31,8 +32,8 @@ function loadIntoStore(stream: NodeJS.ReadableStream) {
 
 describe('Pattern exists 01', () => {
     it('loads dataset', async () => {
-        const stream = fs.createReadStream('example-data/open-food-facts.xml');
-        const store = await loadIntoStore(stream);
+        const stream = fs.createReadStream(RDF_DATA_FILE);
+        const store = await loadIntoStore(stream, 'text/turtle');
         const qe = new QueryEngine();
 
         const result = await qe.query(
@@ -55,8 +56,7 @@ describe('Pattern exists 01', () => {
             },
         );
 
-        const r =
-            (await result.execute()) as unknown as AsyncIterableIterator<Bindings>;
+        const r = (await result.execute()) as unknown as AsyncIterableIterator<Bindings>;
 
         for await (const a of r) {
             console.log(a.get('from')?.value);
