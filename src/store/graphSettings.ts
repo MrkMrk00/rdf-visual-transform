@@ -1,10 +1,11 @@
 import { useHideEdgesReducer } from '@/hooks/useHideEdgesReducer';
 import { useHideNodesReducer } from '@/hooks/useHideNodesReducer';
+import { useRdfsLabelReducer } from '@/hooks/useRdfsLabelReducer';
 import type { OmitNever } from '@/util/types';
 import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { useMemo } from 'react';
-import { DEFAULT_NODE_PROGRAM_CLASSES, Settings as SigmaSettings } from 'sigma/settings';
+import { DEFAULT_NODE_PROGRAM_CLASSES, Settings, Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { createTransformationsStack, TransformationsStackSlice } from './transformationsStack.slice';
@@ -24,7 +25,7 @@ export type GraphSettingsStore = {
     toggleSetting: <TKey extends keyof BoolSetting>(key: TKey, defaultVal?: boolean) => void;
     setPositioningFunction: (value: PositioningFunction) => void;
     setHiddenPredicates: (valueOrPatchFunc: string[] | ((prev: string[]) => string[])) => void;
-    toggleAutoZoomOnTransformation: () => void;
+    toggleAutoZoomOnTransformation: VoidFunction;
 };
 
 type BoolSetting = OmitNever<{
@@ -51,6 +52,7 @@ export const useGraphSettings = create<GraphSettingsStore & TransformationsStack
             positioningFunction: 'inverse-centroid-heuristic',
             hiddenPredicates: [],
             autoZoomOnTransformation: true,
+            useRdfsLabelAsNodeLabel: false,
 
             loadGraphFromUrl: (url) => {
                 set((prev) => {
@@ -115,9 +117,25 @@ export function useShouldZoomWhileTransforming() {
 export function useSigmaSettings(): Partial<SigmaSettings> {
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
     const edgeReducer = useHideEdgesReducer();
-    const nodeReducer = useHideNodesReducer();
+    const hideNodesReducer = useHideNodesReducer();
+    const rdfsLabelReducer = useRdfsLabelReducer();
 
     return useMemo(() => {
+        let nodeReducer: Settings['nodeReducer'] = null;
+        if (hideNodesReducer || rdfsLabelReducer) {
+            nodeReducer = (node, data) => {
+                if (hideNodesReducer) {
+                    data = hideNodesReducer(node, data);
+                }
+
+                if (rdfsLabelReducer) {
+                    data = rdfsLabelReducer(node, data);
+                }
+
+                return data;
+            };
+        }
+
         return {
             ...sigmaSettings,
             enableCameraPanning: true,
@@ -135,5 +153,5 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             edgeReducer,
             nodeReducer,
         };
-    }, [sigmaSettings, edgeReducer, nodeReducer]);
+    }, [sigmaSettings, edgeReducer, hideNodesReducer, rdfsLabelReducer]);
 }

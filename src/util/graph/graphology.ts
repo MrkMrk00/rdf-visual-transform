@@ -42,7 +42,7 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
         }
     }
 
-    const edgeKey = `${subject.value}-${predicate.value}-${objectKey}`;
+    const edgeKey = getPredicateKey(subject, predicate, object);
     if (!graph.hasDirectedEdge(edgeKey)) {
         let displayType: string = 'arrow';
         if (graph.hasDirectedEdge(subject.value, objectKey) || graph.hasDirectedEdge(objectKey, subject.value)) {
@@ -76,4 +76,10 @@ export function getObjectKey(subject: Quad_Subject, predicate: Quad_Predicate, o
     }
 
     return object.value;
+}
+
+export function getPredicateKey(subject: Quad_Subject, predicate: Quad_Predicate, object: Quad_Object) {
+    const objectKey = getObjectKey(subject, predicate, object);
+
+    return `${subject.value}-${predicate.value}-${objectKey}`;
 }

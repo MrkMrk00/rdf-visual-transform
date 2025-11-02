@@ -29,7 +29,10 @@ import { ComponentPropsWithoutRef, RefObject, useEffect, useMemo, useState } fro
 import { createPortal } from 'react-dom';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
-const COMMON_PREDICATES_TO_HIDE = ['http://www.w3.org/1999/02/22-rdf-syntax-ns#type'];
+const COMMON_PREDICATES_TO_HIDE = [
+    'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+    'http://www.w3.org/2000/01/rdf-schema#label',
+];
 
 export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
     const [showGraphLoader, setShowGraphLoader] = useState(false);
@@ -156,6 +159,7 @@ function MenuNavigator(props: MenuProps) {
                             Hide common RDF predicates (e.g. <code>rdf:type</code>)
                         </span>
                     </DropdownMenuCheckboxItem>
+
                     <DropdownMenuSeparator />
 
                     <DropdownMenuLabel className="font-semibold">
