@@ -12,6 +12,9 @@
         "test": "vitest",
         "ts": "tsc --noEmit -p ./tsconfig.json"
     },
+    "engines": {
+        "node": ">=24.10 <25"
+    },
     "devDependencies": {
         "@eslint/js": "^9.37.0",
         "@rdfjs/types": "^2.0.1",
