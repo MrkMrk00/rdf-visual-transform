@@ -1,6 +1,7 @@
 import { useHideEdgesReducer } from '@/hooks/useHideEdgesReducer';
 import { useHideNodesReducer } from '@/hooks/useHideNodesReducer';
 import { useRdfsLabelReducer } from '@/hooks/useRdfsLabelReducer';
+import { useShortenIriReducer } from '@/hooks/useShortenIriReducer';
 import type { OmitNever } from '@/util/types';
 import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
@@ -116,9 +117,10 @@ export function useShouldZoomWhileTransforming() {
 
 export function useSigmaSettings(): Partial<SigmaSettings> {
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
-    const edgeReducer = useHideEdgesReducer();
+    const hideEdgesReducer = useHideEdgesReducer();
     const hideNodesReducer = useHideNodesReducer();
     const rdfsLabelReducer = useRdfsLabelReducer();
+    const shortenIriReducer = useShortenIriReducer();
 
     return useMemo(() => {
         let nodeReducer: Settings['nodeReducer'] = null;
@@ -130,6 +132,21 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
 
                 if (rdfsLabelReducer) {
                     data = rdfsLabelReducer(node, data);
+                }
+
+                return data;
+            };
+        }
+
+        let edgeReducer: Settings['edgeReducer'] = null;
+        if (hideEdgesReducer || shortenIriReducer) {
+            edgeReducer = (edge, data) => {
+                if (hideEdgesReducer) {
+                    data = hideEdgesReducer(edge, data);
+                }
+
+                if (shortenIriReducer) {
+                    data = shortenIriReducer(edge, data);
                 }
 
                 return data;
@@ -153,5 +170,5 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             edgeReducer,
             nodeReducer,
         };
-    }, [sigmaSettings, edgeReducer, hideNodesReducer, rdfsLabelReducer]);
+    }, [hideNodesReducer, rdfsLabelReducer, hideEdgesReducer, shortenIriReducer, sigmaSettings]);
 }

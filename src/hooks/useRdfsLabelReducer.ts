@@ -1,3 +1,4 @@
+import { shortenIri } from '@/consts/rdf-prefixes';
 import { useGraphologyGraph } from '@/contexts/tripple-store';
 import { useGraphSettings } from '@/store/graphSettings';
 import { CustomEdgeAttributes, CustomNodeAttributes } from '@/util/graph/graphology';
@@ -27,10 +28,16 @@ export function useRdfsLabelReducer(): Settings['nodeReducer'] {
             for (const { attributes } of graph.outEdgeEntries(node)) {
                 const edgeAttributes = attributes as CustomEdgeAttributes;
 
+                let shortenedIri: string | undefined;
                 if (edgeAttributes.self.value === RDFS_LABEL) {
                     return {
                         ...attrs,
                         label: edgeAttributes.quad.object.value,
+                    };
+                } else if ((shortenedIri = shortenIri(attrs.label))) {
+                    return {
+                        ...attrs,
+                        label: shortenedIri,
                     };
                 }
             }

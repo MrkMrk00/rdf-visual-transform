@@ -156,7 +156,7 @@ function MenuNavigator(props: MenuProps) {
                         }}
                     >
                         <span>
-                            Hide common RDF predicates (e.g. <code>rdf:type</code>)
+                            Simplify graph <small>(shorten IRIs, use <code>rdfs:label</code> for node labels, hide types etc.)</small>
                         </span>
                     </DropdownMenuCheckboxItem>
 
