@@ -31,7 +31,7 @@ export type TransformerEvent = ValueOf<{
           : (typeof TransformerEvents)[key];
 }>;
 
-export type PositioningFunction = (oldGraph: AbstractGraph, newGraph: AbstractGraph) => void;
+export type PositioningFunction = (newGraph: AbstractGraph) => void;
 
 export type GraphDiff = {
     inserted: Quad[];
@@ -73,7 +73,7 @@ export class GraphTransformer implements EventTarget {
         const graph = new Graph({ type: 'directed', multi: true });
 
         const me = new GraphTransformer(graph, store);
-        me.setPositioningFunction((_, newGraph) => circular.assign(newGraph));
+        me.setPositioningFunction((newGraph) => circular.assign(newGraph));
 
         await me.syncGraphWithStore();
         me.adjustLayout();
@@ -146,8 +146,6 @@ export class GraphTransformer implements EventTarget {
     }
 
     syncGraphWithStore<T extends Record<string, unknown>>(eventDetail?: T): Promise<void> {
-        const oldGraph = this.graph.copy();
-
         // add newly INSERTed tripples into the graph
         for (const quad of this.store) {
             insertQuadIntoGraph(this.graph, quad);
@@ -155,7 +153,7 @@ export class GraphTransformer implements EventTarget {
 
         // TODO: animate nodes into position?
         if (this.positioningFunction) {
-            this.positioningFunction(oldGraph, this.graph);
+            this.positioningFunction(this.graph);
         }
 
         // signal to render the graph in current state (with only the INSERTed tripples in the graph)
@@ -192,7 +190,11 @@ export class GraphTransformer implements EventTarget {
         const settings = forceAtlas2.inferSettings(this.graph);
         forceAtlas2.assign(this.graph, { ...settings, iterations });
 
-        this.eventBus.dispatchEvent(new Event(TransformerEvents.change));
+        const eventDetail = {
+            kind: TransformerEvents.kindLayout,
+        };
+
+        this.eventBus.dispatchEvent(new CustomEvent(TransformerEvents.change, { detail: eventDetail }));
     }
 
     setPositioningFunction(func: PositioningFunction) {

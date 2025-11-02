@@ -1,5 +1,4 @@
-import { NotFoundGraphError, type DirectedGraph } from 'graphology';
-import { NeighborEntry } from 'graphology-types';
+import { type DirectedGraph } from 'graphology';
 
 function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, depth: number = 2) {
     let neighborCount = 0;
@@ -34,18 +33,10 @@ function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, dept
                     continue;
                 }
 
-                if (x > xMax) {
-                    xMax = x;
-                }
-                if (x < xMin) {
-                    xMin = x;
-                }
-                if (y > yMax) {
-                    yMax = y;
-                }
-                if (y < yMin) {
-                    yMin = y;
-                }
+                if (x > xMax) xMax = x;
+                if (x < xMin) xMin = x;
+                if (y > yMax) yMax = y;
+                if (y < yMin) yMin = y;
 
                 if (currentDepth + 1 < depth) {
                     const centroidX = xMin + (xMax - xSum / neighborCount);
@@ -83,47 +74,9 @@ function approximateOptimalPosition(graph: DirectedGraph, rootNode: string, dept
     };
 }
 
-function tryReplaceNeighbor(node: string, oldGraph: DirectedGraph, graph: DirectedGraph) {
-    let oldNeighbors: NeighborEntry[] = [];
-    try {
-        oldNeighbors = Array.from(oldGraph.neighborEntries(node));
-    } catch (e) {
-        if (!(e instanceof NotFoundGraphError)) {
-            throw e;
-        }
-    }
-
-    // Try to find the position from a deleted neighbor...
-    const newNeighbors = new Set(graph.neighborEntries(node));
-    for (const oldNeighbor of oldNeighbors) {
-        // If the neighbor still exists...
-        if (newNeighbors.has(oldNeighbor)) {
-            continue;
-        }
-
-        // If there was a neighboring node, that was deleted by the transformation,
-        // place the new node in there.
-        return {
-            x: graph.getNodeAttribute(oldNeighbor, 'x'),
-            y: graph.getNodeAttribute(oldNeighbor, 'y'),
-        };
-    }
-
-    return undefined;
-}
-
-export function inverseCentroidHeuristicLayout(oldGraph: DirectedGraph, graph: DirectedGraph) {
+export function inverseCentroidHeuristicLayout(graph: DirectedGraph) {
     graph.forEachNode((node, attributes) => {
         if (typeof attributes.x !== 'undefined' && typeof attributes.y !== 'undefined') {
-            return;
-        }
-
-        const neighborsPos = tryReplaceNeighbor(node, oldGraph, graph);
-        if (neighborsPos) {
-            const { x, y } = neighborsPos;
-            graph.setNodeAttribute(node, 'x', x);
-            graph.setNodeAttribute(node, 'y', y);
-
             return;
         }
 
@@ -161,7 +114,6 @@ const defaultSpringLayoutSettings: SpringElectricalLayoutOptions = {
  * @see https://cs.brown.edu/people/rtamassi/gdhandbook/chapters/force-directed.pdf
  */
 export function springElectricalLayout(
-    oldGraph: DirectedGraph,
     graph: DirectedGraph,
     optionsOverride: Partial<SpringElectricalLayoutOptions> = {},
 ) {
@@ -176,15 +128,6 @@ export function springElectricalLayout(
     // Collect all new nodes (and try to place them in their deleted neighbors positions first).
     graph.forEachNode((node, attributes) => {
         if (typeof attributes.x !== 'undefined' && typeof attributes.y !== 'undefined') {
-            return;
-        }
-
-        const neighborsPos = tryReplaceNeighbor(node, oldGraph, graph);
-        if (neighborsPos) {
-            const { x, y } = neighborsPos;
-            graph.setNodeAttribute(node, 'x', x);
-            graph.setNodeAttribute(node, 'y', y);
-
             return;
         }
 
@@ -209,18 +152,10 @@ export function springElectricalLayout(
                     } of neighborEntries) {
                         if (!x || !y) continue;
 
-                        if (x > maxX) {
-                            maxX = x;
-                        }
-                        if (y > maxY) {
-                            maxY = y;
-                        }
-                        if (x < minX) {
-                            minX = x;
-                        }
-                        if (y < minY) {
-                            minY = y;
-                        }
+                        if (x > maxX) maxX = x;
+                        if (y > maxY) maxY = y;
+                        if (x < minX) minX = x;
+                        if (y < minY) minY = y;
                     }
 
                     toVisit.unshift(...Array.from(neighborEntries).map((entry) => entry.neighbor));
