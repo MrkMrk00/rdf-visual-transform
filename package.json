@@ -35,7 +35,7 @@
         "typescript": "~5.7.3",
         "typescript-eslint": "^8.46.0",
         "ulid": "^3.0.1",
-        "vite": "^6.3.6",
+        "vite": "^7.1.12",
         "vite-tsconfig-paths": "^5.1.4",
         "vitest": "^3.2.4"
     },
