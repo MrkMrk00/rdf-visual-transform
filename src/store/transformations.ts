@@ -36,6 +36,7 @@ export type TransformationsStore = {
     patchTransformation: (id: ULID, patchFunction: (transformation: Draft<Transformation>) => void) => void;
 
     exportToJsonFile: () => void;
+    loadFromJson: (fileContents: string) => void;
 };
 
 export const LOCAL_STORAGE_NAME = 'transformations';
@@ -125,6 +126,27 @@ export const useTransformationsStore = create<TransformationsStore>()(
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+            },
+
+            loadFromJson: (transformationsAsJson) => {
+                try {
+                    const parsed = JSON.parse(transformationsAsJson);
+                    if (typeof parsed !== 'object') {
+                        throw new Error(`expected type "object", got: "${parsed}"`);
+                    }
+
+                    const parsedKeys = Object.keys(parsed);
+                    const expectedKeys = ['state', 'version'];
+
+                    if (parsedKeys.sort().join('-') !== expectedKeys.sort().join('-')) {
+                        throw new Error(`Expected keys "[${expectedKeys.join(',')}]", got: [${parsedKeys.join(',')}]`);
+                    }
+
+                    window.localStorage.setItem(LOCAL_STORAGE_NAME, transformationsAsJson);
+                    window.location.reload();
+                } catch (e) {
+                    toast.error(`Failed to load transformations! ${String(e)}`);
+                }
             },
         }),
         { name: LOCAL_STORAGE_NAME },

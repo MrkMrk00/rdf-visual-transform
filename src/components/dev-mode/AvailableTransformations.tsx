@@ -2,9 +2,9 @@ import { useTransformer } from '@/hooks/useTransformer';
 import { Transformation, TransformationPattern, useTransformationsStore } from '@/store/transformations';
 import { cn } from '@/util/ui/shadcn';
 import { truncateText } from '@/util/ui/truncateText';
-import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { CodeBracketIcon, PlayIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
@@ -67,9 +67,45 @@ export function AvailableTransformations() {
 
     const transformationsByPattern = useMemo(() => partitionTransformations(transformationsRaw), [transformationsRaw]);
     const download = useTransformationsStore((store) => store.exportToJsonFile);
+    const loadFromJson = useTransformationsStore((store) => store.loadFromJson);
 
     const editModalRef = useRef<EditTransformationHandle>(null);
     const deleteModalRef = useRef<DeleteTransformationHandle>(null);
+
+    const loadFromFile = useCallback(() => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.style.display = 'none';
+        input.accept = '.json';
+
+        document.body.appendChild(input);
+
+        function cleanup() {
+            input.remove();
+        }
+
+        input.onchange = function (this: HTMLInputElement) {
+            const file = this.files?.[0];
+            if (!file) {
+                cleanup();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target?.result;
+                if (!content) {
+                    cleanup();
+                    return;
+                }
+
+                loadFromJson(content.toString());
+            };
+            reader.readAsText(file);
+        } as EventListener;
+
+        input.click();
+    }, [loadFromJson]);
 
     function onRun(id: Transformation['id']) {
         // already transforming
@@ -91,18 +127,31 @@ export function AvailableTransformations() {
             <Card>
                 <CardTitle className="px-4 w-full flex justify-between items-center">
                     <h3>Available transformations</h3>
-                    {transformationsRaw.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        {transformationsRaw.length > 0 && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button size="sm" type="button" variant="success" onClick={download}>
+                                        <ArrowDownTrayIcon className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipProvider>
+                                    <TooltipContent>Export as JSON</TooltipContent>
+                                </TooltipProvider>
+                            </Tooltip>
+                        )}
+
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button size="sm" type="button" variant="success" onClick={download}>
-                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                <Button size="sm" type="button" variant="secondary" onClick={loadFromFile}>
+                                    <ArrowUpTrayIcon className="w-4 h-4" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipProvider>
-                                <TooltipContent>Export as JSON</TooltipContent>
+                                <TooltipContent>Load transformations from JSON</TooltipContent>
                             </TooltipProvider>
                         </Tooltip>
-                    )}
+                    </div>
                 </CardTitle>
                 <CardContent className="flex flex-col gap-2 overflow-auto">
                     {Object.entries(transformationsByPattern).map(([pattern, Transformations], index) => (
