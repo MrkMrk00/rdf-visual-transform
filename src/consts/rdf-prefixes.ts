@@ -2,7 +2,8 @@
  * From: https://dbpedia.org/sparql/?help=nsdecl
  */
 export const RDF_PREFIX_MAP: Record<string, string> = {
-    'http://example.org/': 'example',
+    'http://example.org/university#': 'uni',
+    'http://example.org/': 'ex',
     'http://www.w3.org/2005/Atom': 'a',
     'http://schemas.talis.com/2005/address/schema#': 'address',
     'http://webns.net/mvcb/': 'admin',
