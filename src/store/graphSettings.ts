@@ -153,11 +153,15 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             };
         }
 
+
+        const GRAY = '#808080';
         return {
             ...sigmaSettings,
             enableCameraPanning: true,
             enableCameraRotation: false,
             enableCameraZooming: true,
+            defaultEdgeColor: GRAY,
+            edgeLabelColor: { color: GRAY },
 
             allowInvalidContainer: true,
             nodeProgramClasses: {
@@ -169,6 +173,6 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             },
             edgeReducer,
             nodeReducer,
-        };
+        } satisfies Partial<SigmaSettings>;
     }, [hideNodesReducer, rdfsLabelReducer, hideEdgesReducer, shortenIriReducer, sigmaSettings]);
 }
