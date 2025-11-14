@@ -122,6 +122,8 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
     const rdfsLabelReducer = useRdfsLabelReducer();
     const shortenIriReducer = useShortenIriReducer();
 
+    const [shouldZoom] = useShouldZoomWhileTransforming();
+
     return useMemo(() => {
         let nodeReducer: Settings['nodeReducer'] = null;
         if (hideNodesReducer || rdfsLabelReducer) {
@@ -153,7 +155,6 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             };
         }
 
-
         const GRAY = '#808080';
         return {
             ...sigmaSettings,
@@ -162,6 +163,7 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             enableCameraZooming: true,
             defaultEdgeColor: GRAY,
             edgeLabelColor: { color: GRAY },
+            doubleClickTimeout: shouldZoom ? 0 : 200,
 
             allowInvalidContainer: true,
             nodeProgramClasses: {
@@ -174,5 +176,5 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             edgeReducer,
             nodeReducer,
         } satisfies Partial<SigmaSettings>;
-    }, [hideNodesReducer, rdfsLabelReducer, hideEdgesReducer, shortenIriReducer, sigmaSettings]);
+    }, [hideNodesReducer, rdfsLabelReducer, hideEdgesReducer, shortenIriReducer, sigmaSettings, shouldZoom]);
 }
