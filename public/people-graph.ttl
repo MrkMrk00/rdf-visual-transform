@@ -25,6 +25,7 @@ uni:David rdf:type foaf:Person ;
     foaf:name "David" ;
     uni:role "Professor" ;
     uni:teaches uni:Mathematics ;
+    uni:teaches uni:ComputerScience ;
     uni:worksAt uni:ExampleUniversity .
 
 uni:ComputerScience a uni:Course ;

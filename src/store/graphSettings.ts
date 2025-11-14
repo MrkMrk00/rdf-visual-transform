@@ -115,6 +115,9 @@ export function useShouldZoomWhileTransforming() {
     return useMemo(() => [shouldZoom, setAutoZoom] as const, [shouldZoom, setAutoZoom]);
 }
 
+export const CAMERA_MIN_RATIO = 0.1;
+export const CAMERA_MAX_RATIO = 1;
+
 export function useSigmaSettings(): Partial<SigmaSettings> {
     const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
     const hideEdgesReducer = useHideEdgesReducer();
@@ -164,6 +167,8 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             defaultEdgeColor: GRAY,
             edgeLabelColor: { color: GRAY },
             doubleClickTimeout: shouldZoom ? 0 : 200,
+            maxCameraRatio: CAMERA_MAX_RATIO,
+            minCameraRatio: CAMERA_MIN_RATIO,
 
             allowInvalidContainer: true,
             nodeProgramClasses: {

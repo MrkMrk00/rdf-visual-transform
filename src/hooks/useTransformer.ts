@@ -1,8 +1,14 @@
 import * as trippleStore from '@/contexts/tripple-store';
-import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
+import { useGraphologyGraph } from '@/contexts/tripple-store';
+import {
+    CAMERA_MAX_RATIO,
+    CAMERA_MIN_RATIO,
+    useGraphSettings,
+    useShouldZoomWhileTransforming,
+} from '@/store/graphSettings';
 import { Transformation, useTransformationsStore } from '@/store/transformations';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
-import { GraphDiff, GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
+import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
 import { useSigma } from '@react-sigma/core';
 import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -197,7 +203,7 @@ export function useTransformer() {
     }, [transformer, stackPush, stackPop, performedTransformations, transformations]);
 }
 
-const ZOOM_RATIO = 0.15;
+const ZOOM_RATIO = 0.25;
 
 /**
  ________________
@@ -212,6 +218,8 @@ const ZOOM_RATIO = 0.15;
 function useAutoZoom() {
     const [shouldZoom] = useShouldZoomWhileTransforming();
     const sigma = useSigma();
+    const graph = useGraphologyGraph();
+    const transformations = useTransformationsStore((store) => store.transformations);
 
     const zoomHandler = useThrottledFunc(
         useCallback(
@@ -237,6 +245,20 @@ function useAutoZoom() {
             [sigma],
         ),
     );
+
+    useEffect(() => {
+        if (!graph || !shouldZoom) {
+            return;
+        }
+
+        const camera = sigma.getCamera();
+        let ratio = CAMERA_MAX_RATIO;
+        for (const _ in transformations) {
+            ratio = Math.max(CAMERA_MIN_RATIO, ratio * (1 - ZOOM_RATIO));
+        }
+
+        camera.setState({ ratio });
+    }, [shouldZoom, graph, sigma, transformations]);
 
     useEffect(() => {
         if (!shouldZoom) {
