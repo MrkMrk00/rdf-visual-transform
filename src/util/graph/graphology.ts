@@ -8,6 +8,7 @@ const YELLOW = '#f8f800';
 
 export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
     const { subject, predicate, object } = quad;
+    let didChange = false;
 
     if (!graph.hasNode(subject.value)) {
         graph.addNode(subject.value, <CustomNodeAttributes>{
@@ -18,6 +19,8 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
             self: subject,
             quad: quad,
         });
+
+        didChange = true;
     }
 
     const objectKey = getObjectKey(subject, predicate, object);
@@ -40,6 +43,8 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
                 self: object,
             });
         }
+
+        didChange = true;
     }
 
     const edgeKey = getPredicateKey(subject, predicate, object);
@@ -56,7 +61,11 @@ export function insertQuadIntoGraph(graph: DirectedGraph, quad: Quad) {
             quad: quad,
             type: displayType,
         });
+
+        didChange = true;
     }
+
+    return didChange;
 }
 
 export interface CustomNodeAttributes {

@@ -2,7 +2,7 @@ import * as trippleStore from '@/contexts/tripple-store';
 import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { Transformation, useTransformationsStore } from '@/store/transformations';
 import { inverseCentroidHeuristicLayout, springElectricalLayout } from '@/util/graph/node-placement';
-import { GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
+import { GraphDiff, GraphTransformer, TransformerEvents } from '@/util/transformations/GraphTransformer';
 import { useSigma } from '@react-sigma/core';
 import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';

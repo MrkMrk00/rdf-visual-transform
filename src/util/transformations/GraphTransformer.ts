@@ -146,9 +146,15 @@ export class GraphTransformer implements EventTarget {
     }
 
     syncGraphWithStore<T extends Record<string, unknown>>(eventDetail?: T): Promise<void> {
+        let didChange = false;
         // add newly INSERTed tripples into the graph
         for (const quad of this.store) {
-            insertQuadIntoGraph(this.graph, quad);
+            const change = insertQuadIntoGraph(this.graph, quad);
+            didChange ||= change;
+        }
+
+        if (!didChange) {
+            return Promise.resolve();
         }
 
         // TODO: animate nodes into position?
