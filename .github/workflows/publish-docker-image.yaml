@@ -32,6 +32,8 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            ${{ github.sha }}
 
       - name: Build and push Docker image
         id: push
@@ -46,14 +48,14 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
       - name: Change version in deployment.yaml
         run: |
           sudo apt-get install --no-install-recommends -y yq
-          yq -i -y '.spec.template.spec.containers[0].image = "ghcr.io/mrkmrk00/rdf-visual-transform:${{ github.sha }}"' deploy/deployment.yaml
+          yq -i -y '.spec.template.spec.containers[0].image = "${{ env.REGISTRY }}/mrkmrk00/rdf-visual-transform:${{ github.sha }}"' deploy/deployment.yaml
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add deploy/deployment.yaml
