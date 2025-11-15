@@ -49,7 +49,7 @@ function ReadyToUseProfiles() {
     const profiles = [
         {
             name: '[artificial] People graph',
-            graph: 'http://localhost:3069/rdf-visual-transform/people-graph.ttl',
+            graph: new URL(`${window.location.pathname}/people-graph.ttl`, window.location.href).toString(),
             profile: `{"state":{"transformations":[{"id":"01K5GQ0KTM0T6TDRM67ANQ6Q5P","name":"Teaches count","patternName":"linkCountingProperty","parameters":{"newProperty":"<http://example.org/university#teachesCount>","sourceProperty":"<http://example.org/university#teaches>","_insert":"on","_delete":"on"},"priority":0},{"id":"01K5X8XYXM42XBPMHZZ7EEW4YM","name":"studies under","patternName":"propertyChainShortcut","parameters":{"result":"<http://example.org/university#studiesUnder>","predicate0":"<http://example.org/university#major>","predicate1":"<http://example.org/university#hasProfessor>","_insert":"on","_delete":"on"},"priority":0},{"id":"01KA3DXDA59AN3B67WRR1A6M96","name":"Colleagues from employees","patternName":"relationshipDereification","parameters":{"result":"<http://example.org/university#hasColleague>","predicate0":"<http://example.org/university#employs>","predicate1":"<http://example.org/university#employs>","_insert":"on","_delete":"on"},"priority":0},{"id":"01KA3FWSR1EFJP2YN446T6ESFS","name":"Count attendees","patternName":"inlinkCountingProperty","parameters":{"newProperty":"<http://example.org/university#attendeeCount>","sourceProperty":"<http://example.org/university#attends>","_insert":"on","_delete":"on"},"priority":0}]},"version":0}`,
         },
     ];
