@@ -2,10 +2,10 @@ import { AvailableTransformations } from '@/components/dev-mode/AvailableTransfo
 import { useTransformer } from '@/hooks/useTransformer';
 import { useGraphSettings } from '@/store/graphSettings';
 import { useTransformationsStore } from '@/store/transformations';
-import { SparqlConsole } from './SparqlConsole';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
+import { SparqlConsole } from './SparqlConsole';
 
 function PerformedTransformations() {
     const stack = useGraphSettings((store) => store.transformationsStack);
@@ -41,6 +41,43 @@ function PerformedTransformations() {
     );
 }
 
+function ReadyToUseProfiles() {
+    const loadFromJson = useTransformationsStore((store) => store.loadFromJson);
+    const loadGraph = useGraphSettings((store) => store.loadGraphFromUrl);
+
+    // yeah, this is not very clean :)
+    const profiles = [
+        {
+            name: '[artificial] People graph',
+            graph: 'http://localhost:3069/rdf-visual-transform/people-graph.ttl',
+            profile: `{"state":{"transformations":[{"id":"01K5GQ0KTM0T6TDRM67ANQ6Q5P","name":"Teaches count","patternName":"linkCountingProperty","parameters":{"newProperty":"<http://example.org/university#teachesCount>","sourceProperty":"<http://example.org/university#teaches>","_insert":"on","_delete":"on"},"priority":0},{"id":"01K5X8XYXM42XBPMHZZ7EEW4YM","name":"studies under","patternName":"propertyChainShortcut","parameters":{"result":"<http://example.org/university#studiesUnder>","predicate0":"<http://example.org/university#major>","predicate1":"<http://example.org/university#hasProfessor>","_insert":"on","_delete":"on"},"priority":0},{"id":"01KA3DXDA59AN3B67WRR1A6M96","name":"Colleagues from employees","patternName":"relationshipDereification","parameters":{"result":"<http://example.org/university#hasColleague>","predicate0":"<http://example.org/university#employs>","predicate1":"<http://example.org/university#employs>","_insert":"on","_delete":"on"},"priority":0},{"id":"01KA3FWSR1EFJP2YN446T6ESFS","name":"Count attendees","patternName":"inlinkCountingProperty","parameters":{"newProperty":"<http://example.org/university#attendeeCount>","sourceProperty":"<http://example.org/university#attends>","_insert":"on","_delete":"on"},"priority":0}]},"version":0}`,
+        },
+    ];
+
+    return (
+        <Card>
+            <CardTitle className="px-4">Ready-to-use profiles</CardTitle>
+            <CardContent className="flex flex-col gap-2">
+                {profiles.map(({ name, graph, profile }) => (
+                    <Button
+                        type="button"
+                        key={name}
+                        onClick={() => {
+                            loadGraph(graph);
+
+                            setTimeout(() => {
+                                loadFromJson(profile);
+                            });
+                        }}
+                    >
+                        {name}
+                    </Button>
+                ))}
+            </CardContent>
+        </Card>
+    );
+}
+
 export function DevMode() {
     return (
         <ResizablePanelGroup
@@ -49,6 +86,7 @@ export function DevMode() {
         >
             <ResizablePanel>
                 <PerformedTransformations />
+                <ReadyToUseProfiles />
             </ResizablePanel>
             <ResizableHandle className="bg-transparent" />
             <ResizablePanel>
