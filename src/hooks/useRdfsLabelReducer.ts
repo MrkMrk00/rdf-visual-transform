@@ -8,14 +8,6 @@ import { useMemo } from 'react';
 import { Settings } from 'sigma/settings';
 import { NodeDisplayData } from 'sigma/types';
 
-function edgeEquals(edgeValue: string) {
-    return (entry: EdgeEntry) => {
-        const edgeAttrs = entry.attributes as CustomEdgeAttributes;
-
-        return edgeAttrs.self.value === edgeValue;
-    };
-}
-
 export function useRdfsLabelReducer(): Settings['nodeReducer'] {
     const hiddenPredicates = useGraphSettings((store) => store.hiddenPredicates);
     const graph = useGraphologyGraph();
