@@ -3,13 +3,14 @@ import { useHideNodesReducer } from '@/hooks/useHideNodesReducer';
 import { useRdfsLabelReducer } from '@/hooks/useRdfsLabelReducer';
 import { useShortenIriReducer } from '@/hooks/useShortenIriReducer';
 import type { OmitNever } from '@/util/types';
-import { EdgeCurvedArrowProgram } from '@sigma/edge-curve';
+import { createEdgeCurveProgram } from '@sigma/edge-curve';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { useMemo } from 'react';
 import { DEFAULT_NODE_PROGRAM_CLASSES, Settings, Settings as SigmaSettings } from 'sigma/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { createTransformationsStack, TransformationsStackSlice } from './transformationsStack.slice';
+import { createEdgeArrowProgram } from 'sigma/rendering';
 
 export type PositioningFunction = 'inverse-centroid-heuristic' | 'spring-electric';
 
@@ -158,7 +159,9 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
             };
         }
 
-        const GRAY = '#808080';
+        const GRAY = '#404040';
+        const ARROW_SIZE_RATIO = 7;
+
         return {
             ...sigmaSettings,
             enableCameraPanning: true,
@@ -176,7 +179,17 @@ export function useSigmaSettings(): Partial<SigmaSettings> {
                 square: NodeSquareProgram,
             },
             edgeProgramClasses: {
-                curved: EdgeCurvedArrowProgram,
+                arrow: createEdgeArrowProgram({
+                    lengthToThicknessRatio: ARROW_SIZE_RATIO,
+                    widenessToThicknessRatio: ARROW_SIZE_RATIO,
+                }),
+                curved: createEdgeCurveProgram({
+                    arrowHead: {
+                        extremity: 'target',
+                        lengthToThicknessRatio: ARROW_SIZE_RATIO,
+                        widenessToThicknessRatio: ARROW_SIZE_RATIO,
+                    },
+                }),
             },
             edgeReducer,
             nodeReducer,

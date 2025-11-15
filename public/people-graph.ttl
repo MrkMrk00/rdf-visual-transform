@@ -12,8 +12,7 @@ uni:Alice rdf:type foaf:Person ;
 uni:Bob rdf:type foaf:Person ;
     foaf:name "Bob" ;
     uni:role "Professor" ;
-    uni:teaches uni:ComputerScience ;
-    uni:worksAt uni:ExampleUniversity .
+    uni:teaches uni:ComputerScience .
 
 uni:Charlie rdf:type foaf:Person ;
     foaf:name "Charlie" ;
@@ -25,8 +24,7 @@ uni:David rdf:type foaf:Person ;
     foaf:name "David" ;
     uni:role "Professor" ;
     uni:teaches uni:Mathematics ;
-    uni:teaches uni:ComputerScience ;
-    uni:worksAt uni:ExampleUniversity .
+    uni:teaches uni:ComputerScience .
 
 uni:ComputerScience a uni:Course ;
     rdfs:label "Computer Science" ;
@@ -37,4 +35,7 @@ uni:Mathematics rdf:type uni:Course ;
     uni:hasProfessor uni:David .
 
 uni:ExampleUniversity rdf:type uni:University ;
-    rdfs:label "Example University" .
+    rdfs:label "Example University" ;
+    uni:employs uni:David ;
+    uni:employs uni:Bob .
+

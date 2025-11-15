@@ -1,0 +1,36 @@
+name: insert
+inputs:
+    - name: "newProperty"
+    - name: "sourceProperty"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+INSERT {
+    ?x {{{newProperty}}} ?count .
+}
+WHERE {
+    {
+        SELECT ?x (COUNT(?y) AS ?count)
+        WHERE {
+            ?y ?p ?x .
+            FILTER(?p = {{{sourceProperty}}})
+        }
+        GROUP BY ?x
+    }
+};
+---
+name: delete
+inputs:
+    - name: "sourceProperty"
+
+{{#each prefixes}}
+    PREFIX {{{this.prefix}}}: <{{{this.iri}}}>
+{{/each}}
+DELETE {
+    ?y ?p ?x .
+}
+WHERE {
+    ?y ?p ?x .
+    FILTER(?p = {{{sourceProperty}}})
+};

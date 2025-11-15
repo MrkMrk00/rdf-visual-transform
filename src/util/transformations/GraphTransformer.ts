@@ -192,7 +192,7 @@ export class GraphTransformer implements EventTarget {
         );
     }
 
-    adjustLayout(iterations: number = 5) {
+    adjustLayout(iterations: number = 15) {
         const settings = forceAtlas2.inferSettings(this.graph);
         forceAtlas2.assign(this.graph, { ...settings, iterations });
 

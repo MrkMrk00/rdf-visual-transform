@@ -4,6 +4,7 @@ import { load } from 'js-yaml';
 import propertyChainShortcutTemplate from './01-property-shortcut.hbs?raw';
 import relationshipDereificationTemplate from './03-relationship-dereification.hbs?raw';
 import linkCountingPropertyTemplate from './06-link-counting-property.hbs?raw';
+import inlinkCountingPropertyTemplate from './06b-inlink-counting-property.hbs?raw';
 
 export type PropertyChainShortcutOpts = {
     prefixes?: string[];
@@ -34,6 +35,14 @@ export type LinkCountingPropertyOpts = {
 
 export const linkCountingProperty = (): TemplateOutput<LinkCountingPropertyOpts>[] =>
     parseTemplate(linkCountingPropertyTemplate);
+
+export type InlinkCountingPropertyOpts = {
+    newProperty: string;
+    sourceProperty: string;
+};
+
+export const inlinkCountingProperty = (): TemplateOutput<InlinkCountingPropertyOpts>[] =>
+    parseTemplate(inlinkCountingPropertyTemplate);
 
 export type TemplateOutput<TOpts extends Record<string, any> = Record<string, any>> = {
     header: object;

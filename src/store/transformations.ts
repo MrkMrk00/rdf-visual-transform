@@ -8,6 +8,7 @@ export type TransformationPattern =
     | 'propertyChainShortcut'
     | 'relationshipDereification'
     | 'linkCountingProperty'
+    | 'inlinkCountingProperty'
     | 'custom';
 
 export type Transformation<TPattern extends TransformationPattern = TransformationPattern> = {
