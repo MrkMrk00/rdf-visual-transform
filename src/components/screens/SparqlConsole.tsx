@@ -29,7 +29,7 @@ export function SparqlConsole({ close }: { close?: VoidFunction }) {
     const editorRef = useRef<EditorHandle>(undefined);
 
     return (
-        <Card className="h-full">
+        <Card className="@container h-full">
             <CardHeader className="flex items-center justify-between">
                 <span>SPARQL Console</span>
                 {typeof close !== 'undefined' && (
@@ -39,24 +39,28 @@ export function SparqlConsole({ close }: { close?: VoidFunction }) {
                 )}
             </CardHeader>
             <CardContent className="flex flex-col gap-4 h-full">
-                <div className="flex gap-4 items-center w-full h-full">
-                    <TransformationInputsForm
-                        ref={formRef}
-                        title={chosenPatternName}
-                        templates={templ}
-                        onSubmit={(ev) => {
-                            ev.preventDefault();
+                <div className="flex flex-col @xl:flex-row gap-4 items-center w-full h-full">
+                    <div className="h-full w-full @xl:w-[unset]">
+                        <TransformationInputsForm
+                            ref={formRef}
+                            title={chosenPatternName}
+                            templates={templ}
+                            onSubmit={(ev) => {
+                                ev.preventDefault();
 
-                            const data = Object.fromEntries(new FormData(ev.currentTarget));
-                            const queries = renderTemplate(chosenPatternName, data as any);
+                                const data = Object.fromEntries(new FormData(ev.currentTarget));
+                                const queries = renderTemplate(chosenPatternName, data as any);
 
-                            editorRef.current?.setValue(queries);
-                        }}
-                    />
+                                editorRef.current?.setValue(queries);
+                            }}
+                        />
+                    </div>
 
-                    <Suspense fallback={<div className="w-full"></div>}>
-                        <SparqlEditor ref={editorRef} height="80%" />
-                    </Suspense>
+                    <div className="w-full h-full rounded-xl overflow-hidden shadow-sm p-2">
+                        <Suspense fallback={<div className="w-full"></div>}>
+                            <SparqlEditor ref={editorRef} height="80%" />
+                        </Suspense>
+                    </div>
 
                     <div className="flex flex-col gap-2 h-full">
                         <Button
@@ -85,7 +89,7 @@ export function SparqlConsole({ close }: { close?: VoidFunction }) {
                     </div>
                 </div>
 
-                <div className="flex gap-2 items-center shrink-0">
+                <div className="flex gap-2 items-center shrink-0 overflow-x-scroll">
                     <span className="pr-4">Load</span>
                     <Button
                         variant="outline"
@@ -124,6 +128,19 @@ export function SparqlConsole({ close }: { close?: VoidFunction }) {
                         }}
                     >
                         link counting property
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            if (!editorRef.current) {
+                                return;
+                            }
+
+                            setChosenPatternName('inlinkCountingProperty');
+                        }}
+                    >
+                        in-link counting property
                     </Button>
                 </div>
             </CardContent>
