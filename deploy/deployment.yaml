@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: rdf-visual-transform
-          image: ghcr.io/mrkmrk00/rdf-visual-transform:master
+          image: ghcr.io/mrkmrk00/rdf-visual-transform:a5d64e4ff39e44b444f828fc4b346e9fdb52fd42
           imagePullPolicy: Always
           ports:
             - containerPort: 80
