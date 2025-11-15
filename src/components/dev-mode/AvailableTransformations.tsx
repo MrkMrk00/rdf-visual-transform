@@ -124,7 +124,7 @@ export function AvailableTransformations() {
 
     return (
         <>
-            <Card>
+            <Card className="overflow-y-scroll">
                 <CardTitle className="px-4 w-full flex justify-between items-center">
                     <h3>Available transformations</h3>
                     <div className="flex items-center gap-2">

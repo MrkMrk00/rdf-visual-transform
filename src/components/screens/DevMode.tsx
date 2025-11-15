@@ -81,15 +81,12 @@ function ReadyToUseProfiles() {
 export function DevMode() {
     return (
         <ResizablePanelGroup
-            className="inset-0 absolute z-30 pointer-events-auto backdrop-blur-md bg-black/20 p-4"
+            className="inset-0 absolute z-30 pointer-events-auto backdrop-blur-md bg-black/20 p-4 gap-2"
             direction="horizontal"
         >
-            <ResizablePanel>
+            <ResizablePanel className="flex flex-col gap-2">
                 <PerformedTransformations />
                 <ReadyToUseProfiles />
-            </ResizablePanel>
-            <ResizableHandle className="bg-transparent" />
-            <ResizablePanel>
                 <AvailableTransformations />
             </ResizablePanel>
             <ResizableHandle className="bg-transparent" />
