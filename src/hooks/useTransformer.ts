@@ -206,8 +206,6 @@ export function useTransformer() {
     };
 }
 
-const ZOOM_RATIO = 0.25;
-
 /**
  ________________
 < Please work :) >
@@ -234,8 +232,10 @@ function useAutoZoom() {
         const camera = sigma.getCamera();
         let ratio = CAMERA_MAX_RATIO;
 
+        const zoomRatio = 1 / transformations.length;
+
         for (let i = performedTransformations.length; i < transformations.length; ++i) {
-            ratio = Math.max(CAMERA_MIN_RATIO, ratio * (1 - ZOOM_RATIO));
+            ratio = Math.max(CAMERA_MIN_RATIO, ratio * (1 - zoomRatio));
         }
 
         camera.animate({ ratio });

@@ -116,7 +116,7 @@ export function useShouldZoomWhileTransforming() {
     return useMemo(() => [shouldZoom, setAutoZoom] as const, [shouldZoom, setAutoZoom]);
 }
 
-export const CAMERA_MIN_RATIO = 0.1;
+export const CAMERA_MIN_RATIO = 0.2;
 export const CAMERA_MAX_RATIO = 1;
 
 export function useSigmaSettings(): Partial<SigmaSettings> {
