@@ -12,7 +12,6 @@ import { GraphTransformer, TransformerEvents } from '@/util/transformations/Grap
 import { useSigma } from '@react-sigma/core';
 import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { useThrottledFunc } from './useDebounced';
 
 const eventBus = new EventTarget();
 
@@ -146,61 +145,65 @@ export function useTransformer() {
         }
     }, [transformer, positioningFunction]);
 
-    return useMemo(() => {
-        async function renderAndRun(transformation: Transformation) {
+    const renderAndRun = useCallback(
+        async (transformation: Transformation) => {
             const result = await transformer.renderAndRunTransformation(transformation);
             if (result) {
                 stackPush(transformation.id, result);
             }
-        }
+        },
+        [transformer, stackPush],
+    );
 
-        return {
-            update: async (query: string) => {
-                const result = await transformer.update(query);
-                if (result) {
-                    stackPush(undefined, result);
-                }
-            },
-            renderAndRun,
-            canPopTransformation: () => {
-                return performedTransformations.length > 0;
-            },
-            canRunTransformation: () => {
-                const idsOfPerformed = new Set(performedTransformations.map((tsf) => tsf.id));
+    const update = useCallback(
+        async (query: string) => {
+            const result = await transformer.update(query);
+            if (result) {
+                stackPush(undefined, result);
+            }
+        },
+        [transformer, stackPush],
+    );
 
-                return transformations.some((tsf) => !idsOfPerformed.has(tsf.id));
-            },
-            popTransformationsStack: () => {
-                const diff = stackPop();
-                if (!diff) {
-                    toast.warning('No transformation left to undo.');
+    return {
+        update,
+        renderAndRun,
+        canPopTransformation: () => performedTransformations.length > 0,
+        canRunTransformation: () => {
+            const idsOfPerformed = new Set(performedTransformations.map((tsf) => tsf.id));
 
-                    return;
-                }
+            return transformations.some((tsf) => !idsOfPerformed.has(tsf.id));
+        },
+        popTransformationsStack: () => {
+            const diff = stackPop();
+            if (!diff) {
+                toast.warning('No transformation left to undo.');
 
-                transformer.undoTransformation(diff);
-            },
-            runNextTransformation: () => {
-                const idsOfPerformed = new Set(performedTransformations.map((tsf) => tsf.id));
-                const available = transformations.filter((tsf) => !idsOfPerformed.has(tsf.id));
-                if (available.length === 0) {
-                    toast.warning('No transformation available to execute');
+                return;
+            }
 
-                    return;
-                }
+            transformer.undoTransformation(diff);
+        },
+        runNextTransformation: () => {
+            const idsOfPerformed = new Set(performedTransformations.map((tsf) => tsf.id));
+            const available = transformations.filter((tsf) => !idsOfPerformed.has(tsf.id));
+            if (available.length === 0) {
+                toast.warning('No transformation available to execute');
 
-                const priorityBucket = getNextPriorityBucket(available);
-                // TODO: do it randomly or deterministically?
-                const toRun = priorityBucket[Math.round(Math.random() * (priorityBucket.length - 1))];
+                return;
+            }
 
-                return renderAndRun(toRun);
-            },
-            adjustLayout: transformer.adjustLayout.bind(transformer),
-            onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
-                eventBus.addEventListener(TransformerEvents.change, callback, { signal });
-            },
-        };
-    }, [transformer, stackPush, stackPop, performedTransformations, transformations]);
+            const priorityBucket = getNextPriorityBucket(available);
+            // TODO: do it randomly or deterministically?
+            const toRun = priorityBucket[Math.round(Math.random() * (priorityBucket.length - 1))];
+
+            return renderAndRun(toRun);
+        },
+        adjustLayout: transformer.adjustLayout.bind(transformer),
+        onChange: (callback: (ev: Event) => void, signal?: AbortSignal) => {
+            eventBus.addEventListener(TransformerEvents.change, callback, { signal });
+        },
+    };
 }
 
 const ZOOM_RATIO = 0.25;
@@ -219,32 +222,9 @@ function useAutoZoom() {
     const [shouldZoom] = useShouldZoomWhileTransforming();
     const sigma = useSigma();
     const graph = useGraphologyGraph();
+
     const transformations = useTransformationsStore((store) => store.transformations);
-
-    const zoomHandler = useThrottledFunc(
-        useCallback(
-            async (ev: Event) => {
-                if (TransformerEvents.isLayoutAdjustmentEvent(ev)) {
-                    return;
-                }
-
-                const camera = sigma.getCamera();
-                const sign = TransformerEvents.isPopStateEvent(ev) ? +1 : -1;
-
-                const prevZoomRatio = camera.getState().ratio;
-                await camera.animatedReset();
-                const newZoomRatio = camera.getState().ratio;
-
-                // popstate = zoom in (more data); the ratio should decrease (*+1 -> should be > 0)
-                // zoom out (less data);           the ratio should increase (*-1 -> should be > 0)
-                //  -> if not (<= 0), zoom manually
-                if ((prevZoomRatio - newZoomRatio) * sign <= 0) {
-                    await camera.animatedZoom(1 + sign * ZOOM_RATIO);
-                }
-            },
-            [sigma],
-        ),
-    );
+    const performedTransformations = useGraphSettings((store) => store.transformationsStack);
 
     useEffect(() => {
         if (!graph || !shouldZoom) {
@@ -253,22 +233,13 @@ function useAutoZoom() {
 
         const camera = sigma.getCamera();
         let ratio = CAMERA_MAX_RATIO;
-        for (const _ in transformations) {
+
+        for (let i = performedTransformations.length; i < transformations.length; ++i) {
             ratio = Math.max(CAMERA_MIN_RATIO, ratio * (1 - ZOOM_RATIO));
         }
 
-        camera.setState({ ratio });
-    }, [shouldZoom, graph, sigma, transformations]);
-
-    useEffect(() => {
-        if (!shouldZoom) {
-            return;
-        }
-
-        eventBus.addEventListener(TransformerEvents.change, zoomHandler);
-
-        return () => eventBus.removeEventListener(TransformerEvents.change, zoomHandler);
-    }, [shouldZoom, zoomHandler]);
+        camera.animate({ ratio });
+    }, [shouldZoom, graph, sigma, transformations, performedTransformations]);
 }
 
 function getNextPriorityBucket(transformations: Transformation[]): Transformation[] {

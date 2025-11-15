@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { FOAF_NAME, RDF_TYPE, RDFS_LABEL } from '@/consts/common-iris';
 import { useGraphIsLoading } from '@/contexts/tripple-store';
 import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { useUiControlStore } from '@/store/uiControl';
@@ -29,10 +30,7 @@ import { ComponentPropsWithoutRef, RefObject, useEffect, useMemo, useState } fro
 import { createPortal } from 'react-dom';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
-const COMMON_PREDICATES_TO_HIDE = [
-    'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-    'http://www.w3.org/2000/01/rdf-schema#label',
-];
+const COMMON_PREDICATES_TO_HIDE = [RDFS_LABEL, RDF_TYPE, FOAF_NAME];
 
 export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
     const [showGraphLoader, setShowGraphLoader] = useState(false);
@@ -156,7 +154,10 @@ function MenuNavigator(props: MenuProps) {
                         }}
                     >
                         <span>
-                            Simplify graph <small>(shorten IRIs, use <code>rdfs:label</code> for node labels, hide types etc.)</small>
+                            Simplify graph{' '}
+                            <small>
+                                (shorten IRIs, use <code>rdfs:label</code> for node labels, hide types etc.)
+                            </small>
                         </span>
                     </DropdownMenuCheckboxItem>
 
