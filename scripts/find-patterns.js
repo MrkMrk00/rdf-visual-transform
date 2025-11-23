@@ -44,6 +44,15 @@ WHERE {
   }
 }`;
 
+const relationshipDereification = `\
+WHERE {
+    ?middle ?a ?start .
+    ?middle ?b ?end   .
+
+    FILTER (?start != ?end && isIRI(?start) && isIRI(?end))
+}
+`;
+
 const countingProperty = `\
 WHERE {
     ?from ?property ?to .
@@ -52,22 +61,31 @@ GROUP BY ?from ?property
 HAVING (COUNT(?property) > 1)
 `;
 
+async function queryBindings(query, bindings) {
+    const bindingsPlaceholders = bindings.reduce((acc, item) => {
+        return acc + `?${item} `;
+    }, '');
+
+    const result = await queryEngine.queryBindings(`SELECT ${bindingsPlaceholders} ${query}`, {
+        sources: [store],
+    });
+
+    return (await result.toArray()).map((it) => {
+        return Object.fromEntries(bindings.map((key) => [key, it.get(key).value]));
+    });
+}
+
 console.log(
     'property-chain-shortcut',
-    await queryEngine.queryBoolean(`ASK ${propertyChainShortcut}`, {
-        sources: [store],
-    }),
+    await queryBindings(propertyChainShortcut, ['from', 'middle', 'to']),
 );
 
-const result = await queryEngine.queryBindings(`SELECT ?from (COUNT(?property) as ?count) ${countingProperty}`, {
-    sources: [store],
-});
+console.log(
+    'relationship-dereification',
+    await queryBindings(relationshipDereification, ['start', 'a', 'middle', 'b', 'end']),
+);
 
-console.log((await result.toArray()).map(it => it.toString()));
-
-// console.log(
-//     'counting property',
-//     await queryEngine.query(`SELECT ?from (COUNT(?property) as ?count) ${countingProperty}`, {
-//         sources: [store],
-//     }),
-// );
+console.log(
+    'counting-property',
+    await queryBindings(countingProperty, ['from', 'property']),
+);
