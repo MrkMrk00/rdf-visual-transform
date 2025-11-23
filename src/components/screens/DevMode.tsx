@@ -1,7 +1,9 @@
 import { AvailableTransformations } from '@/components/dev-mode/AvailableTransformations';
 import { useTransformer } from '@/hooks/useTransformer';
-import { useGraphSettings } from '@/store/graphSettings';
+import { useGraphSettings, useShouldZoomWhileTransforming } from '@/store/graphSettings';
 import { useTransformationsStore } from '@/store/transformations';
+import { useUiControlStore } from '@/store/uiControl';
+import { COMMON_PREDICATES_TO_HIDE } from '../Menu';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardTitle } from '../ui/card';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
@@ -44,6 +46,11 @@ function PerformedTransformations() {
 function ReadyToUseProfiles() {
     const loadFromJson = useTransformationsStore((store) => store.loadFromJson);
     const loadGraph = useGraphSettings((store) => store.loadGraphFromUrl);
+    const setHiddenPredicates = useGraphSettings((store) => store.setHiddenPredicates);
+    const [shouldZoom, toggleShouldZoom] = useShouldZoomWhileTransforming();
+    const sigmaSettings = useGraphSettings((store) => store.sigmaSettings);
+    const toggleSigmaSetting = useGraphSettings((store) => store.toggleSetting);
+    const toggleDevMode = useUiControlStore((store) => store.toggleDevMode);
 
     // yeah, this is not very clean :)
     const profiles = [
@@ -63,11 +70,19 @@ function ReadyToUseProfiles() {
                         type="button"
                         key={name}
                         onClick={() => {
+                            if (!sigmaSettings.renderEdgeLabels) {
+                                toggleSigmaSetting('renderEdgeLabels');
+                            }
+
+                            if (!shouldZoom) {
+                                toggleShouldZoom();
+                            }
+
+                            setHiddenPredicates(COMMON_PREDICATES_TO_HIDE);
                             loadGraph(graph);
 
-                            setTimeout(() => {
-                                loadFromJson(profile);
-                            });
+                            toggleDevMode();
+                            loadFromJson(profile);
                         }}
                     >
                         {name}

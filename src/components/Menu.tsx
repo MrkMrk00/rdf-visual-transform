@@ -30,7 +30,7 @@ import { ComponentPropsWithoutRef, RefObject, useEffect, useMemo, useState } fro
 import { createPortal } from 'react-dom';
 import { UrlHistoryPopover } from './UrlHistoryPopover';
 
-const COMMON_PREDICATES_TO_HIDE = [RDFS_LABEL, RDF_TYPE, FOAF_NAME];
+export const COMMON_PREDICATES_TO_HIDE = [RDFS_LABEL, RDF_TYPE, FOAF_NAME];
 
 export function Menu({ target }: { target: RefObject<HTMLDivElement | null> }) {
     const [showGraphLoader, setShowGraphLoader] = useState(false);
