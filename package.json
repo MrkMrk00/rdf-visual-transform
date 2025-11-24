@@ -24,7 +24,7 @@
         "@types/node": "^24.7.2",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.2",
-        "@types/readable-stream": "^4.0.21",
+        "@types/readable-stream": "^4.0.22",
         "@vitejs/plugin-react": "^5.1.0",
         "eslint": "^9.37.0",
         "eslint-plugin-react": "^7.37.5",
