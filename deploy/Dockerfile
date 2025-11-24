@@ -36,6 +36,11 @@ server {
     }
 
     location ~* \.(?:js|css|ttl)$ {
+        types {
+            text/turtle             ttl;
+            application/javascript  js;
+            text/css                css;
+        }
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
 }
