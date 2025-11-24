@@ -16,7 +16,7 @@
         "node": ">=24.10 <25"
     },
     "devDependencies": {
-        "@eslint/js": "^9.37.0",
+        "@eslint/js": "^9.39.0",
         "@rdfjs/types": "^2.0.1",
         "@tailwindcss/vite": "^4.1.14",
         "@types/js-yaml": "^4.0.9",
