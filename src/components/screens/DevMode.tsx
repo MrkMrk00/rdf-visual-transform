@@ -94,20 +94,32 @@ function ReadyToUseProfiles() {
 }
 
 export function DevMode() {
+    const toggleDevMode = useUiControlStore((store) => store.toggleDevMode);
+
     return (
-        <ResizablePanelGroup
-            className="inset-0 absolute z-30 pointer-events-auto backdrop-blur-md bg-black/20 p-4 gap-2"
-            direction="horizontal"
-        >
-            <ResizablePanel className="flex flex-col gap-2">
-                <PerformedTransformations />
-                <ReadyToUseProfiles />
-                <AvailableTransformations />
-            </ResizablePanel>
-            <ResizableHandle className="bg-transparent" />
-            <ResizablePanel>
-                <SparqlConsole />
-            </ResizablePanel>
-        </ResizablePanelGroup>
+        <div className="flex flex-col top-0 bottom-2 inset-x-2 absolute z-30 pointer-events-auto backdrop-blur-xs bg-black/10 p-4 gap-2 rounded-xl border-2 border-red-600">
+            <div className="relative flex justify-center items-center pb-2">
+                <strong className="text-xl text-red-600">Dev Mode</strong>
+                <Button
+                    type="button"
+                    variant="destructive"
+                    className="absolute right-0 inline-flex items-center font-bold text-lg w-8 h-8"
+                    onClick={toggleDevMode}
+                >
+                    ×
+                </Button>
+            </div>
+            <ResizablePanelGroup direction="horizontal">
+                <ResizablePanel className="flex flex-col gap-2">
+                    <PerformedTransformations />
+                    <ReadyToUseProfiles />
+                    <AvailableTransformations />
+                </ResizablePanel>
+                <ResizableHandle className="bg-transparent" />
+                <ResizablePanel>
+                    <SparqlConsole />
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        </div>
     );
 }
