@@ -122,7 +122,7 @@ function MenuNavigator(props: MenuProps) {
                     <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
                             <MenuItemWithUnderline>
-                                <Cog8ToothIcon className={iconSize} />
+                                <Cog8ToothIcon className={cn(iconSize, 'hover:rotate-45 transition-[rotate]')} />
                             </MenuItemWithUnderline>
                         </DropdownMenuTrigger>
                     </TooltipTrigger>
