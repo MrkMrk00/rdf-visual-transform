@@ -16,8 +16,6 @@ function doParse() {
     const parser = rdfParser.parse(process.stdin, { contentType });
 
     return new Promise((resolve, reject) => {
-        verbose && console.log('loading data...');
-
         parser.on('data', (quad) => {
             store.add(quad);
         });
@@ -46,10 +44,20 @@ WHERE {
 
 const relationshipDereification = `\
 WHERE {
-    ?middle ?a ?start .
-    ?middle ?b ?end   .
+  ?middle ?a ?start .
+  ?middle ?b ?end   .
 
-    FILTER (?start != ?end && isIRI(?start) && isIRI(?end))
+  {
+    SELECT ?middle
+    WHERE {
+      ?middle ?a [] .
+      ?middle ?b [] .
+    }
+    GROUP BY ?middle
+    HAVING (COUNT(?a) = 1 && COUNT(?b) = 1)
+  }
+
+  FILTER (?start != ?end && isIRI(?start) && isIRI(?end))
 }
 `;
 
@@ -75,17 +83,20 @@ async function queryBindings(query, bindings) {
     });
 }
 
-console.log(
-    'property-chain-shortcut',
-    await queryBindings(propertyChainShortcut, ['from', 'middle', 'to']),
-);
+const propChainShortcut = await queryBindings(propertyChainShortcut, ['from', 'p1', 'middle', 'p2', 'to']);
 
-console.log(
-    'relationship-dereification',
-    await queryBindings(relationshipDereification, ['start', 'a', 'middle', 'b', 'end']),
-);
+const dereification = await queryBindings(relationshipDereification, ['start', 'a', 'middle', 'b', 'end']);
 
-console.log(
-    'counting-property',
-    await queryBindings(countingProperty, ['from', 'property']),
-);
+const countingPropertyResult = await queryBindings(countingProperty, ['from', 'property']);
+
+if (verbose) {
+    console.log('property-chain-shortcut', propChainShortcut);
+    console.log('relationship-dereification', dereification);
+    console.log('counting-property', countingPropertyResult);
+}
+
+console.log({
+    'property-chain-shortcut': propChainShortcut.length,
+    'relationship-dereification': dereification.length,
+    'counting-property': countingPropertyResult.length,
+});
